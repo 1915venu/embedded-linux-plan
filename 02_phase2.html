@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Phase 2: Linux Fundamentals — Embedded Linux & Device Drivers Enhanced 40-Day Guide">
+  <title>Phase 2: Linux Fundamentals — Enhanced Plan</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <!-- Highlight.js for syntax highlighting -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+  <!-- App styles -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Progress Bar -->
+  <div id="progress-bar"></div>
+
+  <!-- Sidebar Overlay (mobile) -->
+  <div class="sidebar-overlay"></div>
+
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-brand">
+      <h1>🐧 Embedded Linux</h1>
+      <p>Enhanced 40-Day Guide</p>
+    </div>
+    <div class="sidebar-nav">
+  <div class="sidebar-section-label">Getting Started</div>
+  <a class="sidebar-link" href="00_readme.html"><span class="link-icon">🏠</span><span>README — Overview</span></a>
+  <div class="sidebar-section-label">Learning Phases</div>
+  <a class="sidebar-link" href="01_phase1.html"><span class="link-icon">⚙️</span><span>Phase 1: C Revision</span><span class="link-badge">Days 0-3</span></a>
+  <a class="sidebar-link active" href="02_phase2.html"><span class="link-icon">🐧</span><span>Phase 2: Linux Fundamentals</span><span class="link-badge">Days 4-8</span></a>
+  <a class="sidebar-link" href="03_phase3.html"><span class="link-icon">🧩</span><span>Phase 3: Kernel Modules</span><span class="link-badge">Days 9-13</span></a>
+  <a class="sidebar-link" href="04_phase4.html"><span class="link-icon">💾</span><span>Phase 4: Char Driver Project</span><span class="link-badge">Days 14-22</span></a>
+  <a class="sidebar-link" href="05_phase5.html"><span class="link-icon">🌳</span><span>Phase 5: Device Tree &amp; Platform</span><span class="link-badge">Days 23-27</span></a>
+  <a class="sidebar-link" href="06_phase6.html"><span class="link-icon">🔌</span><span>Phase 6: I2C Project</span><span class="link-badge">Days 28-37</span></a>
+  <a class="sidebar-link" href="07_phase7.html"><span class="link-icon">🎯</span><span>Phase 7: Thread Pool &amp; Interview</span><span class="link-badge">Days 38-40</span></a>
+  <div class="sidebar-section-label">Appendices</div>
+  <a class="sidebar-link" href="08_appendix_interviews.html"><span class="link-icon">📝</span><span>Appendix: Interview Bank</span><span class="link-badge">150+ Q&amp;A</span></a>
+  <a class="sidebar-link" href="09_appendix_kernel.html"><span class="link-icon">🔬</span><span>Appendix: Kernel Internals</span></a>
+  <a class="sidebar-link" href="10_appendix_debugging.html"><span class="link-icon">🔧</span><span>Appendix: Debugging</span></a>
+    </div>
+  </nav>
+
+  <!-- Header -->
+  <header class="header">
+    <button class="hamburger" aria-label="Toggle sidebar">☰</button>
+    <div class="header-title">
+      <span class="emoji">🐧</span> Phase 2: Linux Fundamentals
+    </div>
+    <div class="header-search">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="search-input" placeholder="Search topics..." autocomplete="off">
+      <div class="search-results" id="search-results"></div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="phase-2-linux-fundamentals-days-4-8">PHASE 2: LINUX FUNDAMENTALS (Days 4-8)</h1>
+<hr />
+<h2 id="day-4-system-calls-the-kernel-boundary">DAY 4: SYSTEM CALLS — THE KERNEL BOUNDARY</h2>
+<h3 id="theory-user-space-vs-kernel-space-why-it-exists">🧠 THEORY: User Space vs Kernel Space (Why It Exists)</h3>
+<p>The entire Linux architecture is built on this fundamental split:</p>
+<pre><code>User Space (Ring 3)                    Kernel Space (Ring 0)
+┌──────────────────────────┐          ┌──────────────────────────────────┐
+│  Your application        │          │  Full hardware access            │
+│  Limited privileges      │          │  All memory accessible           │
+│  Virtual addresses only  │   ───►   │  Physical + Virtual memory       │
+│  Can crash safely        │  syscall │  Bug here = system crash         │
+│  Multiple processes      │          │  Single address space (shared)   │
+│  ~3GB address space (32) │          │  ~1GB address space (32-bit)     │
+└──────────────────────────┘          └──────────────────────────────────┘
+</code></pre>
+<h4 id="why-the-split">Why the split?</h4>
+<ol>
+<li><strong>Protection</strong>: User code can&rsquo;t corrupt kernel or other processes</li>
+<li><strong>Stability</strong>: App crash doesn&rsquo;t take down the system</li>
+<li><strong>Security</strong>: Prevents malicious code from accessing hardware directly</li>
+<li><strong>Abstraction</strong>: Same syscall interface regardless of hardware</li>
+</ol>
+<h3 id="theory-system-call-mechanism-step-by-step">🧠 THEORY: System Call Mechanism — Step by Step</h3>
+<pre><code>Application: write(fd, buf, count)
+    │
+    │ 1. glibc wrapper loads syscall number into register
+    │    (write = syscall #1 on x86_64)
+    │
+    │ 2. Arguments loaded into registers:
+    │    rdi = fd, rsi = buf, rdx = count
+    │
+    │ 3. SYSCALL instruction (x86_64) or int 0x80 (x86_32)
+    │    ┌─────────────────────────────────────────┐
+    │    │ CPU switches to Ring 0                   │
+    │    │ Stack switches to kernel stack            │
+    │    │ Saves user registers on kernel stack      │
+    │    └─────────────────────────────────────────┘
+    │
+    │ 4. Kernel entry point (entry_SYSCALL_64 in entry/entry_64.S)
+    │
+    │ 5. Look up handler: sys_call_table[__NR_write] → ksys_write()
+    │
+    │ 6. Handler validates parameters
+    │    - Is fd valid?
+    │    - Is buf a valid user pointer?
+    │    - Does process have permission?
+    │
+    │ 7. Perform the operation
+    │
+    │ 8. Return value placed in rax
+    │    If negative = errno value
+    │
+    │ 9. SYSRET instruction
+    │    ┌─────────────────────────────────────────┐
+    │    │ CPU switches back to Ring 3               │
+    │    │ Stack switches back to user stack          │
+    │    │ Restores user registers                    │
+    │    └─────────────────────────────────────────┘
+    │
+    ▼ Application continues with return value
+</code></pre>
+<h3 id="theory-key-system-calls-for-embedded">🧠 THEORY: Key System Calls for Embedded</h3>
+<table>
+<thead>
+<tr>
+<th>System Call</th>
+<th>Purpose</th>
+<th>Kernel Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>open()</code></td>
+<td>Open file/device</td>
+<td><code>ksys_open()</code> → VFS → driver&rsquo;s <code>.open()</code></td>
+</tr>
+<tr>
+<td><code>read()</code></td>
+<td>Read data</td>
+<td>→ VFS → driver&rsquo;s <code>.read()</code></td>
+</tr>
+<tr>
+<td><code>write()</code></td>
+<td>Write data</td>
+<td>→ VFS → driver&rsquo;s <code>.write()</code></td>
+</tr>
+<tr>
+<td><code>close()</code></td>
+<td>Close FD</td>
+<td>→ VFS → driver&rsquo;s <code>.release()</code></td>
+</tr>
+<tr>
+<td><code>ioctl()</code></td>
+<td>Device control</td>
+<td>→ VFS → driver&rsquo;s <code>.unlocked_ioctl()</code></td>
+</tr>
+<tr>
+<td><code>mmap()</code></td>
+<td>Map memory</td>
+<td>→ VFS → driver&rsquo;s <code>.mmap()</code></td>
+</tr>
+<tr>
+<td><code>poll()</code></td>
+<td>Wait for events</td>
+<td>→ VFS → driver&rsquo;s <code>.poll()</code></td>
+</tr>
+<tr>
+<td><code>fork()</code></td>
+<td>Create process</td>
+<td>→ <code>kernel_clone()</code></td>
+</tr>
+<tr>
+<td><code>execve()</code></td>
+<td>Replace process</td>
+<td>→ Load new ELF binary</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Key insight</strong>: When user calls <code>open("/dev/mydevice")</code>, it eventually calls YOUR driver&rsquo;s <code>.open()</code> function!</p>
+<h3 id="theory-file-descriptors-the-universal-handle">🧠 THEORY: File Descriptors — The Universal Handle</h3>
+<pre><code>Process File Descriptor Table:
+┌────┬──────────────────────────────┐
+│ FD │ Points to...                  │
+├────┼──────────────────────────────┤
+│  0 │ → Open File Entry (stdin)    │ → /dev/tty
+│  1 │ → Open File Entry (stdout)   │ → /dev/tty
+│  2 │ → Open File Entry (stderr)   │ → /dev/tty
+│  3 │ → Open File Entry            │ → /dev/mydevice
+│  4 │ → Open File Entry            │ → /home/user/data.txt
+│  5 │ → (unused)                   │
+└────┴──────────────────────────────┘
+
+Each Open File Entry contains:
+- Current position (offset)
+- Open flags (O_RDONLY, etc.)
+- Pointer to inode (which file)
+- Pointer to file_operations (which driver)
+</code></pre>
+<h3 id="complete-code-system-calls-deep-dive">💻 COMPLETE CODE: System Calls Deep Dive</h3>
+<pre data-lang="c"><code class="language-c">// File: ~/embedded_learning/day_04/syscalls_complete.c
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;fcntl.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;errno.h&gt;
+#include &lt;string.h&gt;
+#include &lt;sys/stat.h&gt;
+#include &lt;sys/types.h&gt;
+
+#define CHECK(x, msg) do { \
+    if ((x) &lt; 0) { \
+        fprintf(stderr, &quot;[ERROR] %s: %s (errno=%d)\n&quot;, msg, strerror(errno), errno); \
+        exit(EXIT_FAILURE); \
+    } \
+} while(0)
+
+// Robust copy with full error handling
+int copy_file(const char *src, const char *dst) {
+    int src_fd, dst_fd;
+    char buffer[4096];
+    ssize_t bytes_read, bytes_written, total_written;
+
+    src_fd = open(src, O_RDONLY);
+    if (src_fd &lt; 0) return -1;
+
+    dst_fd = open(dst, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    if (dst_fd &lt; 0) {
+        close(src_fd);
+        return -1;
+    }
+
+    while ((bytes_read = read(src_fd, buffer, sizeof(buffer))) &gt; 0) {
+        total_written = 0;
+        while (total_written &lt; bytes_read) {
+            // Handle partial writes (important for devices/pipes!)
+            bytes_written = write(dst_fd, buffer + total_written,
+                                 bytes_read - total_written);
+            if (bytes_written &lt; 0) {
+                if (errno == EINTR) continue;  // Interrupted by signal, retry
+                close(src_fd);
+                close(dst_fd);
+                return -1;
+            }
+            total_written += bytes_written;
+        }
+    }
+
+    close(src_fd);
+    close(dst_fd);
+    return (bytes_read &lt; 0) ? -1 : 0;
+}
+
+// Demonstrate lseek
+void demo_lseek(const char *path) {
+    int fd = open(path, O_RDONLY);
+    if (fd &lt; 0) { perror(&quot;open&quot;); return; }
+
+    // Get file size using lseek
+    off_t size = lseek(fd, 0, SEEK_END);
+    printf(&quot;File size via lseek: %ld bytes\n&quot;, size);
+
+    // Read last 10 bytes
+    lseek(fd, -10, SEEK_END);
+    char buf[11] = {0};
+    read(fd, buf, 10);
+    printf(&quot;Last 10 bytes: '%s'\n&quot;, buf);
+
+    close(fd);
+}
+
+// File info via stat
+void print_file_info(const char *path) {
+    struct stat st;
+    if (stat(path, &amp;st) &lt; 0) { perror(&quot;stat&quot;); return; }
+
+    printf(&quot;File: %s\n&quot;, path);
+    printf(&quot;  Size: %ld bytes\n&quot;, st.st_size);
+    printf(&quot;  Mode: %o\n&quot;, st.st_mode &amp; 0777);
+    printf(&quot;  Type: &quot;);
+    if (S_ISREG(st.st_mode))  printf(&quot;Regular file\n&quot;);
+    else if (S_ISDIR(st.st_mode))  printf(&quot;Directory\n&quot;);
+    else if (S_ISCHR(st.st_mode))  printf(&quot;Character device\n&quot;);
+    else if (S_ISBLK(st.st_mode))  printf(&quot;Block device\n&quot;);
+    else if (S_ISFIFO(st.st_mode)) printf(&quot;FIFO\n&quot;);
+    else printf(&quot;Other\n&quot;);
+    printf(&quot;  Inode: %lu\n&quot;, st.st_ino);
+    printf(&quot;  Links: %lu\n&quot;, (unsigned long)st.st_nlink);
+}
+
+int main(int argc, char *argv[]) {
+    printf(&quot;=== SYSTEM CALL DEMO ===\n\n&quot;);
+
+    // Create and write file using low-level syscalls
+    int fd = open(&quot;test.txt&quot;, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    CHECK(fd, &quot;open for write&quot;);
+
+    const char *content = &quot;Hello from system calls!\nLine 2\nLine 3\n&quot;;
+    ssize_t written = write(fd, content, strlen(content));
+    printf(&quot;Wrote %zd bytes\n&quot;, written);
+    close(fd);
+
+    // Read file
+    fd = open(&quot;test.txt&quot;, O_RDONLY);
+    CHECK(fd, &quot;open for read&quot;);
+    char buffer[256];
+    ssize_t bytes = read(fd, buffer, sizeof(buffer) - 1);
+    buffer[bytes] = '\0';
+    printf(&quot;Read %zd bytes:\n%s\n&quot;, bytes, buffer);
+    close(fd);
+
+    // File info
+    print_file_info(&quot;test.txt&quot;);
+
+    // lseek demo
+    printf(&quot;\n=== LSEEK DEMO ===\n&quot;);
+    demo_lseek(&quot;test.txt&quot;);
+
+    // Copy file
+    printf(&quot;\n=== COPY FILE ===\n&quot;);
+    if (copy_file(&quot;test.txt&quot;, &quot;copy.txt&quot;) == 0) {
+        printf(&quot;Copy successful\n&quot;);
+        print_file_info(&quot;copy.txt&quot;);
+    }
+
+    // Strace hint
+    printf(&quot;\n=== TRY THIS ===\n&quot;);
+    printf(&quot;Run: strace ./syscalls_complete\n&quot;);
+    printf(&quot;to see ALL system calls made!\n&quot;);
+
+    // Cleanup
+    unlink(&quot;test.txt&quot;);
+    unlink(&quot;copy.txt&quot;);
+
+    return 0;
+}
+</code></pre>
+<h3 id="common-pitfalls-day-4">⚠️ COMMON PITFALLS — Day 4</h3>
+<table>
+<thead>
+<tr>
+<th>Pitfall</th>
+<th>Why</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Not checking return values</td>
+<td>Syscalls can fail!</td>
+<td>Always check &lt; 0</td>
+</tr>
+<tr>
+<td>Ignoring partial writes</td>
+<td>write() may write fewer bytes</td>
+<td>Loop until all written</td>
+</tr>
+<tr>
+<td>Ignoring EINTR</td>
+<td>Signals can interrupt syscalls</td>
+<td>Retry on EINTR</td>
+</tr>
+<tr>
+<td>Using printf in kernel</td>
+<td>printf is userspace only</td>
+<td>Use printk in kernel</td>
+</tr>
+</tbody>
+</table>
+<h3 id="interview-questions-day-4-10-questions">📝 INTERVIEW QUESTIONS — Day 4 (10 Questions)</h3>
+<p><strong>Q1: What is the difference between <code>open()</code> and <code>fopen()</code>?</strong></p>
+<blockquote>
+<p><code>open()</code>: System call, returns int fd, no buffering, for device files &amp; precise control.
+<code>fopen()</code>: C library function, returns <code>FILE*</code>, provides buffering, for regular file I/O.</p>
+</blockquote>
+<p><strong>Q2: Explain the file descriptor table.</strong></p>
+<blockquote>
+<p>Each process has FD table mapping integers to kernel file objects. fd 0=stdin, 1=stdout, 2=stderr. <code>open()</code> returns lowest available fd. FDs are per-process, but the underlying file objects can be shared (after <code>fork()</code> or <code>dup()</code>).</p>
+</blockquote>
+<p><strong>Q3: What happens when you call <code>write()</code> on a device file?</strong></p>
+<blockquote>
+<p><code>write()</code> → syscall → VFS layer → looks up device by major number → calls driver&rsquo;s <code>.write()</code> function via <code>file_operations</code>. Your driver then handles the data.</p>
+</blockquote>
+<p><strong>Q4: What is <code>strace</code> and how does it work?</strong></p>
+<blockquote>
+<p><code>strace</code> uses <code>ptrace()</code> syscall to intercept all system calls made by a process. Shows syscall name, arguments, and return value. Essential debugging tool for understanding app-kernel interaction.</p>
+</blockquote>
+<p><strong>Q5: Explain <code>dup()</code> and <code>dup2()</code>.</strong></p>
+<blockquote>
+<p><code>dup(fd)</code> creates a copy of fd (new fd pointing to same file). <code>dup2(oldfd, newfd)</code> makes newfd a copy of oldfd, closing newfd first. Used for I/O redirection (e.g., redirecting stdout to a file).</p>
+</blockquote>
+<p><strong>Q6: What is the difference between <code>stat()</code>, <code>fstat()</code>, and <code>lstat()</code>?</strong></p>
+<blockquote>
+<p><code>stat(path)</code>: gets info by path. <code>fstat(fd)</code>: gets info by fd (already opened). <code>lstat(path)</code>: like stat but doesn&rsquo;t follow symlinks. In kernel driver context, you usually work with fd (inode already known).</p>
+</blockquote>
+<p><strong>Q7: What flags would you use to open a file for appending?</strong></p>
+<blockquote>
+<p><code>O_WRONLY | O_APPEND | O_CREAT</code> with mode 0644. <code>O_APPEND</code> seeks to end before each write atomically. Multiple processes can append safely.</p>
+</blockquote>
+<p><strong>Q8: What is the significance of <code>O_NONBLOCK</code>?</strong></p>
+<blockquote>
+<p>Makes file operations non-blocking. If data isn&rsquo;t available, <code>read()</code> returns <code>EAGAIN</code> instead of blocking. Critical for device drivers and event-driven programming. Kernel driver checks <code>filp-&gt;f_flags &amp; O_NONBLOCK</code>.</p>
+</blockquote>
+<p><strong>Q9: How does the kernel know which driver handles a device file?</strong></p>
+<blockquote>
+<p>Device files have major and minor numbers (visible with <code>ls -l /dev/</code>). Major number identifies the driver. Minor number identifies the specific device instance. The kernel maintains a table mapping major numbers to registered drivers.</p>
+</blockquote>
+<p><strong>Q10: What is the VFS layer?</strong></p>
+<blockquote>
+<p>Virtual File System Switch — abstraction layer that provides uniform file interface regardless of underlying filesystem or device. All file operations go through VFS, which then dispatches to the appropriate filesystem driver or device driver based on the file type.</p>
+</blockquote>
+<hr />
+<h2 id="day-5-process-creation-fork-exec">DAY 5: PROCESS CREATION (FORK &amp; EXEC)</h2>
+<h3 id="theory-process-creation-in-linux">🧠 THEORY: Process Creation in Linux</h3>
+<p>Linux creates processes using a unique 2-step model:</p>
+<p><strong>Step 1: <code>fork()</code></strong> — Clone the current process
+- Creates an almost-exact copy (child)
+- Uses <strong>Copy-On-Write (COW)</strong>: pages shared until written
+- Returns twice: 0 to child, child PID to parent</p>
+<p><strong>Step 2: <code>exec()</code></strong> — Replace the process image
+- Replaces code, data, stack with new program
+- Same PID, same file descriptors (unless FD_CLOEXEC set)
+- This is why shell commands work: shell forks, child execs</p>
+<pre><code>shell$ ls -la
+╔══════════════════╗
+║   Shell (bash)   ║
+║   PID = 1000     ║
+╚══════════════════╝
+        │
+        │ fork()
+        ▼
+╔══════════════════╗    ╔══════════════════╗
+║   Shell (parent) ║    ║   Shell (child)  ║
+║   PID = 1000     ║    ║   PID = 1001     ║
+║   wait()...      ║    ║   exec(&quot;ls&quot;)     ║
+╚══════════════════╝    ╚══════════════════╝
+                                │
+                                ▼
+                        ╔══════════════════╗
+                        ║   ls program     ║
+                        ║   PID = 1001     ║
+                        ║   runs, prints   ║
+                        ║   exit(0)        ║
+                        ╚══════════════════╝
+                                │
+                                ▼
+╔══════════════════╗
+║   Shell resumes  ║
+║   PID = 1000     ║
+║   prints prompt  ║
+╚══════════════════╝
+</code></pre>
+<h3 id="theory-copy-on-write-cow-performance-critical">🧠 THEORY: Copy-On-Write (COW) — Performance Critical</h3>
+<pre><code>Before fork():
+Parent virtual page → Physical page P1 (writable)
+
+After fork():
+Parent virtual page → Physical page P1 (read-only)
+Child  virtual page → Physical page P1 (read-only)  ← SAME physical page!
+
+When child writes:
+Page fault! → Kernel copies P1 → P2
+Parent virtual page → P1 (writable again)
+Child  virtual page → P2 (writable, modified copy)
+</code></pre>
+<p>Why COW matters:
+1. Fork is fast — just copy page table entries, not pages
+2. Child often calls <code>exec()</code> immediately — no need to copy at all
+3. Read-only data (code) is never copied</p>
+<h3 id="theory-process-states">🧠 THEORY: Process States</h3>
+<pre><code>                    ┌──────────────────────────────┐
+                    │                              │
+fork() ──▶ TASK_RUNNING ────schedule()──▶ RUNNING ON CPU
+                    │                              │
+                    │◀────── preempted ────────────┘
+                    │
+          wait for event
+                    │
+                    ▼
+           TASK_INTERRUPTIBLE  (can be woken by signal)
+                    │      or
+           TASK_UNINTERRUPTIBLE (cannot be interrupted)
+                    │
+              event/signal
+                    │
+                    ▼
+             TASK_RUNNING (back in run queue)
+
+           exit() ──▶ EXIT_ZOMBIE ──wait()──▶ EXIT_DEAD (freed)
+</code></pre>
+<h3 id="complete-code-process-patterns">💻 COMPLETE CODE: Process Patterns</h3>
+<pre data-lang="c"><code class="language-c">// File: ~/embedded_learning/day_05/process_complete.c
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;sys/wait.h&gt;
+#include &lt;sys/types.h&gt;
+#include &lt;string.h&gt;
+#include &lt;errno.h&gt;
+
+// Pattern 1: Simple fork
+void demo_fork() {
+    printf(&quot;\n=== SIMPLE FORK ===\n&quot;);
+    int shared_var = 42;
+
+    pid_t pid = fork();
+
+    if (pid &lt; 0) {
+        perror(&quot;fork failed&quot;);
+        exit(1);
+    } else if (pid == 0) {
+        // Child modifies shared_var — only its copy (COW)
+        shared_var = 99;
+        printf(&quot;CHILD: PID=%d, PPID=%d, shared_var=%d (our copy)\n&quot;,
+               getpid(), getppid(), shared_var);
+        exit(0);
+    } else {
+        wait(NULL);
+        printf(&quot;PARENT: PID=%d, Child=%d, shared_var=%d (unchanged!)\n&quot;,
+               getpid(), pid, shared_var);
+    }
+}
+
+// Pattern 2: Fork + Exec
+void demo_fork_exec() {
+    printf(&quot;\n=== FORK + EXEC ===\n&quot;);
+
+    pid_t pid = fork();
+
+    if (pid == 0) {
+        printf(&quot;Child about to exec 'ls -la'...\n&quot;);
+        execl(&quot;/bin/ls&quot;, &quot;ls&quot;, &quot;-la&quot;, &quot;/tmp&quot;, NULL);
+        // Only reached if exec fails!
+        perror(&quot;exec failed&quot;);
+        exit(1);
+    } else if (pid &gt; 0) {
+        int status;
+        waitpid(pid, &amp;status, 0);
+
+        if (WIFEXITED(status))
+            printf(&quot;Child exited normally, status=%d\n&quot;, WEXITSTATUS(status));
+        else if (WIFSIGNALED(status))
+            printf(&quot;Child killed by signal %d\n&quot;, WTERMSIG(status));
+    }
+}
+
+// Pattern 3: Pipe communication
+void demo_pipe() {
+    printf(&quot;\n=== PIPE COMMUNICATION ===\n&quot;);
+
+    int pipefd[2];  // pipefd[0]=read, pipefd[1]=write
+
+    if (pipe(pipefd) &lt; 0) { perror(&quot;pipe&quot;); return; }
+
+    pid_t pid = fork();
+
+    if (pid == 0) {
+        close(pipefd[1]);  // Close write end in child
+        char buffer[256];
+        ssize_t n = read(pipefd[0], buffer, sizeof(buffer)-1);
+        buffer[n] = '\0';
+        printf(&quot;Child received: '%s'\n&quot;, buffer);
+        close(pipefd[0]);
+        exit(0);
+    } else {
+        close(pipefd[0]);  // Close read end in parent
+        const char *msg = &quot;Hello from parent via pipe!&quot;;
+        write(pipefd[1], msg, strlen(msg));
+        close(pipefd[1]);  // Signal EOF to child
+        wait(NULL);
+    }
+}
+
+// Pattern 4: Multiple children
+void demo_multi_child() {
+    printf(&quot;\n=== MULTIPLE CHILDREN ===\n&quot;);
+    const int NUM_CHILDREN = 3;
+    pid_t children[NUM_CHILDREN];
+
+    for (int i = 0; i &lt; NUM_CHILDREN; i++) {
+        children[i] = fork();
+        if (children[i] == 0) {
+            printf(&quot;Child %d (PID=%d) starting work...\n&quot;, i, getpid());
+            usleep((3 - i) * 100000);  // Different durations
+            printf(&quot;Child %d done\n&quot;, i);
+            exit(i);  // Exit with different codes
+        }
+    }
+
+    // Parent waits for all children
+    for (int i = 0; i &lt; NUM_CHILDREN; i++) {
+        int status;
+        pid_t pid = waitpid(children[i], &amp;status, 0);
+        printf(&quot;Child PID=%d exited with status=%d\n&quot;, pid, WEXITSTATUS(status));
+    }
+}
+
+int main() {
+    demo_fork();
+    demo_fork_exec();
+    demo_pipe();
+    demo_multi_child();
+    return 0;
+}
+</code></pre>
+<h3 id="interview-questions-day-5-12-questions">📝 INTERVIEW QUESTIONS — Day 5 (12 Questions)</h3>
+<p><strong>Q1: What does fork() return?</strong></p>
+<blockquote>
+<p>Returns 0 to child, child&rsquo;s PID to parent, -1 on error. The process execution continues from the same point in both parent and child.</p>
+</blockquote>
+<p><strong>Q2: What is a zombie process?</strong></p>
+<blockquote>
+<p>A finished process whose exit status hasn&rsquo;t been read by parent via <code>wait()</code>. Takes no memory/CPU but occupies a PID slot. Parent MUST call <code>wait()</code> or set <code>SIGCHLD</code> to <code>SIG_IGN</code>.</p>
+</blockquote>
+<p><strong>Q3: What is an orphan process?</strong></p>
+<blockquote>
+<p>A process whose parent terminated. Adopted by init (PID 1) or subreaper. Init calls <code>wait()</code> when orphan exits, preventing zombies.</p>
+</blockquote>
+<p><strong>Q4: Explain Copy-On-Write.</strong></p>
+<blockquote>
+<p>After fork(), parent and child share same physical pages (marked read-only). On first write, page fault triggers kernel to copy the page. Huge optimization — if child calls exec() immediately, no copying needed at all.</p>
+</blockquote>
+<p><strong>Q5: Difference between exec family functions?</strong></p>
+<blockquote>
+<p><code>execl</code>: list of args. <code>execv</code>: vector (array) of args. <code>execlp</code>/<code>execvp</code>: search PATH. <code>execle</code>/<code>execve</code>: pass environment. All replace current process image.</p>
+</blockquote>
+<p><strong>Q6: What happens to open file descriptors after fork()?</strong></p>
+<blockquote>
+<p>Child inherits copies of all parent&rsquo;s file descriptors. Both share the same file position (offset). Writing from either changes the shared offset. This is why pipes work — parent and child share pipe fds.</p>
+</blockquote>
+<p><strong>Q7: What is <code>wait()</code> vs <code>waitpid()</code>?</strong></p>
+<blockquote>
+<p><code>wait()</code>: waits for any child, blocks. <code>waitpid(pid, &amp;status, flags)</code>: waits for specific child, can be non-blocking with <code>WNOHANG</code>. Can check specific child or process group.</p>
+</blockquote>
+<p><strong>Q8: How does a shell implement piping (<code>ls | grep foo</code>)?</strong></p>
+<blockquote>
+<p>Shell creates pipe, forks twice. First child: dup2(pipe_write, STDOUT), exec(&ldquo;ls&rdquo;). Second child: dup2(pipe_read, STDIN), exec(&ldquo;grep&rdquo;). Parent closes pipe, waits for both.</p>
+</blockquote>
+<p><strong>Q9: What is the difference between <code>_exit()</code> and <code>exit()</code>?</strong></p>
+<blockquote>
+<p><code>exit()</code>: flushes stdio buffers, calls <code>atexit()</code> handlers, then calls <code>_exit()</code>. <code>_exit()</code>: immediate termination, no cleanup. After <code>fork()</code>, child should use <code>_exit()</code> to avoid flushing parent&rsquo;s buffers.</p>
+</blockquote>
+<p><strong>Q10: What is <code>vfork()</code>?</strong></p>
+<blockquote>
+<p>Like fork() but child shares parent&rsquo;s address space (no COW). Parent is suspended until child calls exec() or _exit(). Faster than fork() but dangerous — child must not modify shared memory. Largely obsolete with efficient fork() + COW.</p>
+</blockquote>
+<p><strong>Q11: How do kernel threads differ from user processes?</strong></p>
+<blockquote>
+<p>Kernel threads (<code>kthread_create()</code>) run only in kernel space, no user-space address space. Share kernel address space. Used for background tasks: kworker, ksoftirqd, kswapd.</p>
+</blockquote>
+<p><strong>Q12: What is the <code>clone()</code> system call?</strong></p>
+<blockquote>
+<p>Underlying syscall for both <code>fork()</code> and <code>pthread_create()</code>. Flags control what is shared: <code>CLONE_VM</code> (share memory), <code>CLONE_FILES</code> (share fd table), etc. Most flexible Linux process/thread creation mechanism.</p>
+</blockquote>
+<hr />
+<h2 id="day-6-memory-mapped-files-mmap">DAY 6: MEMORY MAPPED FILES (MMAP)</h2>
+<h3 id="theory-why-mmap-matters">🧠 THEORY: Why mmap() Matters</h3>
+<p><code>mmap()</code> is one of the most important system calls for embedded Linux because:
+1. <strong>Device drivers</strong> use it to map hardware registers into user space
+2. <strong>Shared memory</strong> between processes uses it
+3. <strong>Large file access</strong> without read/write overhead
+4. <strong>DMA buffers</strong> are exposed to user space via mmap</p>
+<pre><code>Regular file I/O:
+User Buffer → copy → Kernel Buffer → copy → Disk
+(Two copies!)
+
+mmap() file I/O:
+User Virtual Address → Page Fault → Kernel loads page from disk → Direct access
+(Zero copies! Pages loaded on demand)
+</code></pre>
+<h3 id="theory-mmap-parameters-explained">🧠 THEORY: mmap() Parameters Explained</h3>
+<pre data-lang="c"><code class="language-c">void *mmap(
+    void *addr,         // Suggested address (usually NULL = let kernel choose)
+    size_t length,      // Size to map
+    int prot,           // Protection: PROT_READ | PROT_WRITE | PROT_EXEC
+    int flags,          // MAP_SHARED | MAP_PRIVATE | MAP_ANONYMOUS
+    int fd,             // File descriptor (-1 for anonymous)
+    off_t offset        // Offset in file (must be page-aligned)
+);
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>MAP_SHARED</code></td>
+<td>Changes visible to other processes, written to file</td>
+</tr>
+<tr>
+<td><code>MAP_PRIVATE</code></td>
+<td>Copy-on-write, changes NOT written to file</td>
+</tr>
+<tr>
+<td><code>MAP_ANONYMOUS</code></td>
+<td>Not backed by file (memory allocation)</td>
+</tr>
+<tr>
+<td><code>MAP_FIXED</code></td>
+<td>Map at exact address (dangerous!)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="complete-code-mmap-patterns">💻 COMPLETE CODE: mmap Patterns</h3>
+<pre data-lang="c"><code class="language-c">// File: ~/embedded_learning/day_06/mmap_complete.c
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;fcntl.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;sys/mman.h&gt;
+#include &lt;sys/stat.h&gt;
+#include &lt;string.h&gt;
+#include &lt;sys/wait.h&gt;
+
+// Pattern 1: Read file via mmap (zero-copy)
+void mmap_read_file(const char *filename) {
+    int fd = open(filename, O_RDONLY);
+    if (fd &lt; 0) { perror(&quot;open&quot;); return; }
+
+    struct stat st;
+    fstat(fd, &amp;st);
+
+    char *data = mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+    if (data == MAP_FAILED) { perror(&quot;mmap&quot;); close(fd); return; }
+
+    // Access file like an array — NO read() calls needed!
+    printf(&quot;File size: %ld, First 50 chars: %.50s\n&quot;, st.st_size, data);
+
+    // Can search, parse, etc. using normal pointer operations
+    // The kernel loads pages on-demand (page faults)
+
+    munmap(data, st.st_size);
+    close(fd);
+}
+
+// Pattern 2: Shared memory between processes
+void mmap_shared_memory() {
+    size_t size = 4096;
+
+    // Anonymous shared mapping — persists across fork()
+    int *shared = mmap(NULL, size, PROT_READ | PROT_WRITE,
+                       MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+    if (shared == MAP_FAILED) { perror(&quot;mmap&quot;); return; }
+
+    shared[0] = 0;  // Counter
+    shared[1] = 0;  // Flag
+
+    pid_t pid = fork();
+    if (pid == 0) {
+        // Child increments counter
+        for (int i = 0; i &lt; 1000; i++) shared[0]++;
+        shared[1] = 1;  // Signal done
+        _exit(0);
+    } else {
+        wait(NULL);
+        printf(&quot;Shared counter: %d (expect ~2000, race possible without lock)\n&quot;,
+               shared[0]);
+    }
+
+    munmap(shared, size);
+}
+
+// Pattern 3: Memory-mapped hardware simulation
+// In real embedded: mmap /dev/mem or driver provides mmap
+void mmap_hardware_sim() {
+    // Simulate hardware register access
+    size_t size = 4096;
+    volatile uint32_t *regs = mmap(NULL, size, PROT_READ | PROT_WRITE,
+                                    MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    if (regs == MAP_FAILED) { perror(&quot;mmap&quot;); return; }
+
+    // In real driver, this would be physical hardware address
+    regs[0] = 0x01;  // Control register
+    regs[1] = 0xFF;  // Status register
+    printf(&quot;Simulated HW regs: CTRL=0x%X, STATUS=0x%X\n&quot;, regs[0], regs[1]);
+
+    // IMPORTANT: volatile prevents compiler from optimizing away reads
+    // Without volatile, compiler might cache the value
+
+    munmap((void*)regs, size);
+}
+
+int main() {
+    // Create test file
+    int fd = open(&quot;test.txt&quot;, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    const char *text = &quot;Hello World! This is a test file for memory mapping.\n&quot;;
+    write(fd, text, strlen(text));
+    close(fd);
+
+    printf(&quot;=== MMAP FILE READ ===\n&quot;);
+    mmap_read_file(&quot;test.txt&quot;);
+
+    printf(&quot;\n=== MMAP SHARED MEMORY ===\n&quot;);
+    mmap_shared_memory();
+
+    printf(&quot;\n=== MMAP HARDWARE SIM ===\n&quot;);
+    mmap_hardware_sim();
+
+    unlink(&quot;test.txt&quot;);
+    return 0;
+}
+</code></pre>
+<h3 id="interview-questions-day-6-8-questions">📝 INTERVIEW QUESTIONS — Day 6 (8 Questions)</h3>
+<p><strong>Q1: mmap vs read/write — when to use each?</strong></p>
+<blockquote>
+<p>mmap: random access, multiple reads of same data, shared memory, large files, HW register access. read/write: sequential one-time access, small files, simple operations.</p>
+</blockquote>
+<p><strong>Q2: MAP_PRIVATE vs MAP_SHARED?</strong></p>
+<blockquote>
+<p>PRIVATE: COW — changes not written to file, not visible to others. SHARED: changes go to file and visible to all mapping processes.</p>
+</blockquote>
+<p><strong>Q3: What is the purpose of msync()?</strong></p>
+<blockquote>
+<p>Forces dirty pages to disk. Without it, changes may be lost on crash. <code>msync(addr, len, MS_SYNC)</code> blocks until write completes.</p>
+</blockquote>
+<p><strong>Q4: How does mmap relate to device drivers?</strong></p>
+<blockquote>
+<p>Drivers implement <code>.mmap()</code> in file_operations to map device memory/DMA buffers into user space. User calls <code>mmap()</code> on <code>/dev/mydevice</code>, kernel calls driver&rsquo;s mmap handler, which sets up page table entries pointing to physical device memory.</p>
+</blockquote>
+<p><strong>Q5: Why use volatile with memory-mapped registers?</strong></p>
+<blockquote>
+<p>Without volatile, compiler may cache register values in CPU registers, reorder accesses, or eliminate &ldquo;redundant&rdquo; reads. <code>volatile</code> forces every access to go to the actual memory address.</p>
+</blockquote>
+<p><strong>Q6: What happens when you access unmapped mmap&rsquo;d memory?</strong></p>
+<blockquote>
+<p>Page fault → kernel checks if address is in valid mapping → if yes, loads page from file/allocates zero page → returns to user. If address invalid → SIGSEGV.</p>
+</blockquote>
+<p><strong>Q7: Can mmap() fail? When?</strong></p>
+<blockquote>
+<p>Yes. Common failures: out of virtual address space, file too large, invalid flags, permission denied, no physical memory for page tables. Always check for <code>MAP_FAILED</code>.</p>
+</blockquote>
+<p><strong>Q8: What is the difference between mmap() and ioremap() in kernel?</strong></p>
+<blockquote>
+<p><code>mmap()</code> is userspace syscall. <code>ioremap()</code> is kernel function that maps physical I/O addresses into kernel virtual address space for driver register access. Both achieve memory-mapped I/O but in different contexts.</p>
+</blockquote>
+<hr />
+<h2 id="days-7-8-linux-boot-process-filesystems">DAYS 7-8: LINUX BOOT PROCESS &amp; FILESYSTEMS</h2>
+<h3 id="theory-complete-boot-sequence">🧠 THEORY: Complete Boot Sequence</h3>
+<pre><code>1. POWER ON
+      │
+      ▼
+2. BIOS/UEFI
+   - POST (Power-On Self Test)
+   - Find boot device
+   - Load bootloader (MBR/EFI)
+      │
+      ▼
+3. BOOTLOADER (GRUB/U-Boot)
+   - Load kernel image (vmlinuz) from disk
+   - Load initial ramdisk (initrd/initramfs)
+   - Set kernel command line parameters
+   - Transfer control to kernel
+   - On embedded: U-Boot loads kernel + DTB from flash/network
+      │
+      ▼
+4. KERNEL STARTUP (start_kernel() in init/main.c)
+   - Decompress kernel image
+   - Initialize memory management (page tables, buddy system)
+   - Initialize CPU, interrupts, timers
+   - Initialize device drivers (built-in ones)
+   - Parse device tree (on ARM/embedded)
+   - Mount initramfs as temporary root
+   - Run /init from initramfs
+   - Real root filesystem mounted (pivot_root)
+   - Execute /sbin/init (PID 1)
+      │
+      ▼
+5. INIT SYSTEM (systemd on modern, SysV init on legacy)
+   - PID 1 process — ancestor of all user processes
+   - Start services (networking, logging, etc.)
+   - Mount filesystems from /etc/fstab
+   - On embedded: may use BusyBox init
+      │
+      ▼
+6. USER SPACE
+   - Login prompt or auto-start application
+</code></pre>
+<h3 id="theory-critical-pseudo-filesystems">🧠 THEORY: Critical Pseudo-Filesystems</h3>
+<table>
+<thead>
+<tr>
+<th>Path</th>
+<th>Type</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/proc</code></td>
+<td>procfs</td>
+<td>Process &amp; kernel info</td>
+</tr>
+<tr>
+<td><code>/sys</code></td>
+<td>sysfs</td>
+<td>Device &amp; driver info (modern, structured)</td>
+</tr>
+<tr>
+<td><code>/dev</code></td>
+<td>devtmpfs</td>
+<td>Device nodes</td>
+</tr>
+<tr>
+<td><code>/run</code></td>
+<td>tmpfs</td>
+<td>Runtime data</td>
+</tr>
+</tbody>
+</table>
+<h4 id="proc-what-your-driver-should-know">/proc — What your driver should know:</h4>
+<pre data-lang="bash"><code class="language-bash">/proc/[PID]/         # Per-process info (status, maps, fd/)
+/proc/cpuinfo        # CPU details
+/proc/meminfo        # Memory statistics
+/proc/interrupts     # IRQ usage (your driver's IRQ shows here!)
+/proc/modules        # Loaded kernel modules
+/proc/devices        # Registered char/block devices (YOUR driver!)
+/proc/cmdline        # Kernel boot parameters
+</code></pre>
+<h4 id="sys-the-driver-developers-best-friend">/sys — The driver developer&rsquo;s best friend:</h4>
+<pre data-lang="bash"><code class="language-bash">/sys/class/          # Device classes (your driver creates class here)
+/sys/bus/            # Bus types (platform, i2c, spi, pci, usb)
+/sys/devices/        # Physical device hierarchy
+/sys/module/         # Loaded module parameters (readable/writable!)
+/sys/kernel/         # Kernel parameters
+</code></pre>
+<h4 id="dev-device-nodes">/dev — Device nodes:</h4>
+<pre data-lang="bash"><code class="language-bash"># Character devices (stream):
+/dev/null    - Discards all data
+/dev/zero    - Produces zeros
+/dev/random  - Random numbers (blocking)
+/dev/urandom - Random numbers (non-blocking)
+/dev/ttyS0   - Serial port
+/dev/i2c-0   - I2C bus 0
+
+# Block devices (random access):
+/dev/sda     - First SATA/SCSI disk
+/dev/mmcblk0 - First MMC/SD card
+
+# Your driver will create:
+/dev/mydevice - Your character device!
+</code></pre>
+<h3 id="theory-for-embedded-u-boot-device-tree-boot">🧠 THEORY: For Embedded — U-Boot &amp; Device Tree Boot</h3>
+<pre><code>U-Boot (common on ARM SoCs):
+1. Initialize DRAM controller
+2. Load kernel image from flash/SD/network:
+   fatload mmc 0:1 0x80000000 zImage
+3. Load device tree blob:
+   fatload mmc 0:1 0x84000000 board.dtb
+4. Optional: load initramfs
+5. Boot:
+   bootz 0x80000000 - 0x84000000
+         ^kernel      ^dtb address
+</code></pre>
+<h3 id="interview-questions-days-7-8-12-questions">📝 INTERVIEW QUESTIONS — Days 7-8 (12 Questions)</h3>
+<p><strong>Q1: What is initramfs and why is it needed?</strong></p>
+<blockquote>
+<p>Temporary root filesystem in RAM. Contains drivers and tools needed to mount real root. Needed because root may be on complex storage (RAID, LVM, encrypted, NFS) requiring drivers not built into kernel.</p>
+</blockquote>
+<p><strong>Q2: Difference between /proc and /sys?</strong></p>
+<blockquote>
+<p><code>/proc</code>: process info + kernel params, historical, somewhat messy format. <code>/sys</code>: structured device/driver info, modern, organized by bus/class, each file=one value. Use /sys for device driver interfaces.</p>
+</blockquote>
+<p><strong>Q3: What is PID 1 and why is it special?</strong></p>
+<blockquote>
+<p>Init process (systemd). First user process. Cannot be killed. Adopts orphans. Reaps zombies. System shuts down if PID 1 exits.</p>
+</blockquote>
+<p><strong>Q4: What is U-Boot?</strong></p>
+<blockquote>
+<p>Universal Boot Loader — standard bootloader for embedded Linux (ARM, MIPS, etc.). Initializes hardware (DRAM, clocks), loads kernel + DTB + rootfs from flash/SD/TFTP/USB, passes control to kernel with boot args.</p>
+</blockquote>
+<p><strong>Q5: What is the kernel command line?</strong></p>
+<blockquote>
+<p>Parameters passed to kernel at boot (by GRUB/U-Boot). Example: <code>root=/dev/mmcblk0p2 console=ttyS0,115200 loglevel=7</code>. Controls root device, console, debug settings.</p>
+</blockquote>
+<p><strong>Q6: What is the difference between <code>insmod</code> and <code>modprobe</code>?</strong></p>
+<blockquote>
+<p><code>insmod</code>: loads a specific .ko file, no dependency handling. <code>modprobe</code>: searches <code>/lib/modules/</code>, resolves and loads dependencies automatically. Use <code>modprobe</code> in production, <code>insmod</code> during development.</p>
+</blockquote>
+<p><strong>Q7: How does udev create device nodes?</strong></p>
+<blockquote>
+<p>Kernel sends uevent when device registered. udev daemon (or mdev on embedded) receives event, creates /dev node with correct major/minor/permissions based on rules in /etc/udev/rules.d/.</p>
+</blockquote>
+<p><strong>Q8: What is sysfs and how do drivers use it?</strong></p>
+<blockquote>
+<p>Kernel object filesystem at /sys. Drivers expose attributes (readable/writable files) via <code>DEVICE_ATTR_RO/RW/WO</code>. Users read/write these files to control driver behavior without ioctl.</p>
+</blockquote>
+<p><strong>Q9: What is the difference between built-in and loadable modules?</strong></p>
+<blockquote>
+<p>Built-in (<code>obj-y</code>): compiled into kernel image, available at boot, __init memory freed after boot, cannot be removed. Loadable (<code>obj-m</code>): separate .ko file, loaded/unloaded at runtime, uses more memory.</p>
+</blockquote>
+<p><strong>Q10: Explain rootfs mounting process.</strong></p>
+<blockquote>
+<ol>
+<li>Kernel mounts initramfs as temporary /. 2. initramfs /init loads storage drivers. 3. Mounts real root partition. 4. <code>switch_root</code> or <code>pivot_root</code> changes to real root. 5. Real /sbin/init starts.</li>
+</ol>
+</blockquote>
+<p><strong>Q11: What is BusyBox and why is it used in embedded?</strong></p>
+<blockquote>
+<p>Single binary providing hundreds of Unix utilities (sh, ls, cat, mount, etc.). Uses symlinks: <code>/bin/ls → /bin/busybox</code>. Tiny footprint (~1MB for everything). Standard for embedded rootfs.</p>
+</blockquote>
+<p><strong>Q12: How do you cross-compile a kernel for ARM?</strong></p>
+<blockquote>
+<p><code>bash
+export ARCH=arm
+export CROSS_COMPILE=arm-linux-gnueabihf-
+make defconfig      # or vendor-specific config
+make menuconfig     # customize
+make zImage dtbs modules -j$(nproc)</code>
+Produces <code>arch/arm/boot/zImage</code> (kernel) and <code>arch/arm/boot/dts/*.dtb</code> (device trees).</p>
+</blockquote>
+
+      <!-- Page Navigation -->
+      <div class="page-nav">
+        <a class="prev" href="01_phase1.html"><span class="nav-label">← Previous</span><span class="nav-title">Phase 1: C Revision</span></a>
+<a class="next" href="03_phase3.html"><span class="nav-label">Next →</span><span class="nav-title">Phase 3: Kernel Modules</span></a>
+      </div>
+    </div>
+  </main>
+
+  <!-- Back to Top -->
+  <button class="back-to-top" aria-label="Back to top">↑</button>
+
+  <!-- Search Index Data -->
+  <script type="application/json" id="search-data">[{"title": "README \u2014 Overview", "url": "00_readme.html", "headings": [{"text": "\ud83d\udc27 EMBEDDED LINUX &amp; DEVICE DRIVERS \u2014 ENHANCED FOOL-PROOF GUIDE", "id": "embedded-linux-device-drivers-enhanced-fool-proof-guide"}, {"text": "Complete 40-Day Execution Plan (Enhanced Edition)", "id": "complete-40-day-execution-plan-enhanced-edition"}, {"text": "From Systems C Programmer \u2192 Embedded Linux Engineer", "id": "from-systems-c-programmer-embedded-linux-engineer"}, {"text": "\ud83d\udd25 What&rsquo;s NEW in the Enhanced Edition", "id": "whats-new-in-the-enhanced-edition"}, {"text": "\ud83d\udcc1 Enhanced File Structure", "id": "enhanced-file-structure"}, {"text": "\ud83d\udcca Timeline Overview", "id": "timeline-overview"}, {"text": "\ud83c\udfaf Who This Is For", "id": "who-this-is-for"}, {"text": "\ud83d\udccb Daily Workflow (Enhanced)", "id": "daily-workflow-enhanced"}, {"text": "Morning (2.5-3 hours):", "id": "morning-25-3-hours"}, {"text": "Evening (1.5-2 hours):", "id": "evening-15-2-hours"}, {"text": "Before Sleep (15 min):", "id": "before-sleep-15-min"}, {"text": "\ud83c\udf93 Rules for Success", "id": "rules-for-success"}, {"text": "\ud83c\udfc6 End Goal: After 40 Days", "id": "end-goal-after-40-days"}, {"text": "\u26a1 Start Now", "id": "start-now"}]}, {"title": "Phase 1: C Revision", "url": "01_phase1.html", "headings": [{"text": "PHASE 1: SYSTEMS C REVISION (Days 0-3)", "id": "phase-1-systems-c-revision-days-0-3"}, {"text": "DAY 0: ENVIRONMENT SETUP", "id": "day-0-environment-setup"}, {"text": "Installation Commands (Ubuntu 22.04/20.04)", "id": "installation-commands-ubuntu-22042004"}, {"text": "Verify Setup", "id": "verify-setup"}, {"text": "\u2705 Verification Criteria", "id": "verification-criteria"}, {"text": "DAY 1: POINTERS &amp; MEMORY \u2014 DEEP DIVE", "id": "day-1-pointers-memory-deep-dive"}, {"text": "\ud83e\udde0 THEORY: Memory Layout of a C Program", "id": "theory-memory-layout-of-a-c-program"}, {"text": "Why This Matters for Embedded Linux:", "id": "why-this-matters-for-embedded-linux"}, {"text": "Internal Detail: How malloc() Works", "id": "internal-detail-how-malloc-works"}, {"text": "\ud83e\udde0 THEORY: Pointer Fundamentals \u2014 What You MUST Know", "id": "theory-pointer-fundamentals-what-you-must-know"}, {"text": "A pointer is just an address. Period.", "id": "a-pointer-is-just-an-address-period"}, {"text": "Pointer Sizes:", "id": "pointer-sizes"}, {"text": "Pointer Arithmetic \u2014 The #1 Interview Topic", "id": "pointer-arithmetic-the-1-interview-topic"}, {"text": "\ud83e\udde0 THEORY: Function Pointers \u2014 Essential for Kernel", "id": "theory-function-pointers-essential-for-kernel"}, {"text": "\ud83e\udde0 THEORY: Struct Padding &amp; Alignment", "id": "theory-struct-padding-alignment"}, {"text": "\ud83d\udcbb COMPLETE CODE: Comprehensive Pointer &amp; Memory Demo", "id": "complete-code-comprehensive-pointer-memory-demo"}, {"text": "\ud83c\udfd7\ufe0f MINI-EXERCISES \u2014 Day 1", "id": "mini-exercises-day-1"}, {"text": "\u26a0\ufe0f COMMON PITFALLS \u2014 Day 1", "id": "common-pitfalls-day-1"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Day 1 (15 Questions)", "id": "interview-questions-day-1-15-questions"}, {"text": "DAY 2: BITWISE OPERATIONS \u2014 MASTERY", "id": "day-2-bitwise-operations-mastery"}, {"text": "\ud83e\udde0 THEORY: Why Bitwise Operations Are Essential", "id": "theory-why-bitwise-operations-are-essential"}, {"text": "\ud83e\udde0 THEORY: Bitwise Operators (Complete Reference)", "id": "theory-bitwise-operators-complete-reference"}, {"text": "\ud83e\udde0 THEORY: The Fundamental Bit Operations", "id": "theory-the-fundamental-bit-operations"}, {"text": "\ud83e\udde0 THEORY: Kernel Bit Manipulation APIs", "id": "theory-kernel-bit-manipulation-apis"}, {"text": "\ud83d\udcbb COMPLETE CODE: Bitwise Mastery", "id": "complete-code-bitwise-mastery"}, {"text": "\ud83c\udfd7\ufe0f MINI-EXERCISES \u2014 Day 2", "id": "mini-exercises-day-2"}, {"text": "\u26a0\ufe0f COMMON PITFALLS \u2014 Day 2", "id": "common-pitfalls-day-2"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Day 2 (14 Questions)", "id": "interview-questions-day-2-14-questions"}, {"text": "DAY 3: THREADING \u2014 CONCURRENCY ESSENTIALS", "id": "day-3-threading-concurrency-essentials"}, {"text": "\ud83e\udde0 THEORY: Why Threading Matters for Kernel Development", "id": "theory-why-threading-matters-for-kernel-development"}, {"text": "\ud83e\udde0 THEORY: Thread vs Process", "id": "theory-thread-vs-process"}, {"text": "\ud83e\udde0 THEORY: Synchronization Primitives \u2014 Deep Dive", "id": "theory-synchronization-primitives-deep-dive"}, {"text": "Mutex (Mutual Exclusion)", "id": "mutex-mutual-exclusion"}, {"text": "Spinlock", "id": "spinlock"}, {"text": "Condition Variable", "id": "condition-variable"}, {"text": "Semaphore", "id": "semaphore"}, {"text": "\ud83e\udde0 THEORY: The Deadlock Problem", "id": "theory-the-deadlock-problem"}, {"text": "\ud83d\udcbb COMPLETE CODE: Threading Patterns", "id": "complete-code-threading-patterns"}, {"text": "\ud83c\udfd7\ufe0f MINI-EXERCISES \u2014 Day 3", "id": "mini-exercises-day-3"}, {"text": "\u26a0\ufe0f COMMON PITFALLS \u2014 Day 3", "id": "common-pitfalls-day-3"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Day 3 (16 Questions)", "id": "interview-questions-day-3-16-questions"}]}, {"title": "Phase 2: Linux Fundamentals", "url": "02_phase2.html", "headings": [{"text": "PHASE 2: LINUX FUNDAMENTALS (Days 4-8)", "id": "phase-2-linux-fundamentals-days-4-8"}, {"text": "DAY 4: SYSTEM CALLS \u2014 THE KERNEL BOUNDARY", "id": "day-4-system-calls-the-kernel-boundary"}, {"text": "\ud83e\udde0 THEORY: User Space vs Kernel Space (Why It Exists)", "id": "theory-user-space-vs-kernel-space-why-it-exists"}, {"text": "Why the split?", "id": "why-the-split"}, {"text": "\ud83e\udde0 THEORY: System Call Mechanism \u2014 Step by Step", "id": "theory-system-call-mechanism-step-by-step"}, {"text": "\ud83e\udde0 THEORY: Key System Calls for Embedded", "id": "theory-key-system-calls-for-embedded"}, {"text": "\ud83e\udde0 THEORY: File Descriptors \u2014 The Universal Handle", "id": "theory-file-descriptors-the-universal-handle"}, {"text": "\ud83d\udcbb COMPLETE CODE: System Calls Deep Dive", "id": "complete-code-system-calls-deep-dive"}, {"text": "\u26a0\ufe0f COMMON PITFALLS \u2014 Day 4", "id": "common-pitfalls-day-4"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Day 4 (10 Questions)", "id": "interview-questions-day-4-10-questions"}, {"text": "DAY 5: PROCESS CREATION (FORK &amp; EXEC)", "id": "day-5-process-creation-fork-exec"}, {"text": "\ud83e\udde0 THEORY: Process Creation in Linux", "id": "theory-process-creation-in-linux"}, {"text": "\ud83e\udde0 THEORY: Copy-On-Write (COW) \u2014 Performance Critical", "id": "theory-copy-on-write-cow-performance-critical"}, {"text": "\ud83e\udde0 THEORY: Process States", "id": "theory-process-states"}, {"text": "\ud83d\udcbb COMPLETE CODE: Process Patterns", "id": "complete-code-process-patterns"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Day 5 (12 Questions)", "id": "interview-questions-day-5-12-questions"}, {"text": "DAY 6: MEMORY MAPPED FILES (MMAP)", "id": "day-6-memory-mapped-files-mmap"}, {"text": "\ud83e\udde0 THEORY: Why mmap() Matters", "id": "theory-why-mmap-matters"}, {"text": "\ud83e\udde0 THEORY: mmap() Parameters Explained", "id": "theory-mmap-parameters-explained"}, {"text": "\ud83d\udcbb COMPLETE CODE: mmap Patterns", "id": "complete-code-mmap-patterns"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Day 6 (8 Questions)", "id": "interview-questions-day-6-8-questions"}, {"text": "DAYS 7-8: LINUX BOOT PROCESS &amp; FILESYSTEMS", "id": "days-7-8-linux-boot-process-filesystems"}, {"text": "\ud83e\udde0 THEORY: Complete Boot Sequence", "id": "theory-complete-boot-sequence"}, {"text": "\ud83e\udde0 THEORY: Critical Pseudo-Filesystems", "id": "theory-critical-pseudo-filesystems"}, {"text": "/proc \u2014 What your driver should know:", "id": "proc-what-your-driver-should-know"}, {"text": "/sys \u2014 The driver developer&rsquo;s best friend:", "id": "sys-the-driver-developers-best-friend"}, {"text": "/dev \u2014 Device nodes:", "id": "dev-device-nodes"}, {"text": "\ud83e\udde0 THEORY: For Embedded \u2014 U-Boot &amp; Device Tree Boot", "id": "theory-for-embedded-u-boot-device-tree-boot"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Days 7-8 (12 Questions)", "id": "interview-questions-days-7-8-12-questions"}]}, {"title": "Phase 3: Kernel Modules", "url": "03_phase3.html", "headings": [{"text": "PHASE 3: KERNEL MODULES &amp; PATTERNS (Days 9-13)", "id": "phase-3-kernel-modules-patterns-days-9-13"}, {"text": "DAY 9: FIRST KERNEL MODULE", "id": "day-9-first-kernel-module"}, {"text": "\ud83e\udde0 THEORY: What IS a Kernel Module?", "id": "theory-what-is-a-kernel-module"}, {"text": "\ud83e\udde0 THEORY: Module vs Built-in", "id": "theory-module-vs-built-in"}, {"text": "\ud83e\udde0 THEORY: Module Lifecycle", "id": "theory-module-lifecycle"}, {"text": "\ud83e\udde0 THEORY: Kernel vs Userspace Environment", "id": "theory-kernel-vs-userspace-environment"}, {"text": "\ud83d\udcbb COMPLETE CODE: Comprehensive First Module", "id": "complete-code-comprehensive-first-module"}, {"text": "\ud83d\udcbb Makefile for Out-of-Tree Module", "id": "makefile-for-out-of-tree-module"}, {"text": "\ud83e\udde0 THEORY: Makefile Explanation", "id": "theory-makefile-explanation"}, {"text": "Usage:", "id": "usage"}, {"text": "\ud83c\udfd7\ufe0f MINI-EXERCISES \u2014 Day 9", "id": "mini-exercises-day-9"}, {"text": "\u26a0\ufe0f COMMON PITFALLS \u2014 Day 9", "id": "common-pitfalls-day-9"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Day 9 (10 Questions)", "id": "interview-questions-day-9-10-questions"}, {"text": "DAYS 10-11: KERNEL ERROR HANDLING &amp; MEMORY", "id": "days-10-11-kernel-error-handling-memory"}, {"text": "\ud83e\udde0 THEORY: The goto Cleanup Pattern \u2014 Kernel&rsquo;s #1 Pattern", "id": "theory-the-goto-cleanup-pattern-kernels-1-pattern"}, {"text": "\ud83d\udcbb COMPLETE CODE: Error Handling Patterns", "id": "complete-code-error-handling-patterns"}, {"text": "\ud83e\udde0 THEORY: Kernel Memory Allocation", "id": "theory-kernel-memory-allocation"}, {"text": "\ud83e\udde0 THEORY: IS_ERR / PTR_ERR / ERR_PTR Pattern", "id": "theory-is_err-ptr_err-err_ptr-pattern"}, {"text": "DAYS 12-13: KERNEL DATA STRUCTURES &amp; TIMERS", "id": "days-12-13-kernel-data-structures-timers"}, {"text": "\ud83e\udde0 THEORY: Kernel Linked Lists", "id": "theory-kernel-linked-lists"}, {"text": "\ud83d\udcbb COMPLETE CODE: Kernel List &amp; Timer Module", "id": "complete-code-kernel-list-timer-module"}, {"text": "\ud83e\udde0 THEORY: Key Kernel Data Structures", "id": "theory-key-kernel-data-structures"}, {"text": "\ud83e\udde0 THEORY: Timers &amp; Delayed Work", "id": "theory-timers-delayed-work"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Days 10-13 (14 Questions)", "id": "interview-questions-days-10-13-14-questions"}]}, {"title": "Phase 4: Char Driver Project", "url": "04_phase4.html", "headings": [{"text": "PHASE 4: CHARACTER DEVICE DRIVER PROJECT (Days 14-22)", "id": "phase-4-character-device-driver-project-days-14-22"}, {"text": "DAY 14: CHARACTER DRIVER ARCHITECTURE", "id": "day-14-character-driver-architecture"}, {"text": "\ud83e\udde0 THEORY: The Big Picture \u2014 How User Reaches Your Driver", "id": "theory-the-big-picture-how-user-reaches-your-driver"}, {"text": "\ud83e\udde0 THEORY: Device Numbers", "id": "theory-device-numbers"}, {"text": "\ud83e\udde0 THEORY: Key Structures Deep Dive", "id": "theory-key-structures-deep-dive"}, {"text": "struct file \u2014 Represents an OPEN file", "id": "struct-file-represents-an-open-file"}, {"text": "struct inode \u2014 Represents a FILE on filesystem", "id": "struct-inode-represents-a-file-on-filesystem"}, {"text": "\ud83e\udde0 THEORY: copy_to_user / copy_from_user \u2014 WHY They Exist", "id": "theory-copy_to_user-copy_from_user-why-they-exist"}, {"text": "DAYS 15-22: COMPLETE CHARACTER DRIVER IMPLEMENTATION", "id": "days-15-22-complete-character-driver-implementation"}, {"text": "\ud83d\udcbb THE DRIVER \u2014 Production Quality", "id": "the-driver-production-quality"}, {"text": "\ud83d\udcbb MAKEFILE", "id": "makefile"}, {"text": "\ud83d\udcbb TEST APPLICATION", "id": "test-application"}, {"text": "\ud83c\udfd7\ufe0f MINI-EXERCISES \u2014 Days 14-22", "id": "mini-exercises-days-14-22"}, {"text": "\u26a0\ufe0f COMMON PITFALLS \u2014 Character Driver", "id": "common-pitfalls-character-driver"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Character Driver (15 Questions)", "id": "interview-questions-character-driver-15-questions"}]}, {"title": "Phase 5: Device Tree & Platform", "url": "05_phase5.html", "headings": [{"text": "PHASE 5: DEVICE TREE &amp; PLATFORM DRIVERS (Days 23-27)", "id": "phase-5-device-tree-platform-drivers-days-23-27"}, {"text": "DAYS 23-24: DEVICE TREE FUNDAMENTALS", "id": "days-23-24-device-tree-fundamentals"}, {"text": "\ud83e\udde0 THEORY: Why Device Tree Exists", "id": "theory-why-device-tree-exists"}, {"text": "\ud83e\udde0 THEORY: Device Tree Syntax", "id": "theory-device-tree-syntax"}, {"text": "\ud83e\udde0 THEORY: Key Properties Reference", "id": "theory-key-properties-reference"}, {"text": "\ud83e\udde0 THEORY: Compatible String Matching \u2014 The Heart of DT", "id": "theory-compatible-string-matching-the-heart-of-dt"}, {"text": "\ud83d\udcbb COMPLETE CODE: DT Property Reading Demo", "id": "complete-code-dt-property-reading-demo"}, {"text": "DT Overlay for Testing (without real hardware)", "id": "dt-overlay-for-testing-without-real-hardware"}, {"text": "DAYS 25-27: PLATFORM DRIVER", "id": "days-25-27-platform-driver"}, {"text": "\ud83e\udde0 THEORY: Platform Driver Model", "id": "theory-platform-driver-model"}, {"text": "\ud83e\udde0 THEORY: probe() and remove() \u2014 The Full Story", "id": "theory-probe-and-remove-the-full-story"}, {"text": "\ud83d\udcbb COMPLETE CODE: Platform Driver", "id": "complete-code-platform-driver"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Device Tree &amp; Platform (16 Questions)", "id": "interview-questions-device-tree-platform-16-questions"}]}, {"title": "Phase 6: I2C Project", "url": "06_phase6.html", "headings": [{"text": "PHASE 6: I2C SENSOR DRIVER PROJECT (Days 28-37)", "id": "phase-6-i2c-sensor-driver-project-days-28-37"}, {"text": "DAYS 28-29: I2C SUBSYSTEM DEEP DIVE", "id": "days-28-29-i2c-subsystem-deep-dive"}, {"text": "\ud83e\udde0 THEORY: I2C Protocol \u2014 Hardware Level", "id": "theory-i2c-protocol-hardware-level"}, {"text": "\ud83e\udde0 THEORY: I2C Transaction Format", "id": "theory-i2c-transaction-format"}, {"text": "\ud83e\udde0 THEORY: Linux I2C Stack", "id": "theory-linux-i2c-stack"}, {"text": "\ud83e\udde0 THEORY: Key I2C API Functions", "id": "theory-key-i2c-api-functions"}, {"text": "DAYS 30-37: COMPLETE I2C TEMPERATURE SENSOR DRIVER", "id": "days-30-37-complete-i2c-temperature-sensor-driver"}, {"text": "\ud83d\udcbb THE DRIVER \u2014 Production Quality", "id": "the-driver-production-quality"}, {"text": "\ud83d\udcbb MAKEFILE", "id": "makefile"}, {"text": "\ud83e\udde0 THEORY: Testing Without Real Hardware", "id": "theory-testing-without-real-hardware"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 I2C Driver (12 Questions)", "id": "interview-questions-i2c-driver-12-questions"}]}, {"title": "Phase 7: Thread Pool & Interview", "url": "07_phase7.html", "headings": [{"text": "PHASE 7: THREAD POOL PROJECT + FINAL PREP (Days 38-40)", "id": "phase-7-thread-pool-project-final-prep-days-38-40"}, {"text": "DAYS 38-39: THREAD POOL IMPLEMENTATION", "id": "days-38-39-thread-pool-implementation"}, {"text": "\ud83e\udde0 THEORY: Why Thread Pools?", "id": "theory-why-thread-pools"}, {"text": "\ud83e\udde0 THEORY: Architecture Deep Dive", "id": "theory-architecture-deep-dive"}, {"text": "\ud83d\udcbb COMPLETE CODE: Thread Pool Header", "id": "complete-code-thread-pool-header"}, {"text": "\ud83d\udcbb COMPLETE CODE: Thread Pool Implementation", "id": "complete-code-thread-pool-implementation"}, {"text": "\ud83d\udcbb TEST APPLICATION", "id": "test-application"}, {"text": "\ud83d\udcbb MAKEFILE", "id": "makefile"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Thread Pool (10 Questions)", "id": "interview-questions-thread-pool-10-questions"}, {"text": "DAY 40: DOCUMENTATION, POLISH &amp; FINAL PREP", "id": "day-40-documentation-polish-final-prep"}, {"text": "\u2705 FINAL CHECKLIST", "id": "final-checklist"}, {"text": "\ud83c\udfaf PROJECT PRESENTATION SCRIPTS", "id": "project-presentation-scripts"}]}, {"title": "Appendix: Interview Bank", "url": "08_appendix_interviews.html", "headings": [{"text": "\ud83d\udcda COMPREHENSIVE INTERVIEW QUESTION BANK", "id": "comprehensive-interview-question-bank"}, {"text": "150+ Questions Categorized by Topic \u2014 with Model Answers for 0-2 YOE", "id": "150-questions-categorized-by-topic-with-model-answers-for-0-2-yoe"}, {"text": "CATEGORY 1: C PROGRAMMING FUNDAMENTALS (25 Questions)", "id": "category-1-c-programming-fundamentals-25-questions"}, {"text": "Memory &amp; Pointers", "id": "memory-pointers"}, {"text": "Bitwise", "id": "bitwise"}, {"text": "Threading", "id": "threading"}, {"text": "CATEGORY 2: LINUX KERNEL FUNDAMENTALS (25 Questions)", "id": "category-2-linux-kernel-fundamentals-25-questions"}, {"text": "CATEGORY 3: MEMORY MANAGEMENT (20 Questions)", "id": "category-3-memory-management-20-questions"}, {"text": "CATEGORY 4: DEVICE DRIVERS (30 Questions)", "id": "category-4-device-drivers-30-questions"}, {"text": "CATEGORY 5: DEVICE TREE (15 Questions)", "id": "category-5-device-tree-15-questions"}, {"text": "CATEGORY 6: I2C/SPI PROTOCOLS (15 Questions)", "id": "category-6-i2cspi-protocols-15-questions"}, {"text": "CATEGORY 7: SYNCHRONIZATION &amp; CONCURRENCY (20 Questions)", "id": "category-7-synchronization-concurrency-20-questions"}, {"text": "CATEGORY 8: DEBUGGING &amp; TOOLS (15 Questions)", "id": "category-8-debugging-tools-15-questions"}, {"text": "CATEGORY 9: REAL INTERVIEW SCENARIOS (15 Questions)", "id": "category-9-real-interview-scenarios-15-questions"}, {"text": "CATEGORY 10: SYSTEM DESIGN &amp; ARCHITECTURE (10 Questions)", "id": "category-10-system-design-architecture-10-questions"}, {"text": "QUICK REFERENCE: Must-Know Code Snippets", "id": "quick-reference-must-know-code-snippets"}, {"text": "1. Basic Module Template", "id": "1-basic-module-template"}, {"text": "2. File Operations", "id": "2-file-operations"}, {"text": "3. Character Device Registration", "id": "3-character-device-registration"}, {"text": "4. IOCTL Command Definition", "id": "4-ioctl-command-definition"}, {"text": "5. Platform Driver Template", "id": "5-platform-driver-template"}, {"text": "6. I2C Driver Template", "id": "6-i2c-driver-template"}, {"text": "7. Error Handling Pattern", "id": "7-error-handling-pattern"}, {"text": "8. Quick Error Codes", "id": "8-quick-error-codes"}]}, {"title": "Appendix: Kernel Internals", "url": "09_appendix_kernel.html", "headings": [{"text": "\ud83d\udcd6 APPENDIX: KERNEL INTERNALS DEEP DIVE", "id": "appendix-kernel-internals-deep-dive"}, {"text": "Virtual Memory, Scheduling, Interrupts \u2014 For Interview Depth", "id": "virtual-memory-scheduling-interrupts-for-interview-depth"}, {"text": "VIRTUAL MEMORY \u2014 How It Actually Works", "id": "virtual-memory-how-it-actually-works"}, {"text": "Address Translation", "id": "address-translation"}, {"text": "Page Fault Handling", "id": "page-fault-handling"}, {"text": "Why This Matters for Driver Development", "id": "why-this-matters-for-driver-development"}, {"text": "PROCESS SCHEDULING", "id": "process-scheduling"}, {"text": "The Completely Fair Scheduler (CFS)", "id": "the-completely-fair-scheduler-cfs"}, {"text": "Real-Time Scheduling Classes", "id": "real-time-scheduling-classes"}, {"text": "INTERRUPT HANDLING \u2014 COMPLETE PICTURE", "id": "interrupt-handling-complete-picture"}, {"text": "Interrupt Flow", "id": "interrupt-flow"}, {"text": "Threaded IRQ Example", "id": "threaded-irq-example"}, {"text": "POWER MANAGEMENT", "id": "power-management"}, {"text": "Runtime PM (for drivers)", "id": "runtime-pm-for-drivers"}, {"text": "KERNEL DEBUGGING TOOLS REFERENCE", "id": "kernel-debugging-tools-reference"}, {"text": "Dynamic Debug (Enable dev_dbg at runtime)", "id": "dynamic-debug-enable-dev_dbg-at-runtime"}]}, {"title": "Appendix: Debugging", "url": "10_appendix_debugging.html", "headings": [{"text": "\ud83d\udd27 APPENDIX: DEBUGGING TECHNIQUES", "id": "appendix-debugging-techniques"}, {"text": "Complete Debugging Toolkit for Embedded Linux Development", "id": "complete-debugging-toolkit-for-embedded-linux-development"}, {"text": "SECTION 1: USER-SPACE DEBUGGING", "id": "section-1-user-space-debugging"}, {"text": "strace \u2014 System Call Tracer", "id": "strace-system-call-tracer"}, {"text": "GDB \u2014 The GNU Debugger", "id": "gdb-the-gnu-debugger"}, {"text": "Valgrind \u2014 Memory Error Detector", "id": "valgrind-memory-error-detector"}, {"text": "Address Sanitizer (ASan) \u2014 Compile-Time Instrumentation", "id": "address-sanitizer-asan-compile-time-instrumentation"}, {"text": "SECTION 2: KERNEL-SPACE DEBUGGING", "id": "section-2-kernel-space-debugging"}, {"text": "dmesg \u2014 Kernel Message Buffer", "id": "dmesg-kernel-message-buffer"}, {"text": "Dynamic Debug (dev_dbg at runtime)", "id": "dynamic-debug-dev_dbg-at-runtime"}, {"text": "/proc and /sys Inspection", "id": "proc-and-sys-inspection"}, {"text": "ftrace \u2014 Kernel Function Tracer", "id": "ftrace-kernel-function-tracer"}, {"text": "Kernel Oops \u2014 Reading Crash Outputs", "id": "kernel-oops-reading-crash-outputs"}, {"text": "SECTION 3: DEBUGGING WORKFLOW", "id": "section-3-debugging-workflow"}, {"text": "When Your Module Won&rsquo;t Load", "id": "when-your-module-wont-load"}, {"text": "When Your Driver Crashes", "id": "when-your-driver-crashes"}, {"text": "When I2C Communication Fails", "id": "when-i2c-communication-fails"}, {"text": "SECTION 4: PERFORMANCE DEBUGGING", "id": "section-4-performance-debugging"}, {"text": "perf \u2014 The Swiss Army Knife", "id": "perf-the-swiss-army-knife"}, {"text": "Kernel Config Options for Debugging", "id": "kernel-config-options-for-debugging"}, {"text": "QUICK REFERENCE: What Tool When?", "id": "quick-reference-what-tool-when"}]}]</script>
+
+  <!-- Scripts -->
+  <script>hljs.highlightAll();</script>
+  <script src="app.js"></script>
+</body>
+</html>

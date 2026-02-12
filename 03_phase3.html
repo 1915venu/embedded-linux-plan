@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Phase 3: Kernel Modules — Embedded Linux & Device Drivers Enhanced 40-Day Guide">
+  <title>Phase 3: Kernel Modules — Enhanced Plan</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <!-- Highlight.js for syntax highlighting -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+  <!-- App styles -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Progress Bar -->
+  <div id="progress-bar"></div>
+
+  <!-- Sidebar Overlay (mobile) -->
+  <div class="sidebar-overlay"></div>
+
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-brand">
+      <h1>🐧 Embedded Linux</h1>
+      <p>Enhanced 40-Day Guide</p>
+    </div>
+    <div class="sidebar-nav">
+  <div class="sidebar-section-label">Getting Started</div>
+  <a class="sidebar-link" href="00_readme.html"><span class="link-icon">🏠</span><span>README — Overview</span></a>
+  <div class="sidebar-section-label">Learning Phases</div>
+  <a class="sidebar-link" href="01_phase1.html"><span class="link-icon">⚙️</span><span>Phase 1: C Revision</span><span class="link-badge">Days 0-3</span></a>
+  <a class="sidebar-link" href="02_phase2.html"><span class="link-icon">🐧</span><span>Phase 2: Linux Fundamentals</span><span class="link-badge">Days 4-8</span></a>
+  <a class="sidebar-link active" href="03_phase3.html"><span class="link-icon">🧩</span><span>Phase 3: Kernel Modules</span><span class="link-badge">Days 9-13</span></a>
+  <a class="sidebar-link" href="04_phase4.html"><span class="link-icon">💾</span><span>Phase 4: Char Driver Project</span><span class="link-badge">Days 14-22</span></a>
+  <a class="sidebar-link" href="05_phase5.html"><span class="link-icon">🌳</span><span>Phase 5: Device Tree &amp; Platform</span><span class="link-badge">Days 23-27</span></a>
+  <a class="sidebar-link" href="06_phase6.html"><span class="link-icon">🔌</span><span>Phase 6: I2C Project</span><span class="link-badge">Days 28-37</span></a>
+  <a class="sidebar-link" href="07_phase7.html"><span class="link-icon">🎯</span><span>Phase 7: Thread Pool &amp; Interview</span><span class="link-badge">Days 38-40</span></a>
+  <div class="sidebar-section-label">Appendices</div>
+  <a class="sidebar-link" href="08_appendix_interviews.html"><span class="link-icon">📝</span><span>Appendix: Interview Bank</span><span class="link-badge">150+ Q&amp;A</span></a>
+  <a class="sidebar-link" href="09_appendix_kernel.html"><span class="link-icon">🔬</span><span>Appendix: Kernel Internals</span></a>
+  <a class="sidebar-link" href="10_appendix_debugging.html"><span class="link-icon">🔧</span><span>Appendix: Debugging</span></a>
+    </div>
+  </nav>
+
+  <!-- Header -->
+  <header class="header">
+    <button class="hamburger" aria-label="Toggle sidebar">☰</button>
+    <div class="header-title">
+      <span class="emoji">🧩</span> Phase 3: Kernel Modules
+    </div>
+    <div class="header-search">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="search-input" placeholder="Search topics..." autocomplete="off">
+      <div class="search-results" id="search-results"></div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="phase-3-kernel-modules-patterns-days-9-13">PHASE 3: KERNEL MODULES &amp; PATTERNS (Days 9-13)</h1>
+<hr />
+<h2 id="day-9-first-kernel-module">DAY 9: FIRST KERNEL MODULE</h2>
+<h3 id="theory-what-is-a-kernel-module">🧠 THEORY: What IS a Kernel Module?</h3>
+<p>A kernel module is a piece of code that can be loaded/unloaded into the kernel <strong>at runtime</strong> without rebooting. Think of it as a plugin for the Linux kernel.</p>
+<pre><code>┌────────────────────────────────────────────────────────────────┐
+│                    LINUX KERNEL (Ring 0)                        │
+│                                                                │
+│  ┌──────────┐  ┌──────────┐  ┌──────────────────────┐         │
+│  │ Scheduler│  │ VFS      │  │  Built-in Drivers    │         │
+│  │          │  │          │  │  (compiled into kernel)│         │
+│  └──────────┘  └──────────┘  └──────────────────────┘         │
+│                                                                │
+│  ┌──────────────────────────────────────┐                     │
+│  │       MODULE SPACE                    │                     │
+│  │  ┌──────────┐  ┌──────────┐          │                     │
+│  │  │ your_mod │  │ usb_drv  │  ← Loaded at runtime          │
+│  │  │  .ko     │  │  .ko     │    insmod / modprobe           │
+│  │  └──────────┘  └──────────┘                                │
+│  └──────────────────────────────────────┘                     │
+│                                                                │
+│  A module has FULL kernel privileges!                          │
+│  Bug in module = kernel crash (oops/panic)                    │
+└────────────────────────────────────────────────────────────────┘
+</code></pre>
+<h3 id="theory-module-vs-built-in">🧠 THEORY: Module vs Built-in</h3>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Module (.ko)</th>
+<th>Built-in</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Config</strong></td>
+<td><code>obj-m += foo.o</code></td>
+<td><code>obj-y += foo.o</code> or CONFIG=y</td>
+</tr>
+<tr>
+<td><strong>Load time</strong></td>
+<td>Runtime via insmod/modprobe</td>
+<td>Boot time</td>
+</tr>
+<tr>
+<td><strong>Unload</strong></td>
+<td>rmmod</td>
+<td>Cannot</td>
+</tr>
+<tr>
+<td><strong>__init memory</strong></td>
+<td>Freed after insmod</td>
+<td>Freed after boot</td>
+</tr>
+<tr>
+<td><strong>Use case</strong></td>
+<td>Development, optional drivers</td>
+<td>Essential drivers</td>
+</tr>
+<tr>
+<td><strong>Size impact</strong></td>
+<td>No kernel image growth</td>
+<td>Larger vmlinuz</td>
+</tr>
+</tbody>
+</table>
+<h3 id="theory-module-lifecycle">🧠 THEORY: Module Lifecycle</h3>
+<pre><code>insmod module.ko
+    │
+    ▼
+1. Kernel loads .ko into memory (ELF parsing)
+2. Relocate symbols (link printk, kmalloc, etc.)
+3. Run __init function (module_init)
+    │
+    ├── Returns 0 → SUCCESS
+    │   Module is active, appears in lsmod
+    │   /sys/module/my_module/ directory created
+    │
+    └── Returns negative → FAILURE
+        Module NOT loaded
+        Cleanup already done (by your code!)
+        __exit is NOT called!
+
+rmmod module
+    │
+    ▼
+4. Kernel checks refcount (in-use?)
+5. Run __exit function (module_exit)
+6. Free module memory
+   Module removed from lsmod
+</code></pre>
+<h3 id="theory-kernel-vs-userspace-environment">🧠 THEORY: Kernel vs Userspace Environment</h3>
+<p>In kernel modules, you are NOT in userspace anymore:</p>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Userspace</th>
+<th>Kernel Module</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Output</strong></td>
+<td>printf(), stdout</td>
+<td>printk(), dmesg</td>
+</tr>
+<tr>
+<td><strong>Memory</strong></td>
+<td>malloc/free</td>
+<td>kmalloc/kfree, vmalloc</td>
+</tr>
+<tr>
+<td><strong>Headers</strong></td>
+<td>stdio.h, stdlib.h</td>
+<td>linux/module.h, linux/kernel.h</td>
+</tr>
+<tr>
+<td><strong>Errors</strong></td>
+<td>errno, perror</td>
+<td>Return negative errno</td>
+</tr>
+<tr>
+<td><strong>String</strong></td>
+<td>string.h</td>
+<td>linux/string.h</td>
+</tr>
+<tr>
+<td><strong>Sleep</strong></td>
+<td>sleep(), usleep()</td>
+<td>msleep(), usleep_range()</td>
+</tr>
+<tr>
+<td><strong>Threading</strong></td>
+<td>pthread</td>
+<td>kthread, workqueue</td>
+</tr>
+<tr>
+<td><strong>Stack</strong></td>
+<td>~8MB</td>
+<td><strong>8-16KB</strong> (TINY!)</td>
+</tr>
+<tr>
+<td><strong>Float</strong></td>
+<td>Allowed</td>
+<td><strong>NEVER use floating point!</strong></td>
+</tr>
+<tr>
+<td><strong>Crash</strong></td>
+<td>Segfault (process dies)</td>
+<td><strong>Kernel oops/panic (system may crash)</strong></td>
+</tr>
+</tbody>
+</table>
+<h3 id="complete-code-comprehensive-first-module">💻 COMPLETE CODE: Comprehensive First Module</h3>
+<pre data-lang="c"><code class="language-c">// File: ~/embedded_learning/day_09/my_module/my_module.c
+#include &lt;linux/init.h&gt;
+#include &lt;linux/module.h&gt;
+#include &lt;linux/kernel.h&gt;
+#include &lt;linux/moduleparam.h&gt;
+#include &lt;linux/stat.h&gt;
+#include &lt;linux/jiffies.h&gt;
+#include &lt;linux/sched.h&gt;
+
+/* Module metadata */
+MODULE_LICENSE(&quot;GPL&quot;);
+MODULE_AUTHOR(&quot;Your Name&quot;);
+MODULE_DESCRIPTION(&quot;Comprehensive first kernel module&quot;);
+MODULE_VERSION(&quot;1.0&quot;);
+
+/* ==== MODULE PARAMETERS ==== */
+/* These appear in /sys/module/my_module/parameters/ */
+static int debug_level = 0;
+module_param(debug_level, int, S_IRUGO | S_IWUSR);  // Readable by all, writable by root
+MODULE_PARM_DESC(debug_level, &quot;Debug verbosity (0=off, 1=info, 2=verbose)&quot;);
+
+static char *device_name = &quot;mydevice&quot;;
+module_param(device_name, charp, S_IRUGO);  // Read-only after load
+MODULE_PARM_DESC(device_name, &quot;Device name string&quot;);
+
+static int max_devices = 4;
+module_param(max_devices, int, S_IRUGO);
+MODULE_PARM_DESC(max_devices, &quot;Maximum number of devices&quot;);
+
+/* ==== LOGGING MACROS ==== */
+/* Kernel convention: use dev_info/dev_err when you have a struct device,
+   pr_info/pr_err when you don't */
+#define MOD_NAME &quot;my_module&quot;
+#define LOG(level, fmt, ...) do { \
+    if (debug_level &gt;= level) \
+        pr_info(MOD_NAME &quot;: &quot; fmt, ##__VA_ARGS__); \
+} while(0)
+
+#define LOG_ERR(fmt, ...)  pr_err(MOD_NAME &quot;: ERROR: &quot; fmt, ##__VA_ARGS__)
+#define LOG_INFO(fmt, ...) LOG(1, fmt, ##__VA_ARGS__)
+#define LOG_DBG(fmt, ...)  LOG(2, fmt, ##__VA_ARGS__)
+
+/* ==== INIT FUNCTION ==== */
+/* __init: function used ONLY during initialization
+   Memory is freed after init completes (for built-in modules) */
+static int __init my_module_init(void)
+{
+    pr_info(&quot;========================================\n&quot;);
+    pr_info(MOD_NAME &quot;: Loading module\n&quot;);
+    pr_info(MOD_NAME &quot;: Parameters:\n&quot;);
+    pr_info(MOD_NAME &quot;:   debug_level = %d\n&quot;, debug_level);
+    pr_info(MOD_NAME &quot;:   device_name = %s\n&quot;, device_name);
+    pr_info(MOD_NAME &quot;:   max_devices = %d\n&quot;, max_devices);
+
+    /* Validate parameters */
+    if (max_devices &lt; 1 || max_devices &gt; 16) {
+        LOG_ERR(&quot;max_devices must be 1-16, got %d\n&quot;, max_devices);
+        return -EINVAL;  /* Module will NOT load */
+    }
+
+    /* Log some kernel info */
+    pr_info(MOD_NAME &quot;: Kernel version: %s\n&quot;, UTS_RELEASE);
+    pr_info(MOD_NAME &quot;: HZ = %d (timer frequency)\n&quot;, HZ);
+    pr_info(MOD_NAME &quot;: Jiffies = %lu\n&quot;, jiffies);
+    pr_info(MOD_NAME &quot;: Current process: %s (PID %d)\n&quot;,
+            current-&gt;comm, current-&gt;pid);
+    pr_info(MOD_NAME &quot;: PAGE_SIZE = %lu\n&quot;, PAGE_SIZE);
+
+    /* Print all log levels */
+    pr_emerg(MOD_NAME &quot;: EMERG: System is unusable\n&quot;);
+    pr_alert(MOD_NAME &quot;: ALERT: Action must be taken immediately\n&quot;);
+    pr_crit(MOD_NAME &quot;:  CRIT:  Critical conditions\n&quot;);
+    pr_err(MOD_NAME &quot;:   ERR:   Error conditions\n&quot;);
+    pr_warn(MOD_NAME &quot;:  WARN:  Warning conditions\n&quot;);
+    pr_notice(MOD_NAME &quot;: NOTICE: Normal but significant\n&quot;);
+    pr_info(MOD_NAME &quot;:  INFO:  Informational\n&quot;);
+
+    LOG_INFO(&quot;Debug logging active at level %d\n&quot;, debug_level);
+    LOG_DBG(&quot;Verbose debug active\n&quot;);
+
+    pr_info(MOD_NAME &quot;: Module loaded successfully!\n&quot;);
+    pr_info(&quot;========================================\n&quot;);
+
+    return 0;  /* SUCCESS */
+}
+
+/* ==== EXIT FUNCTION ==== */
+/* __exit: function called ONLY during module unload
+   For built-in modules, this function is discarded entirely */
+static void __exit my_module_exit(void)
+{
+    pr_info(MOD_NAME &quot;: Unloading module\n&quot;);
+    pr_info(MOD_NAME &quot;: Module was active for %lu seconds\n&quot;,
+            jiffies / HZ);
+    pr_info(MOD_NAME &quot;: Module unloaded. Goodbye!\n&quot;);
+}
+
+/* Register init/exit functions */
+module_init(my_module_init);
+module_exit(my_module_exit);
+</code></pre>
+<h3 id="makefile-for-out-of-tree-module">💻 Makefile for Out-of-Tree Module</h3>
+<pre data-lang="makefile"><code class="language-makefile"># File: ~/embedded_learning/day_09/my_module/Makefile
+
+# For modules built outside kernel tree
+obj-m += my_module.o
+
+# Kernel build directory
+KDIR := /lib/modules/$(shell uname -r)/build
+
+# Build directory (current)
+PWD := $(shell pwd)
+
+# Default target
+all:
+    $(MAKE) -C $(KDIR) M=$(PWD) modules
+
+clean:
+    $(MAKE) -C $(KDIR) M=$(PWD) clean
+
+# Convenience targets
+load:
+    sudo insmod my_module.ko debug_level=2 device_name=&quot;testdev&quot; max_devices=4
+
+unload:
+    sudo rmmod my_module
+
+reload: unload load
+
+info:
+    modinfo my_module.ko
+
+log:
+    dmesg | tail -30
+
+test: all load log
+    @echo &quot;Module loaded. Check dmesg output above.&quot;
+
+.PHONY: all clean load unload reload info log test
+</code></pre>
+<h3 id="theory-makefile-explanation">🧠 THEORY: Makefile Explanation</h3>
+<pre><code>$(MAKE) -C $(KDIR) M=$(PWD) modules
+         │              │        │
+         │              │        └── Target: build modules
+         │              └── M= tells kbuild &quot;source is HERE&quot;
+         └── -C: change to kernel build dir first (has kbuild system)
+
+This invokes the kernel's build system (kbuild), which:
+1. Reads your Makefile for obj-m line
+2. Compiles your .c files with kernel flags
+3. Links into .ko (kernel object) file
+</code></pre>
+<h3 id="usage">Usage:</h3>
+<pre data-lang="bash"><code class="language-bash">cd ~/embedded_learning/day_09/my_module
+make
+sudo insmod my_module.ko debug_level=2
+dmesg | tail -20
+lsmod | grep my_module
+cat /sys/module/my_module/parameters/debug_level
+echo 1 | sudo tee /sys/module/my_module/parameters/debug_level  # Change at runtime!
+sudo rmmod my_module
+dmesg | tail -5
+</code></pre>
+<h3 id="mini-exercises-day-9">🏗️ MINI-EXERCISES — Day 9</h3>
+<ol>
+<li><strong>Exercise 9.1</strong>: Add a module parameter <code>greeting</code> (string). Print it in init. Change it via sysfs while module is loaded.</li>
+<li><strong>Exercise 9.2</strong>: Add an array parameter (<code>module_param_array</code>). Print all values.</li>
+<li><strong>Exercise 9.3</strong>: Try loading with invalid <code>max_devices=20</code>. Verify module fails to load.</li>
+</ol>
+<h3 id="common-pitfalls-day-9">⚠️ COMMON PITFALLS — Day 9</h3>
+<table>
+<thead>
+<tr>
+<th>Pitfall</th>
+<th>Why</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Missing <code>MODULE_LICENSE("GPL")</code></td>
+<td>Taints kernel, EXPORT_SYMBOL_GPL fails</td>
+<td>Always add GPL</td>
+</tr>
+<tr>
+<td><code>printf()</code> instead of <code>printk()</code></td>
+<td>printf is userspace only</td>
+<td>Use pr_info(), pr_err()</td>
+</tr>
+<tr>
+<td>Large stack arrays</td>
+<td>Kernel stack is 8-16KB</td>
+<td>Use kmalloc for large buffers</td>
+</tr>
+<tr>
+<td>Using floats</td>
+<td>No FPU in kernel context</td>
+<td>Use fixed-point math</td>
+</tr>
+<tr>
+<td>Returning positive from init</td>
+<td>Positive treated as module-specific code, module LOADS</td>
+<td>Return 0 success, negative errno fail</td>
+</tr>
+</tbody>
+</table>
+<h3 id="interview-questions-day-9-10-questions">📝 INTERVIEW QUESTIONS — Day 9 (10 Questions)</h3>
+<p><strong>Q1: What is a kernel module?</strong></p>
+<blockquote>
+<p>Dynamically loadable kernel code (.ko file). Runs in Ring 0 with full kernel privileges. Can be loaded/unloaded without rebooting. Used for drivers, filesystems, network protocols.</p>
+</blockquote>
+<p><strong>Q2: What happens if module_init returns -EINVAL?</strong></p>
+<blockquote>
+<p>Module fails to load. <code>insmod</code> returns error to userspace. Module_exit is NOT called. Developer must clean up all partially-allocated resources before returning the error.</p>
+</blockquote>
+<p><strong>Q3: What does MODULE_LICENSE(&ldquo;GPL&rdquo;) do?</strong></p>
+<blockquote>
+<p>Declares module&rsquo;s license. Without it: kernel is &ldquo;tainted&rdquo; (warning in dmesg), EXPORT_SYMBOL_GPL symbols become inaccessible. Always use GPL for new driver development.</p>
+</blockquote>
+<p><strong>Q4: How does <code>module_param</code> work?</strong></p>
+<blockquote>
+<p>Creates a parameter that can be set at load time (<code>insmod mod.ko param=val</code>) and optionally changed at runtime via <code>/sys/module/modname/parameters/param</code>. Permission bits control read/write access.</p>
+</blockquote>
+<p><strong>Q5: What is the difference between <code>pr_info</code> and <code>dev_info</code>?</strong></p>
+<blockquote>
+<p><code>pr_info</code> prints with module name prefix. <code>dev_info(&amp;dev, ...)</code> prints with device identifier prefix (bus/address). Use <code>dev_*</code> when you have a struct device (in drivers), <code>pr_*</code> when you don&rsquo;t.</p>
+</blockquote>
+<p><strong>Q6: What is <code>__init</code> annotation?</strong></p>
+<blockquote>
+<p>Marks function as initialization-only. For built-in drivers: memory freed after boot (kernel prints &ldquo;Freeing unused kernel memory&rdquo;). For modules: freed after successful insmod. Saves memory.</p>
+</blockquote>
+<p><strong>Q7: Where do printk messages go?</strong></p>
+<blockquote>
+<p>Kernel ring buffer. Read with <code>dmesg</code>. Also: <code>/proc/kmsg</code>, syslog. Messages above <code>console_loglevel</code> display on console. Can set level: <code>echo 7 &gt; /proc/sys/kernel/printk</code>.</p>
+</blockquote>
+<p><strong>Q8: What is module taint?</strong></p>
+<blockquote>
+<p>Flags indicating kernel may be in unexpected state. Taint reasons: proprietary module (P), forced load (F), staging driver (C), unsigned module (E). Tainted kernel bugs get less attention from developers.</p>
+</blockquote>
+<p><strong>Q9: What is <code>current</code> in kernel?</strong></p>
+<blockquote>
+<p>Macro returning pointer to current process&rsquo;s <code>task_struct</code>. In process context: the process that called syscall. In init: the insmod process. Always valid in process context.</p>
+</blockquote>
+<p><strong>Q10: Why MODULE_DEVICE_TABLE?</strong></p>
+<blockquote>
+<p>Creates alias information so <code>modprobe</code> can auto-load the module when matching device appears. Example: <code>MODULE_DEVICE_TABLE(of, my_of_match)</code> creates autoload entry for DT compatible strings.</p>
+</blockquote>
+<hr />
+<h2 id="days-10-11-kernel-error-handling-memory">DAYS 10-11: KERNEL ERROR HANDLING &amp; MEMORY</h2>
+<h3 id="theory-the-goto-cleanup-pattern-kernels-1-pattern">🧠 THEORY: The <code>goto</code> Cleanup Pattern — Kernel&rsquo;s #1 Pattern</h3>
+<p>In userspace, goto is considered bad practice. In kernel code, it&rsquo;s <strong>essential and standard</strong>:</p>
+<pre><code>WHY goto in kernel?
+─────────────────
+init() allocates 5 resources in sequence.
+If resource 3 fails, must free resources 2 and 1.
+If resource 5 fails, must free 4, 3, 2, and 1.
+
+Without goto: deeply nested if/else, error-prone duplicated cleanup code
+With goto: clean, linear, matches kernel coding style exactly
+</code></pre>
+<h3 id="complete-code-error-handling-patterns">💻 COMPLETE CODE: Error Handling Patterns</h3>
+<pre data-lang="c"><code class="language-c">// File: ~/embedded_learning/day_10/error_handling/error_module.c
+#include &lt;linux/init.h&gt;
+#include &lt;linux/module.h&gt;
+#include &lt;linux/slab.h&gt;     /* kmalloc, kfree */
+#include &lt;linux/errno.h&gt;
+#include &lt;linux/err.h&gt;      /* IS_ERR, PTR_ERR, ERR_PTR */
+
+MODULE_LICENSE(&quot;GPL&quot;);
+
+struct my_device {
+    char *name;
+    char *buffer;
+    int *config;
+    int id;
+};
+
+static struct my_device *mydev = NULL;
+
+/*
+ * PATTERN: goto cleanup chain
+ * 
+ * Rules:
+ * 1. Allocate resources in order
+ * 2. On failure, goto label that frees all PREVIOUSLY allocated resources
+ * 3. Labels go in REVERSE order of allocation
+ * 4. Success path returns 0 at the end
+ * 5. Every allocation has a corresponding label
+ */
+static int __init error_module_init(void)
+{
+    int ret;
+
+    pr_info(&quot;error_module: Starting initialization\n&quot;);
+
+    /* Step 1: Allocate device structure */
+    mydev = kzalloc(sizeof(*mydev), GFP_KERNEL);
+    if (!mydev) {
+        pr_err(&quot;error_module: Failed to allocate device struct\n&quot;);
+        ret = -ENOMEM;
+        goto fail;
+    }
+    pr_info(&quot;error_module: Step 1 OK - device struct allocated\n&quot;);
+
+    /* Step 2: Allocate name buffer */
+    mydev-&gt;name = kzalloc(64, GFP_KERNEL);
+    if (!mydev-&gt;name) {
+        pr_err(&quot;error_module: Failed to allocate name\n&quot;);
+        ret = -ENOMEM;
+        goto fail_dev;
+    }
+    snprintf(mydev-&gt;name, 64, &quot;TestDevice-%d&quot;, 0);
+    pr_info(&quot;error_module: Step 2 OK - name: %s\n&quot;, mydev-&gt;name);
+
+    /* Step 3: Allocate data buffer */
+    mydev-&gt;buffer = kzalloc(4096, GFP_KERNEL);
+    if (!mydev-&gt;buffer) {
+        pr_err(&quot;error_module: Failed to allocate buffer\n&quot;);
+        ret = -ENOMEM;
+        goto fail_name;
+    }
+    pr_info(&quot;error_module: Step 3 OK - buffer allocated\n&quot;);
+
+    /* Step 4: Allocate config */
+    mydev-&gt;config = kzalloc(sizeof(int) * 10, GFP_KERNEL);
+    if (!mydev-&gt;config) {
+        pr_err(&quot;error_module: Failed to allocate config\n&quot;);
+        ret = -ENOMEM;
+        goto fail_buffer;
+    }
+    pr_info(&quot;error_module: Step 4 OK - config allocated\n&quot;);
+
+    /* Simulated validation (could fail) */
+    mydev-&gt;id = 42;
+    if (mydev-&gt;id &gt; 100) {
+        pr_err(&quot;error_module: Invalid device ID\n&quot;);
+        ret = -EINVAL;
+        goto fail_config;
+    }
+
+    pr_info(&quot;error_module: All initialization complete!\n&quot;);
+    return 0;
+
+    /* Cleanup labels - REVERSE ORDER */
+fail_config:
+    kfree(mydev-&gt;config);
+fail_buffer:
+    kfree(mydev-&gt;buffer);
+fail_name:
+    kfree(mydev-&gt;name);
+fail_dev:
+    kfree(mydev);
+    mydev = NULL;
+fail:
+    return ret;
+}
+
+static void __exit error_module_exit(void)
+{
+    if (mydev) {
+        kfree(mydev-&gt;config);
+        kfree(mydev-&gt;buffer);
+        kfree(mydev-&gt;name);
+        kfree(mydev);
+    }
+    pr_info(&quot;error_module: Unloaded\n&quot;);
+}
+
+module_init(error_module_init);
+module_exit(error_module_exit);
+</code></pre>
+<h3 id="theory-kernel-memory-allocation">🧠 THEORY: Kernel Memory Allocation</h3>
+<pre><code>MEMORY ALLOCATION LANDSCAPE:
+
+┌─────────────────────────────────────────────────────────┐
+│                    KERNEL MEMORY                         │
+│                                                          │
+│  ┌──────────────────┐  ┌──────────────────┐             │
+│  │    PAGE ALLOCATOR │  │   SLAB ALLOCATOR  │            │
+│  │    (Buddy System) │  │   (SLUB/SLAB)     │            │
+│  │                   │  │                   │            │
+│  │  alloc_pages()    │  │  kmalloc()        │ ◄── Use this!
+│  │  __get_free_page()│  │  kzalloc()        │            │
+│  │                   │  │  kcalloc()        │            │
+│  │  Granularity:     │  │  kfree()          │            │
+│  │  4KB pages        │  │                   │            │
+│  │                   │  │  Physically        │            │
+│  │                   │  │  contiguous        │            │
+│  └──────────────────┘  └──────────────────┘             │
+│                                                          │
+│  ┌──────────────────┐  ┌──────────────────┐             │
+│  │   VMALLOC        │  │  DEVICE MANAGED   │             │
+│  │                   │  │  (devm_*)         │             │
+│  │  vmalloc()       │  │                   │             │
+│  │  vfree()         │  │  devm_kzalloc()   │ ◄── Preferred!
+│  │                   │  │  devm_ioremap()   │             │
+│  │  Virtually        │  │  devm_request_irq│             │
+│  │  contiguous only  │  │                   │             │
+│  │  Can't DMA!       │  │  Auto-freed on    │             │
+│  │                   │  │  device removal   │             │
+│  └──────────────────┘  └──────────────────┘             │
+└─────────────────────────────────────────────────────────┘
+
+Decision flow:
+1. In a driver with struct device? → devm_kzalloc (preferred!)
+2. Need physically contiguous, &lt;128KB? → kmalloc/kzalloc
+3. Need zeroed memory? → kzalloc (kmalloc + memset(0))
+4. Large allocation (&gt;1MB)? → vmalloc
+5. Need DMA-able? → dma_alloc_coherent or kmalloc with GFP_DMA
+6. In interrupt context? → kmalloc with GFP_ATOMIC
+</code></pre>
+<h3 id="theory-is_err-ptr_err-err_ptr-pattern">🧠 THEORY: IS_ERR / PTR_ERR / ERR_PTR Pattern</h3>
+<p>Some kernel functions return pointers that encode errors:</p>
+<pre data-lang="c"><code class="language-c">/* Kernel convention: error pointers */
+/* PTR range: last page of address space reserved for error codes */
+
+void *ptr = some_alloc_func();
+
+if (IS_ERR(ptr)) {
+    int err = PTR_ERR(ptr);  // Extract error code
+    pr_err(&quot;Alloc failed: %d\n&quot;, err);
+    return err;
+}
+
+/* Creating error pointer (from callee side): */
+return ERR_PTR(-ENOMEM);
+
+/* Example: class_create returns error pointer, NOT NULL! */
+struct class *cls = class_create(&quot;myclass&quot;);
+if (IS_ERR(cls))
+    return PTR_ERR(cls);  // Don't check for NULL!
+</code></pre>
+<hr />
+<h2 id="days-12-13-kernel-data-structures-timers">DAYS 12-13: KERNEL DATA STRUCTURES &amp; TIMERS</h2>
+<h3 id="theory-kernel-linked-lists">🧠 THEORY: Kernel Linked Lists</h3>
+<p>The kernel linked list is <strong>different</strong> from typical textbook linked lists:</p>
+<pre><code>Textbook (wrong for kernel):
+┌────────────┐    ┌────────────┐    ┌────────────┐
+│ data       │    │ data       │    │ data       │
+│ next ──────┼───&gt;│ next ──────┼───&gt;│ next=NULL  │
+└────────────┘    └────────────┘    └────────────┘
+
+Kernel (correct):
+You EMBED list_head into YOUR struct, not the other way!
+
+struct my_item {
+    int data;
+    char name[32];
+    struct list_head list;  // &lt;-- Embedded generic list node
+};
+
+   ┌────────────────────┐     ┌────────────────────┐
+   │  struct my_item    │     │  struct my_item    │
+   │  data=42           │     │  data=99           │
+   │  name=&quot;hello&quot;      │     │  name=&quot;world&quot;      │
+   │  ┌──────────────┐  │     │  ┌──────────────┐  │
+   │  │  list_head   │  │ ←──→│  │  list_head   │  │ ←──→ (head)
+   │  │  next/prev   │  │     │  │  next/prev   │  │
+   │  └──────────────┘  │     │  └──────────────┘  │
+   └────────────────────┘     └────────────────────┘
+
+To get from list_head back to my_item → container_of()!
+</code></pre>
+<h3 id="complete-code-kernel-list-timer-module">💻 COMPLETE CODE: Kernel List &amp; Timer Module</h3>
+<pre data-lang="c"><code class="language-c">// File: ~/embedded_learning/day_12/kdata/kdata_module.c
+#include &lt;linux/init.h&gt;
+#include &lt;linux/module.h&gt;
+#include &lt;linux/list.h&gt;
+#include &lt;linux/slab.h&gt;
+#include &lt;linux/timer.h&gt;
+#include &lt;linux/jiffies.h&gt;
+
+MODULE_LICENSE(&quot;GPL&quot;);
+MODULE_DESCRIPTION(&quot;Kernel lists, timers, and data structures demo&quot;);
+
+/* ==== LINKED LIST DEMO ==== */
+
+struct sensor_reading {
+    int sensor_id;
+    int temperature;    // milli-Celsius
+    unsigned long timestamp;
+    struct list_head list;  // Embedded list node
+};
+
+static LIST_HEAD(sensor_list);  // Declare and initialize list head
+static int reading_count = 0;
+
+static int add_reading(int id, int temp)
+{
+    struct sensor_reading *reading;
+
+    reading = kzalloc(sizeof(*reading), GFP_KERNEL);
+    if (!reading)
+        return -ENOMEM;
+
+    reading-&gt;sensor_id = id;
+    reading-&gt;temperature = temp;
+    reading-&gt;timestamp = jiffies;
+
+    /* Add to end of list */
+    list_add_tail(&amp;reading-&gt;list, &amp;sensor_list);
+    reading_count++;
+
+    pr_info(&quot;kdata: Added sensor %d: temp=%d.%03d°C\n&quot;,
+            id, temp / 1000, abs(temp % 1000));
+    return 0;
+}
+
+static void print_all_readings(void)
+{
+    struct sensor_reading *reading;
+
+    pr_info(&quot;kdata: === All Readings (%d total) ===\n&quot;, reading_count);
+
+    /* list_for_each_entry: iterate over list, extracting struct */
+    list_for_each_entry(reading, &amp;sensor_list, list) {
+        pr_info(&quot;kdata:   Sensor %d: %d.%03d°C @ jiffies=%lu\n&quot;,
+                reading-&gt;sensor_id,
+                reading-&gt;temperature / 1000,
+                abs(reading-&gt;temperature % 1000),
+                reading-&gt;timestamp);
+    }
+}
+
+static void delete_all_readings(void)
+{
+    struct sensor_reading *reading, *tmp;
+
+    /* list_for_each_entry_safe: safe for deletion during iteration */
+    list_for_each_entry_safe(reading, tmp, &amp;sensor_list, list) {
+        list_del(&amp;reading-&gt;list);
+        kfree(reading);
+        reading_count--;
+    }
+
+    pr_info(&quot;kdata: All readings deleted\n&quot;);
+}
+
+/* ==== TIMER DEMO ==== */
+
+static struct timer_list my_timer;
+static int timer_count = 0;
+#define MAX_TIMER_FIRES 5
+
+static void timer_callback(struct timer_list *t)
+{
+    timer_count++;
+    pr_info(&quot;kdata: Timer fired! Count=%d, jiffies=%lu\n&quot;,
+            timer_count, jiffies);
+
+    /* Re-arm timer (periodic behavior) */
+    if (timer_count &lt; MAX_TIMER_FIRES) {
+        mod_timer(&amp;my_timer, jiffies + 2 * HZ);  /* 2 seconds */
+    } else {
+        pr_info(&quot;kdata: Timer finished (max fires reached)\n&quot;);
+    }
+}
+
+/* ==== MODULE INIT/EXIT ==== */
+
+static int __init kdata_init(void)
+{
+    int ret;
+
+    pr_info(&quot;kdata: Initializing kernel data structures demo\n&quot;);
+
+    /* Add some sensor readings */
+    ret = add_reading(1, 25500);   // 25.500°C
+    if (ret) goto fail;
+    ret = add_reading(2, 30200);   // 30.200°C
+    if (ret) goto fail_readings;
+    ret = add_reading(1, 26100);   // 26.100°C
+    if (ret) goto fail_readings;
+    ret = add_reading(3, -5300);   // -5.300°C (negative!)
+    if (ret) goto fail_readings;
+
+    print_all_readings();
+
+    /* Check if list is empty */
+    pr_info(&quot;kdata: List empty? %s\n&quot;,
+            list_empty(&amp;sensor_list) ? &quot;yes&quot; : &quot;no&quot;);
+
+    /* Setup and start timer */
+    timer_setup(&amp;my_timer, timer_callback, 0);
+    mod_timer(&amp;my_timer, jiffies + HZ);  /* Fire in 1 second */
+    pr_info(&quot;kdata: Timer started (1 second interval)\n&quot;);
+
+    pr_info(&quot;kdata: Module loaded\n&quot;);
+    return 0;
+
+fail_readings:
+    delete_all_readings();
+fail:
+    return ret;
+}
+
+static void __exit kdata_exit(void)
+{
+    /* IMPORTANT: delete timer before freeing anything it might access */
+    del_timer_sync(&amp;my_timer);  /* _sync waits for running callback */
+    pr_info(&quot;kdata: Timer cancelled (fired %d times)\n&quot;, timer_count);
+
+    print_all_readings();
+    delete_all_readings();
+
+    pr_info(&quot;kdata: Module unloaded\n&quot;);
+}
+
+module_init(kdata_init);
+module_exit(kdata_exit);
+</code></pre>
+<pre data-lang="makefile"><code class="language-makefile"># File: ~/embedded_learning/day_12/kdata/Makefile
+obj-m += kdata_module.o
+KDIR := /lib/modules/$(shell uname -r)/build
+PWD := $(shell pwd)
+
+all:
+    $(MAKE) -C $(KDIR) M=$(PWD) modules
+
+clean:
+    $(MAKE) -C $(KDIR) M=$(PWD) clean
+
+load: all
+    sudo insmod kdata_module.ko
+    sleep 12
+    dmesg | tail -40
+
+unload:
+    sudo rmmod kdata_module
+    dmesg | tail -10
+</code></pre>
+<h3 id="theory-key-kernel-data-structures">🧠 THEORY: Key Kernel Data Structures</h3>
+<table>
+<thead>
+<tr>
+<th>Structure</th>
+<th>Header</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>struct list_head</code></td>
+<td><code>linux/list.h</code></td>
+<td>Doubly linked circular list</td>
+</tr>
+<tr>
+<td><code>struct hlist_head</code></td>
+<td><code>linux/list.h</code></td>
+<td>Hash list (single pointer head)</td>
+</tr>
+<tr>
+<td><code>struct rb_node</code></td>
+<td><code>linux/rbtree.h</code></td>
+<td>Red-black tree</td>
+</tr>
+<tr>
+<td><code>struct timer_list</code></td>
+<td><code>linux/timer.h</code></td>
+<td>Kernel timer (softirq context!)</td>
+</tr>
+<tr>
+<td><code>struct work_struct</code></td>
+<td><code>linux/workqueue.h</code></td>
+<td>Deferred work (process context)</td>
+</tr>
+<tr>
+<td><code>struct completion</code></td>
+<td><code>linux/completion.h</code></td>
+<td>One-shot synchronization</td>
+</tr>
+<tr>
+<td><code>struct kref</code></td>
+<td><code>linux/kref.h</code></td>
+<td>Reference counting</td>
+</tr>
+</tbody>
+</table>
+<h3 id="theory-timers-delayed-work">🧠 THEORY: Timers &amp; Delayed Work</h3>
+<pre><code>TIMER (timer_list):
+- Runs in softirq context (CANNOT sleep!)
+- Cannot use mutex, kmalloc(GFP_KERNEL), or I2C/SPI
+- Good for: setting flags, scheduling work, quick checks
+
+DELAYED WORK (delayed_work):
+- Runs in process context (CAN sleep)
+- Can use mutex, kmalloc, device I/O
+- schedule_delayed_work(&amp;work, delay_in_jiffies)
+- Good for: polling devices, periodic I/O
+
+WHICH TO USE?
+- Need to access hardware (I2C/SPI)? → delayed_work
+- Need to sleep/lock? → delayed_work
+- Just incrementing counter, setting flag? → timer
+- In doubt? → delayed_work (safer)
+</code></pre>
+<h3 id="interview-questions-days-10-13-14-questions">📝 INTERVIEW QUESTIONS — Days 10-13 (14 Questions)</h3>
+<p><strong>Q1: Explain the goto cleanup pattern. Why is it used in kernel?</strong></p>
+<blockquote>
+<p>Resources allocated sequentially. On failure at step N, free steps N-1 to 1 in reverse. Goto provides clean, linear code matching kernel coding style. Google&rsquo;s kernel coding guidelines explicitly recommend this.</p>
+</blockquote>
+<p><strong>Q2: What is the difference between kmalloc and kzalloc?</strong></p>
+<blockquote>
+<p>kzalloc = kmalloc + memset(0). Always prefer kzalloc for structures — uninitialized memory causes bugs (dangling pointers, garbage values read as valid data).</p>
+</blockquote>
+<p><strong>Q3: What is GFP_KERNEL vs GFP_ATOMIC?</strong></p>
+<blockquote>
+<p>GFP_KERNEL: can sleep to reclaim memory. Use in process context. GFP_ATOMIC: cannot sleep. Lower chance of success. Use in interrupt context or while holding spinlock.</p>
+</blockquote>
+<p><strong>Q4: When would you use vmalloc instead of kmalloc?</strong></p>
+<blockquote>
+<p>Large allocations (&gt;128KB) where physical contiguity isn&rsquo;t needed. vmalloc pages are only virtually contiguous. Cannot be used for DMA. Slower than kmalloc due to page table manipulation.</p>
+</blockquote>
+<p><strong>Q5: What is IS_ERR/PTR_ERR/ERR_PTR?</strong></p>
+<blockquote>
+<p>Pattern for functions returning pointers that can fail. ERR_PTR(-ENOMEM) creates error pointer. IS_ERR(ptr) checks if it&rsquo;s an error. PTR_ERR(ptr) extracts error code. Used by class_create, devm functions, etc. Don&rsquo;t check for NULL — check with IS_ERR!</p>
+</blockquote>
+<p><strong>Q6: What is devm_kzalloc and why prefer it?</strong></p>
+<blockquote>
+<p>Device-managed allocation. Auto-freed when device is removed (remove()) or probe fails. Eliminates memory leaks from forgotten kfree. Part of devm_* family (devm_ioremap, devm_request_irq, etc.).</p>
+</blockquote>
+<p><strong>Q7: How does the kernel linked list differ from a textbook one?</strong></p>
+<blockquote>
+<p>Kernel list embeds struct list_head INTO your struct (intrusive list). The list mechanism is generic — one implementation works for any struct. Use container_of to recover your struct from list_head pointer. Circular doubly-linked.</p>
+</blockquote>
+<p><strong>Q8: What is list_for_each_entry_safe and when is it needed?</strong></p>
+<blockquote>
+<p>Iterates over list using a temporary variable. Required when deleting entries during iteration (regular list_for_each_entry would use freed memory). The &ldquo;safe&rdquo; version pre-fetches next before your code potentially deletes current.</p>
+</blockquote>
+<p><strong>Q9: Explain del_timer_sync.</strong></p>
+<blockquote>
+<p>Deletes timer and waits for any currently running callback to complete. Essential in module_exit — without _sync, you might free memory that the timer callback is still using. Regular del_timer doesn&rsquo;t wait.</p>
+</blockquote>
+<p><strong>Q10: Timer callback context — what can/can&rsquo;t you do?</strong></p>
+<blockquote>
+<p>Runs in softirq context (bottom half). CANNOT: sleep, use mutex, call GFP_KERNEL alloc, do I2C/SPI. CAN: set flags, schedule work, increment counters, spin_lock. Solution for heavier work: schedule_work from timer callback.</p>
+</blockquote>
+<p><strong>Q11: What is container_of and how is it implemented?</strong></p>
+<blockquote>
+<p><code>(type*)((char*)ptr - offsetof(type, member))</code>. Given pointer to a struct member, computes pointer to containing struct. Foundation of Linux kernel data structures, driver model, subsystem interfaces.</p>
+</blockquote>
+<p><strong>Q12: What is kref?</strong></p>
+<blockquote>
+<p>Kernel reference counter. <code>kref_init</code>: set to 1. <code>kref_get</code>: increment. <code>kref_put(&amp;kref, release_func)</code>: decrement, call release when 0. Thread-safe (atomic). Used for shared objects (struct device, struct kobject).</p>
+</blockquote>
+<p><strong>Q13: What is the difference between <code>timer_setup</code> and <code>init_timer</code>?</strong></p>
+<blockquote>
+<p><code>timer_setup(&amp;timer, callback, flags)</code> is the modern API (kernel 4.14+). <code>init_timer</code> is legacy, requires manual .function and .data assignment. Always use timer_setup.</p>
+</blockquote>
+<p><strong>Q14: What is <code>jiffies</code>?</strong></p>
+<blockquote>
+<p>Global kernel counter, incremented HZ times per second. HZ = 100 (server), 250 (desktop), 1000 (low-latency). <code>jiffies + HZ</code> = 1 second from now. Wraps around (~49 days on 32-bit). Use <code>time_after()</code>, <code>time_before()</code> for comparison to handle wraparound.</p>
+</blockquote>
+
+      <!-- Page Navigation -->
+      <div class="page-nav">
+        <a class="prev" href="02_phase2.html"><span class="nav-label">← Previous</span><span class="nav-title">Phase 2: Linux Fundamentals</span></a>
+<a class="next" href="04_phase4.html"><span class="nav-label">Next →</span><span class="nav-title">Phase 4: Char Driver Project</span></a>
+      </div>
+    </div>
+  </main>
+
+  <!-- Back to Top -->
+  <button class="back-to-top" aria-label="Back to top">↑</button>
+
+  <!-- Search Index Data -->
+  <script type="application/json" id="search-data">[{"title": "README \u2014 Overview", "url": "00_readme.html", "headings": [{"text": "\ud83d\udc27 EMBEDDED LINUX &amp; DEVICE DRIVERS \u2014 ENHANCED FOOL-PROOF GUIDE", "id": "embedded-linux-device-drivers-enhanced-fool-proof-guide"}, {"text": "Complete 40-Day Execution Plan (Enhanced Edition)", "id": "complete-40-day-execution-plan-enhanced-edition"}, {"text": "From Systems C Programmer \u2192 Embedded Linux Engineer", "id": "from-systems-c-programmer-embedded-linux-engineer"}, {"text": "\ud83d\udd25 What&rsquo;s NEW in the Enhanced Edition", "id": "whats-new-in-the-enhanced-edition"}, {"text": "\ud83d\udcc1 Enhanced File Structure", "id": "enhanced-file-structure"}, {"text": "\ud83d\udcca Timeline Overview", "id": "timeline-overview"}, {"text": "\ud83c\udfaf Who This Is For", "id": "who-this-is-for"}, {"text": "\ud83d\udccb Daily Workflow (Enhanced)", "id": "daily-workflow-enhanced"}, {"text": "Morning (2.5-3 hours):", "id": "morning-25-3-hours"}, {"text": "Evening (1.5-2 hours):", "id": "evening-15-2-hours"}, {"text": "Before Sleep (15 min):", "id": "before-sleep-15-min"}, {"text": "\ud83c\udf93 Rules for Success", "id": "rules-for-success"}, {"text": "\ud83c\udfc6 End Goal: After 40 Days", "id": "end-goal-after-40-days"}, {"text": "\u26a1 Start Now", "id": "start-now"}]}, {"title": "Phase 1: C Revision", "url": "01_phase1.html", "headings": [{"text": "PHASE 1: SYSTEMS C REVISION (Days 0-3)", "id": "phase-1-systems-c-revision-days-0-3"}, {"text": "DAY 0: ENVIRONMENT SETUP", "id": "day-0-environment-setup"}, {"text": "Installation Commands (Ubuntu 22.04/20.04)", "id": "installation-commands-ubuntu-22042004"}, {"text": "Verify Setup", "id": "verify-setup"}, {"text": "\u2705 Verification Criteria", "id": "verification-criteria"}, {"text": "DAY 1: POINTERS &amp; MEMORY \u2014 DEEP DIVE", "id": "day-1-pointers-memory-deep-dive"}, {"text": "\ud83e\udde0 THEORY: Memory Layout of a C Program", "id": "theory-memory-layout-of-a-c-program"}, {"text": "Why This Matters for Embedded Linux:", "id": "why-this-matters-for-embedded-linux"}, {"text": "Internal Detail: How malloc() Works", "id": "internal-detail-how-malloc-works"}, {"text": "\ud83e\udde0 THEORY: Pointer Fundamentals \u2014 What You MUST Know", "id": "theory-pointer-fundamentals-what-you-must-know"}, {"text": "A pointer is just an address. Period.", "id": "a-pointer-is-just-an-address-period"}, {"text": "Pointer Sizes:", "id": "pointer-sizes"}, {"text": "Pointer Arithmetic \u2014 The #1 Interview Topic", "id": "pointer-arithmetic-the-1-interview-topic"}, {"text": "\ud83e\udde0 THEORY: Function Pointers \u2014 Essential for Kernel", "id": "theory-function-pointers-essential-for-kernel"}, {"text": "\ud83e\udde0 THEORY: Struct Padding &amp; Alignment", "id": "theory-struct-padding-alignment"}, {"text": "\ud83d\udcbb COMPLETE CODE: Comprehensive Pointer &amp; Memory Demo", "id": "complete-code-comprehensive-pointer-memory-demo"}, {"text": "\ud83c\udfd7\ufe0f MINI-EXERCISES \u2014 Day 1", "id": "mini-exercises-day-1"}, {"text": "\u26a0\ufe0f COMMON PITFALLS \u2014 Day 1", "id": "common-pitfalls-day-1"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Day 1 (15 Questions)", "id": "interview-questions-day-1-15-questions"}, {"text": "DAY 2: BITWISE OPERATIONS \u2014 MASTERY", "id": "day-2-bitwise-operations-mastery"}, {"text": "\ud83e\udde0 THEORY: Why Bitwise Operations Are Essential", "id": "theory-why-bitwise-operations-are-essential"}, {"text": "\ud83e\udde0 THEORY: Bitwise Operators (Complete Reference)", "id": "theory-bitwise-operators-complete-reference"}, {"text": "\ud83e\udde0 THEORY: The Fundamental Bit Operations", "id": "theory-the-fundamental-bit-operations"}, {"text": "\ud83e\udde0 THEORY: Kernel Bit Manipulation APIs", "id": "theory-kernel-bit-manipulation-apis"}, {"text": "\ud83d\udcbb COMPLETE CODE: Bitwise Mastery", "id": "complete-code-bitwise-mastery"}, {"text": "\ud83c\udfd7\ufe0f MINI-EXERCISES \u2014 Day 2", "id": "mini-exercises-day-2"}, {"text": "\u26a0\ufe0f COMMON PITFALLS \u2014 Day 2", "id": "common-pitfalls-day-2"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Day 2 (14 Questions)", "id": "interview-questions-day-2-14-questions"}, {"text": "DAY 3: THREADING \u2014 CONCURRENCY ESSENTIALS", "id": "day-3-threading-concurrency-essentials"}, {"text": "\ud83e\udde0 THEORY: Why Threading Matters for Kernel Development", "id": "theory-why-threading-matters-for-kernel-development"}, {"text": "\ud83e\udde0 THEORY: Thread vs Process", "id": "theory-thread-vs-process"}, {"text": "\ud83e\udde0 THEORY: Synchronization Primitives \u2014 Deep Dive", "id": "theory-synchronization-primitives-deep-dive"}, {"text": "Mutex (Mutual Exclusion)", "id": "mutex-mutual-exclusion"}, {"text": "Spinlock", "id": "spinlock"}, {"text": "Condition Variable", "id": "condition-variable"}, {"text": "Semaphore", "id": "semaphore"}, {"text": "\ud83e\udde0 THEORY: The Deadlock Problem", "id": "theory-the-deadlock-problem"}, {"text": "\ud83d\udcbb COMPLETE CODE: Threading Patterns", "id": "complete-code-threading-patterns"}, {"text": "\ud83c\udfd7\ufe0f MINI-EXERCISES \u2014 Day 3", "id": "mini-exercises-day-3"}, {"text": "\u26a0\ufe0f COMMON PITFALLS \u2014 Day 3", "id": "common-pitfalls-day-3"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Day 3 (16 Questions)", "id": "interview-questions-day-3-16-questions"}]}, {"title": "Phase 2: Linux Fundamentals", "url": "02_phase2.html", "headings": [{"text": "PHASE 2: LINUX FUNDAMENTALS (Days 4-8)", "id": "phase-2-linux-fundamentals-days-4-8"}, {"text": "DAY 4: SYSTEM CALLS \u2014 THE KERNEL BOUNDARY", "id": "day-4-system-calls-the-kernel-boundary"}, {"text": "\ud83e\udde0 THEORY: User Space vs Kernel Space (Why It Exists)", "id": "theory-user-space-vs-kernel-space-why-it-exists"}, {"text": "Why the split?", "id": "why-the-split"}, {"text": "\ud83e\udde0 THEORY: System Call Mechanism \u2014 Step by Step", "id": "theory-system-call-mechanism-step-by-step"}, {"text": "\ud83e\udde0 THEORY: Key System Calls for Embedded", "id": "theory-key-system-calls-for-embedded"}, {"text": "\ud83e\udde0 THEORY: File Descriptors \u2014 The Universal Handle", "id": "theory-file-descriptors-the-universal-handle"}, {"text": "\ud83d\udcbb COMPLETE CODE: System Calls Deep Dive", "id": "complete-code-system-calls-deep-dive"}, {"text": "\u26a0\ufe0f COMMON PITFALLS \u2014 Day 4", "id": "common-pitfalls-day-4"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Day 4 (10 Questions)", "id": "interview-questions-day-4-10-questions"}, {"text": "DAY 5: PROCESS CREATION (FORK &amp; EXEC)", "id": "day-5-process-creation-fork-exec"}, {"text": "\ud83e\udde0 THEORY: Process Creation in Linux", "id": "theory-process-creation-in-linux"}, {"text": "\ud83e\udde0 THEORY: Copy-On-Write (COW) \u2014 Performance Critical", "id": "theory-copy-on-write-cow-performance-critical"}, {"text": "\ud83e\udde0 THEORY: Process States", "id": "theory-process-states"}, {"text": "\ud83d\udcbb COMPLETE CODE: Process Patterns", "id": "complete-code-process-patterns"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Day 5 (12 Questions)", "id": "interview-questions-day-5-12-questions"}, {"text": "DAY 6: MEMORY MAPPED FILES (MMAP)", "id": "day-6-memory-mapped-files-mmap"}, {"text": "\ud83e\udde0 THEORY: Why mmap() Matters", "id": "theory-why-mmap-matters"}, {"text": "\ud83e\udde0 THEORY: mmap() Parameters Explained", "id": "theory-mmap-parameters-explained"}, {"text": "\ud83d\udcbb COMPLETE CODE: mmap Patterns", "id": "complete-code-mmap-patterns"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Day 6 (8 Questions)", "id": "interview-questions-day-6-8-questions"}, {"text": "DAYS 7-8: LINUX BOOT PROCESS &amp; FILESYSTEMS", "id": "days-7-8-linux-boot-process-filesystems"}, {"text": "\ud83e\udde0 THEORY: Complete Boot Sequence", "id": "theory-complete-boot-sequence"}, {"text": "\ud83e\udde0 THEORY: Critical Pseudo-Filesystems", "id": "theory-critical-pseudo-filesystems"}, {"text": "/proc \u2014 What your driver should know:", "id": "proc-what-your-driver-should-know"}, {"text": "/sys \u2014 The driver developer&rsquo;s best friend:", "id": "sys-the-driver-developers-best-friend"}, {"text": "/dev \u2014 Device nodes:", "id": "dev-device-nodes"}, {"text": "\ud83e\udde0 THEORY: For Embedded \u2014 U-Boot &amp; Device Tree Boot", "id": "theory-for-embedded-u-boot-device-tree-boot"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Days 7-8 (12 Questions)", "id": "interview-questions-days-7-8-12-questions"}]}, {"title": "Phase 3: Kernel Modules", "url": "03_phase3.html", "headings": [{"text": "PHASE 3: KERNEL MODULES &amp; PATTERNS (Days 9-13)", "id": "phase-3-kernel-modules-patterns-days-9-13"}, {"text": "DAY 9: FIRST KERNEL MODULE", "id": "day-9-first-kernel-module"}, {"text": "\ud83e\udde0 THEORY: What IS a Kernel Module?", "id": "theory-what-is-a-kernel-module"}, {"text": "\ud83e\udde0 THEORY: Module vs Built-in", "id": "theory-module-vs-built-in"}, {"text": "\ud83e\udde0 THEORY: Module Lifecycle", "id": "theory-module-lifecycle"}, {"text": "\ud83e\udde0 THEORY: Kernel vs Userspace Environment", "id": "theory-kernel-vs-userspace-environment"}, {"text": "\ud83d\udcbb COMPLETE CODE: Comprehensive First Module", "id": "complete-code-comprehensive-first-module"}, {"text": "\ud83d\udcbb Makefile for Out-of-Tree Module", "id": "makefile-for-out-of-tree-module"}, {"text": "\ud83e\udde0 THEORY: Makefile Explanation", "id": "theory-makefile-explanation"}, {"text": "Usage:", "id": "usage"}, {"text": "\ud83c\udfd7\ufe0f MINI-EXERCISES \u2014 Day 9", "id": "mini-exercises-day-9"}, {"text": "\u26a0\ufe0f COMMON PITFALLS \u2014 Day 9", "id": "common-pitfalls-day-9"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Day 9 (10 Questions)", "id": "interview-questions-day-9-10-questions"}, {"text": "DAYS 10-11: KERNEL ERROR HANDLING &amp; MEMORY", "id": "days-10-11-kernel-error-handling-memory"}, {"text": "\ud83e\udde0 THEORY: The goto Cleanup Pattern \u2014 Kernel&rsquo;s #1 Pattern", "id": "theory-the-goto-cleanup-pattern-kernels-1-pattern"}, {"text": "\ud83d\udcbb COMPLETE CODE: Error Handling Patterns", "id": "complete-code-error-handling-patterns"}, {"text": "\ud83e\udde0 THEORY: Kernel Memory Allocation", "id": "theory-kernel-memory-allocation"}, {"text": "\ud83e\udde0 THEORY: IS_ERR / PTR_ERR / ERR_PTR Pattern", "id": "theory-is_err-ptr_err-err_ptr-pattern"}, {"text": "DAYS 12-13: KERNEL DATA STRUCTURES &amp; TIMERS", "id": "days-12-13-kernel-data-structures-timers"}, {"text": "\ud83e\udde0 THEORY: Kernel Linked Lists", "id": "theory-kernel-linked-lists"}, {"text": "\ud83d\udcbb COMPLETE CODE: Kernel List &amp; Timer Module", "id": "complete-code-kernel-list-timer-module"}, {"text": "\ud83e\udde0 THEORY: Key Kernel Data Structures", "id": "theory-key-kernel-data-structures"}, {"text": "\ud83e\udde0 THEORY: Timers &amp; Delayed Work", "id": "theory-timers-delayed-work"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Days 10-13 (14 Questions)", "id": "interview-questions-days-10-13-14-questions"}]}, {"title": "Phase 4: Char Driver Project", "url": "04_phase4.html", "headings": [{"text": "PHASE 4: CHARACTER DEVICE DRIVER PROJECT (Days 14-22)", "id": "phase-4-character-device-driver-project-days-14-22"}, {"text": "DAY 14: CHARACTER DRIVER ARCHITECTURE", "id": "day-14-character-driver-architecture"}, {"text": "\ud83e\udde0 THEORY: The Big Picture \u2014 How User Reaches Your Driver", "id": "theory-the-big-picture-how-user-reaches-your-driver"}, {"text": "\ud83e\udde0 THEORY: Device Numbers", "id": "theory-device-numbers"}, {"text": "\ud83e\udde0 THEORY: Key Structures Deep Dive", "id": "theory-key-structures-deep-dive"}, {"text": "struct file \u2014 Represents an OPEN file", "id": "struct-file-represents-an-open-file"}, {"text": "struct inode \u2014 Represents a FILE on filesystem", "id": "struct-inode-represents-a-file-on-filesystem"}, {"text": "\ud83e\udde0 THEORY: copy_to_user / copy_from_user \u2014 WHY They Exist", "id": "theory-copy_to_user-copy_from_user-why-they-exist"}, {"text": "DAYS 15-22: COMPLETE CHARACTER DRIVER IMPLEMENTATION", "id": "days-15-22-complete-character-driver-implementation"}, {"text": "\ud83d\udcbb THE DRIVER \u2014 Production Quality", "id": "the-driver-production-quality"}, {"text": "\ud83d\udcbb MAKEFILE", "id": "makefile"}, {"text": "\ud83d\udcbb TEST APPLICATION", "id": "test-application"}, {"text": "\ud83c\udfd7\ufe0f MINI-EXERCISES \u2014 Days 14-22", "id": "mini-exercises-days-14-22"}, {"text": "\u26a0\ufe0f COMMON PITFALLS \u2014 Character Driver", "id": "common-pitfalls-character-driver"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Character Driver (15 Questions)", "id": "interview-questions-character-driver-15-questions"}]}, {"title": "Phase 5: Device Tree & Platform", "url": "05_phase5.html", "headings": [{"text": "PHASE 5: DEVICE TREE &amp; PLATFORM DRIVERS (Days 23-27)", "id": "phase-5-device-tree-platform-drivers-days-23-27"}, {"text": "DAYS 23-24: DEVICE TREE FUNDAMENTALS", "id": "days-23-24-device-tree-fundamentals"}, {"text": "\ud83e\udde0 THEORY: Why Device Tree Exists", "id": "theory-why-device-tree-exists"}, {"text": "\ud83e\udde0 THEORY: Device Tree Syntax", "id": "theory-device-tree-syntax"}, {"text": "\ud83e\udde0 THEORY: Key Properties Reference", "id": "theory-key-properties-reference"}, {"text": "\ud83e\udde0 THEORY: Compatible String Matching \u2014 The Heart of DT", "id": "theory-compatible-string-matching-the-heart-of-dt"}, {"text": "\ud83d\udcbb COMPLETE CODE: DT Property Reading Demo", "id": "complete-code-dt-property-reading-demo"}, {"text": "DT Overlay for Testing (without real hardware)", "id": "dt-overlay-for-testing-without-real-hardware"}, {"text": "DAYS 25-27: PLATFORM DRIVER", "id": "days-25-27-platform-driver"}, {"text": "\ud83e\udde0 THEORY: Platform Driver Model", "id": "theory-platform-driver-model"}, {"text": "\ud83e\udde0 THEORY: probe() and remove() \u2014 The Full Story", "id": "theory-probe-and-remove-the-full-story"}, {"text": "\ud83d\udcbb COMPLETE CODE: Platform Driver", "id": "complete-code-platform-driver"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Device Tree &amp; Platform (16 Questions)", "id": "interview-questions-device-tree-platform-16-questions"}]}, {"title": "Phase 6: I2C Project", "url": "06_phase6.html", "headings": [{"text": "PHASE 6: I2C SENSOR DRIVER PROJECT (Days 28-37)", "id": "phase-6-i2c-sensor-driver-project-days-28-37"}, {"text": "DAYS 28-29: I2C SUBSYSTEM DEEP DIVE", "id": "days-28-29-i2c-subsystem-deep-dive"}, {"text": "\ud83e\udde0 THEORY: I2C Protocol \u2014 Hardware Level", "id": "theory-i2c-protocol-hardware-level"}, {"text": "\ud83e\udde0 THEORY: I2C Transaction Format", "id": "theory-i2c-transaction-format"}, {"text": "\ud83e\udde0 THEORY: Linux I2C Stack", "id": "theory-linux-i2c-stack"}, {"text": "\ud83e\udde0 THEORY: Key I2C API Functions", "id": "theory-key-i2c-api-functions"}, {"text": "DAYS 30-37: COMPLETE I2C TEMPERATURE SENSOR DRIVER", "id": "days-30-37-complete-i2c-temperature-sensor-driver"}, {"text": "\ud83d\udcbb THE DRIVER \u2014 Production Quality", "id": "the-driver-production-quality"}, {"text": "\ud83d\udcbb MAKEFILE", "id": "makefile"}, {"text": "\ud83e\udde0 THEORY: Testing Without Real Hardware", "id": "theory-testing-without-real-hardware"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 I2C Driver (12 Questions)", "id": "interview-questions-i2c-driver-12-questions"}]}, {"title": "Phase 7: Thread Pool & Interview", "url": "07_phase7.html", "headings": [{"text": "PHASE 7: THREAD POOL PROJECT + FINAL PREP (Days 38-40)", "id": "phase-7-thread-pool-project-final-prep-days-38-40"}, {"text": "DAYS 38-39: THREAD POOL IMPLEMENTATION", "id": "days-38-39-thread-pool-implementation"}, {"text": "\ud83e\udde0 THEORY: Why Thread Pools?", "id": "theory-why-thread-pools"}, {"text": "\ud83e\udde0 THEORY: Architecture Deep Dive", "id": "theory-architecture-deep-dive"}, {"text": "\ud83d\udcbb COMPLETE CODE: Thread Pool Header", "id": "complete-code-thread-pool-header"}, {"text": "\ud83d\udcbb COMPLETE CODE: Thread Pool Implementation", "id": "complete-code-thread-pool-implementation"}, {"text": "\ud83d\udcbb TEST APPLICATION", "id": "test-application"}, {"text": "\ud83d\udcbb MAKEFILE", "id": "makefile"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Thread Pool (10 Questions)", "id": "interview-questions-thread-pool-10-questions"}, {"text": "DAY 40: DOCUMENTATION, POLISH &amp; FINAL PREP", "id": "day-40-documentation-polish-final-prep"}, {"text": "\u2705 FINAL CHECKLIST", "id": "final-checklist"}, {"text": "\ud83c\udfaf PROJECT PRESENTATION SCRIPTS", "id": "project-presentation-scripts"}]}, {"title": "Appendix: Interview Bank", "url": "08_appendix_interviews.html", "headings": [{"text": "\ud83d\udcda COMPREHENSIVE INTERVIEW QUESTION BANK", "id": "comprehensive-interview-question-bank"}, {"text": "150+ Questions Categorized by Topic \u2014 with Model Answers for 0-2 YOE", "id": "150-questions-categorized-by-topic-with-model-answers-for-0-2-yoe"}, {"text": "CATEGORY 1: C PROGRAMMING FUNDAMENTALS (25 Questions)", "id": "category-1-c-programming-fundamentals-25-questions"}, {"text": "Memory &amp; Pointers", "id": "memory-pointers"}, {"text": "Bitwise", "id": "bitwise"}, {"text": "Threading", "id": "threading"}, {"text": "CATEGORY 2: LINUX KERNEL FUNDAMENTALS (25 Questions)", "id": "category-2-linux-kernel-fundamentals-25-questions"}, {"text": "CATEGORY 3: MEMORY MANAGEMENT (20 Questions)", "id": "category-3-memory-management-20-questions"}, {"text": "CATEGORY 4: DEVICE DRIVERS (30 Questions)", "id": "category-4-device-drivers-30-questions"}, {"text": "CATEGORY 5: DEVICE TREE (15 Questions)", "id": "category-5-device-tree-15-questions"}, {"text": "CATEGORY 6: I2C/SPI PROTOCOLS (15 Questions)", "id": "category-6-i2cspi-protocols-15-questions"}, {"text": "CATEGORY 7: SYNCHRONIZATION &amp; CONCURRENCY (20 Questions)", "id": "category-7-synchronization-concurrency-20-questions"}, {"text": "CATEGORY 8: DEBUGGING &amp; TOOLS (15 Questions)", "id": "category-8-debugging-tools-15-questions"}, {"text": "CATEGORY 9: REAL INTERVIEW SCENARIOS (15 Questions)", "id": "category-9-real-interview-scenarios-15-questions"}, {"text": "CATEGORY 10: SYSTEM DESIGN &amp; ARCHITECTURE (10 Questions)", "id": "category-10-system-design-architecture-10-questions"}, {"text": "QUICK REFERENCE: Must-Know Code Snippets", "id": "quick-reference-must-know-code-snippets"}, {"text": "1. Basic Module Template", "id": "1-basic-module-template"}, {"text": "2. File Operations", "id": "2-file-operations"}, {"text": "3. Character Device Registration", "id": "3-character-device-registration"}, {"text": "4. IOCTL Command Definition", "id": "4-ioctl-command-definition"}, {"text": "5. Platform Driver Template", "id": "5-platform-driver-template"}, {"text": "6. I2C Driver Template", "id": "6-i2c-driver-template"}, {"text": "7. Error Handling Pattern", "id": "7-error-handling-pattern"}, {"text": "8. Quick Error Codes", "id": "8-quick-error-codes"}]}, {"title": "Appendix: Kernel Internals", "url": "09_appendix_kernel.html", "headings": [{"text": "\ud83d\udcd6 APPENDIX: KERNEL INTERNALS DEEP DIVE", "id": "appendix-kernel-internals-deep-dive"}, {"text": "Virtual Memory, Scheduling, Interrupts \u2014 For Interview Depth", "id": "virtual-memory-scheduling-interrupts-for-interview-depth"}, {"text": "VIRTUAL MEMORY \u2014 How It Actually Works", "id": "virtual-memory-how-it-actually-works"}, {"text": "Address Translation", "id": "address-translation"}, {"text": "Page Fault Handling", "id": "page-fault-handling"}, {"text": "Why This Matters for Driver Development", "id": "why-this-matters-for-driver-development"}, {"text": "PROCESS SCHEDULING", "id": "process-scheduling"}, {"text": "The Completely Fair Scheduler (CFS)", "id": "the-completely-fair-scheduler-cfs"}, {"text": "Real-Time Scheduling Classes", "id": "real-time-scheduling-classes"}, {"text": "INTERRUPT HANDLING \u2014 COMPLETE PICTURE", "id": "interrupt-handling-complete-picture"}, {"text": "Interrupt Flow", "id": "interrupt-flow"}, {"text": "Threaded IRQ Example", "id": "threaded-irq-example"}, {"text": "POWER MANAGEMENT", "id": "power-management"}, {"text": "Runtime PM (for drivers)", "id": "runtime-pm-for-drivers"}, {"text": "KERNEL DEBUGGING TOOLS REFERENCE", "id": "kernel-debugging-tools-reference"}, {"text": "Dynamic Debug (Enable dev_dbg at runtime)", "id": "dynamic-debug-enable-dev_dbg-at-runtime"}]}, {"title": "Appendix: Debugging", "url": "10_appendix_debugging.html", "headings": [{"text": "\ud83d\udd27 APPENDIX: DEBUGGING TECHNIQUES", "id": "appendix-debugging-techniques"}, {"text": "Complete Debugging Toolkit for Embedded Linux Development", "id": "complete-debugging-toolkit-for-embedded-linux-development"}, {"text": "SECTION 1: USER-SPACE DEBUGGING", "id": "section-1-user-space-debugging"}, {"text": "strace \u2014 System Call Tracer", "id": "strace-system-call-tracer"}, {"text": "GDB \u2014 The GNU Debugger", "id": "gdb-the-gnu-debugger"}, {"text": "Valgrind \u2014 Memory Error Detector", "id": "valgrind-memory-error-detector"}, {"text": "Address Sanitizer (ASan) \u2014 Compile-Time Instrumentation", "id": "address-sanitizer-asan-compile-time-instrumentation"}, {"text": "SECTION 2: KERNEL-SPACE DEBUGGING", "id": "section-2-kernel-space-debugging"}, {"text": "dmesg \u2014 Kernel Message Buffer", "id": "dmesg-kernel-message-buffer"}, {"text": "Dynamic Debug (dev_dbg at runtime)", "id": "dynamic-debug-dev_dbg-at-runtime"}, {"text": "/proc and /sys Inspection", "id": "proc-and-sys-inspection"}, {"text": "ftrace \u2014 Kernel Function Tracer", "id": "ftrace-kernel-function-tracer"}, {"text": "Kernel Oops \u2014 Reading Crash Outputs", "id": "kernel-oops-reading-crash-outputs"}, {"text": "SECTION 3: DEBUGGING WORKFLOW", "id": "section-3-debugging-workflow"}, {"text": "When Your Module Won&rsquo;t Load", "id": "when-your-module-wont-load"}, {"text": "When Your Driver Crashes", "id": "when-your-driver-crashes"}, {"text": "When I2C Communication Fails", "id": "when-i2c-communication-fails"}, {"text": "SECTION 4: PERFORMANCE DEBUGGING", "id": "section-4-performance-debugging"}, {"text": "perf \u2014 The Swiss Army Knife", "id": "perf-the-swiss-army-knife"}, {"text": "Kernel Config Options for Debugging", "id": "kernel-config-options-for-debugging"}, {"text": "QUICK REFERENCE: What Tool When?", "id": "quick-reference-what-tool-when"}]}]</script>
+
+  <!-- Scripts -->
+  <script>hljs.highlightAll();</script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Appendix: Interview Bank — Embedded Linux & Device Drivers Enhanced 40-Day Guide">
+  <title>Appendix: Interview Bank — Enhanced Plan</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <!-- Highlight.js for syntax highlighting -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+  <!-- App styles -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Progress Bar -->
+  <div id="progress-bar"></div>
+
+  <!-- Sidebar Overlay (mobile) -->
+  <div class="sidebar-overlay"></div>
+
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-brand">
+      <h1>🐧 Embedded Linux</h1>
+      <p>Enhanced 40-Day Guide</p>
+    </div>
+    <div class="sidebar-nav">
+  <div class="sidebar-section-label">Getting Started</div>
+  <a class="sidebar-link" href="00_readme.html"><span class="link-icon">🏠</span><span>README — Overview</span></a>
+  <div class="sidebar-section-label">Learning Phases</div>
+  <a class="sidebar-link" href="01_phase1.html"><span class="link-icon">⚙️</span><span>Phase 1: C Revision</span><span class="link-badge">Days 0-3</span></a>
+  <a class="sidebar-link" href="02_phase2.html"><span class="link-icon">🐧</span><span>Phase 2: Linux Fundamentals</span><span class="link-badge">Days 4-8</span></a>
+  <a class="sidebar-link" href="03_phase3.html"><span class="link-icon">🧩</span><span>Phase 3: Kernel Modules</span><span class="link-badge">Days 9-13</span></a>
+  <a class="sidebar-link" href="04_phase4.html"><span class="link-icon">💾</span><span>Phase 4: Char Driver Project</span><span class="link-badge">Days 14-22</span></a>
+  <a class="sidebar-link" href="05_phase5.html"><span class="link-icon">🌳</span><span>Phase 5: Device Tree &amp; Platform</span><span class="link-badge">Days 23-27</span></a>
+  <a class="sidebar-link" href="06_phase6.html"><span class="link-icon">🔌</span><span>Phase 6: I2C Project</span><span class="link-badge">Days 28-37</span></a>
+  <a class="sidebar-link" href="07_phase7.html"><span class="link-icon">🎯</span><span>Phase 7: Thread Pool &amp; Interview</span><span class="link-badge">Days 38-40</span></a>
+  <div class="sidebar-section-label">Appendices</div>
+  <a class="sidebar-link active" href="08_appendix_interviews.html"><span class="link-icon">📝</span><span>Appendix: Interview Bank</span><span class="link-badge">150+ Q&amp;A</span></a>
+  <a class="sidebar-link" href="09_appendix_kernel.html"><span class="link-icon">🔬</span><span>Appendix: Kernel Internals</span></a>
+  <a class="sidebar-link" href="10_appendix_debugging.html"><span class="link-icon">🔧</span><span>Appendix: Debugging</span></a>
+    </div>
+  </nav>
+
+  <!-- Header -->
+  <header class="header">
+    <button class="hamburger" aria-label="Toggle sidebar">☰</button>
+    <div class="header-title">
+      <span class="emoji">📝</span> Appendix: Interview Bank
+    </div>
+    <div class="header-search">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="search-input" placeholder="Search topics..." autocomplete="off">
+      <div class="search-results" id="search-results"></div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="comprehensive-interview-question-bank">📚 COMPREHENSIVE INTERVIEW QUESTION BANK</h1>
+<h2 id="150-questions-categorized-by-topic-with-model-answers-for-0-2-yoe">150+ Questions Categorized by Topic — with Model Answers for 0-2 YOE</h2>
+<hr />
+<h2 id="category-1-c-programming-fundamentals-25-questions">CATEGORY 1: C PROGRAMMING FUNDAMENTALS (25 Questions)</h2>
+<h3 id="memory-pointers">Memory &amp; Pointers</h3>
+<p><strong>Q1: What is the difference between stack and heap? How does this relate to kernel programming?</strong></p>
+<blockquote>
+<p>Stack: auto-allocated, LIFO, ~8MB user / <strong>8-16KB kernel</strong>. Heap: manual via malloc, unlimited. In kernel: NO malloc — use kmalloc (slab allocator). Kernel stack is extremely limited, so never declare large local arrays.</p>
+</blockquote>
+<p><strong>Q2: What is a memory leak? How do you detect one in kernel space?</strong></p>
+<blockquote>
+<p>Memory allocated but never freed. User: valgrind, ASan. Kernel: <code>CONFIG_DEBUG_KMEMLEAK</code> — kmemleak scans memory for unreferenced allocations. Also: <code>cat /proc/slab_allocators</code>.</p>
+</blockquote>
+<p><strong>Q3: What is the <code>container_of</code> macro? Give a kernel use case.</strong></p>
+<blockquote>
+<p>Given pointer to member, returns pointer to enclosing struct: <code>container_of(ptr, type, member)</code>. Used in kernel linked lists: you embed <code>struct list_head</code> in your struct, then recover your struct from the list node pointer. Also used in <code>cdev</code> → your device struct in driver&rsquo;s open().</p>
+</blockquote>
+<p><strong>Q4: Explain <code>volatile</code> keyword and when to use it.</strong></p>
+<blockquote>
+<p>Tells compiler: don&rsquo;t optimize accesses, always read from memory. Use for: memory-mapped hardware registers, variables shared with ISR, signal handlers. In kernel: I/O accessors (<code>readl()</code>/<code>writel()</code>) include barriers, so <code>volatile</code> is less common but <code>volatile</code> is needed for direct MMIO pointers.</p>
+</blockquote>
+<p><strong>Q5: What is <code>restrict</code> keyword?</strong></p>
+<blockquote>
+<p>Promise to compiler that a pointer is the only way to access that memory. Enables better optimization. Used in: <code>memcpy(void * restrict dest, const void * restrict src, size_t n)</code> — guarantees no overlap.</p>
+</blockquote>
+<p><strong>Q6: Explain the difference between <code>sizeof</code> and <code>strlen</code>.</strong></p>
+<blockquote>
+<p><code>sizeof</code>: compile-time operator, gives size of type/variable in bytes (includes padding, null terminator). <code>strlen</code>: runtime function, counts chars until <code>\0</code>. <code>sizeof("hello") = 6</code> (includes \0), <code>strlen("hello") = 5</code>.</p>
+</blockquote>
+<p><strong>Q7: What is a union? How is it used in embedded?</strong></p>
+<blockquote>
+<p>Union members share same memory location. Size = largest member. Use: type punning, protocol parsing, register overlays.
+<code>c
+union reg_access {
+    uint32_t raw;
+    struct { uint8_t byte0, byte1, byte2, byte3; } bytes;
+};</code></p>
+</blockquote>
+<p><strong>Q8: What is the <code>offsetof</code> macro?</strong></p>
+<blockquote>
+<p>Returns byte offset of member within struct: <code>offsetof(struct_type, member)</code>. Foundation of <code>container_of</code>. Defined as <code>((size_t)&amp;((type*)0)-&gt;member)</code>.</p>
+</blockquote>
+<p><strong>Q9: Explain <code>static</code> keyword in all its uses in C.</strong></p>
+<blockquote>
+<ol>
+<li><code>static</code> local variable: persists across function calls (stored in DATA/BSS, not stack).</li>
+<li><code>static</code> global/function: limits linkage to current file (internal linkage — like &ldquo;private&rdquo; in OOP).</li>
+<li>In kernel: <code>static</code> functions/variables are file-scope — standard practice to avoid symbol collisions between modules.</li>
+</ol>
+</blockquote>
+<p><strong>Q10: What is <code>inline</code> and does the compiler always inline?</strong></p>
+<blockquote>
+<p>Hint to compiler to expand function at call site (eliminates call overhead). Compiler may ignore hint. In kernel: <code>__always_inline</code> forces inlining. <code>inline</code> helps for small, frequently-called functions. Trade-off: code size vs call overhead.</p>
+</blockquote>
+<h3 id="bitwise">Bitwise</h3>
+<p><strong>Q11: How do you atomically set a bit in a shared variable?</strong></p>
+<blockquote>
+<p>Userspace: <code>__atomic_or_fetch(&amp;var, BIT(n), __ATOMIC_SEQ_CST)</code> or <code>atomic_fetch_or()</code>. Kernel: <code>set_bit(n, &amp;var)</code> which uses architecture-specific atomic instructions (LOCK prefix on x86, LDREX/STREX on ARM).</p>
+</blockquote>
+<p><strong>Q12: Write code to reverse the bits of a 32-bit integer.</strong></p>
+<blockquote>
+<p><code>c
+uint32_t reverse_bits(uint32_t n) {
+    n = ((n &gt;&gt; 1) &amp; 0x55555555) | ((n &amp; 0x55555555) &lt;&lt; 1);
+    n = ((n &gt;&gt; 2) &amp; 0x33333333) | ((n &amp; 0x33333333) &lt;&lt; 2);
+    n = ((n &gt;&gt; 4) &amp; 0x0F0F0F0F) | ((n &amp; 0x0F0F0F0F) &lt;&lt; 4);
+    n = ((n &gt;&gt; 8) &amp; 0x00FF00FF) | ((n &amp; 0x00FF00FF) &lt;&lt; 8);
+    n = (n &gt;&gt; 16) | (n &lt;&lt; 16);
+    return n;
+}</code></p>
+</blockquote>
+<p><strong>Q13: What is two&rsquo;s complement representation?</strong></p>
+<blockquote>
+<p>System to represent signed integers. Positive: same as unsigned. Negative: flip all bits + 1. So -1 = 0xFFFFFFFF. Advantage: single representation of zero, addition works for both signed/unsigned.</p>
+</blockquote>
+<h3 id="threading">Threading</h3>
+<p><strong>Q14: What is a futex and how does <code>pthread_mutex</code> use it?</strong></p>
+<blockquote>
+<p>Fast Userspace Mutex. Uncontested lock/unlock: atomic CAS in userspace (no syscall!). Only when contested: <code>futex()</code> syscall to sleep/wake. Huge performance win — most locks are uncontested.</p>
+</blockquote>
+<p><strong>Q15: What is the ABA problem in lock-free programming?</strong></p>
+<blockquote>
+<p>Thread reads value A, gets preempted. Another thread changes A→B→A. First thread&rsquo;s CAS succeeds (value is A again) but state has changed. Solution: add version counter alongside the value.</p>
+</blockquote>
+<hr />
+<h2 id="category-2-linux-kernel-fundamentals-25-questions">CATEGORY 2: LINUX KERNEL FUNDAMENTALS (25 Questions)</h2>
+<p><strong>Q16: What is the difference between kernel space and user space?</strong></p>
+<blockquote>
+<p>Kernel: Ring 0, full HW access, all memory, single shared address space. User: Ring 3, restricted, isolated per-process virtual address space. Crossing boundary = syscall = context switch (save/restore registers, switch stack).</p>
+</blockquote>
+<p><strong>Q17: What happens during a system call? Trace it step by step.</strong></p>
+<blockquote>
+<ol>
+<li>User calls library function (write()). 2. glibc wrapper loads syscall# into rax. 3. Args in rdi, rsi, rdx, etc. 4. SYSCALL instruction. 5. CPU switches to Ring 0. 6. Kernel saves user registers. 7. Look up handler in sys_call_table. 8. Execute handler (ksys_write). 9. Return value in rax. 10. SYSRET back to user mode.</li>
+</ol>
+</blockquote>
+<p><strong>Q18: What is kernel preemption?</strong></p>
+<blockquote>
+<p>Kernel can be preempted to run higher-priority task. <code>CONFIG_PREEMPT_NONE</code>: never preempt kernel (server). <code>CONFIG_PREEMPT</code>: preempt almost anywhere except critical sections (desktop). <code>CONFIG_PREEMPT_RT</code>: full preemption (real-time).</p>
+</blockquote>
+<p><strong>Q19: Explain the Linux kernel module lifecycle.</strong></p>
+<blockquote>
+<ol>
+<li><code>insmod module.ko</code> → load binary into kernel memory. 2. Resolve symbols (link to kernel exports like printk). 3. Call <code>module_init()</code> function. 4. If returns 0 → module active, appears in lsmod. 5. <code>rmmod module</code> → Call <code>module_exit()</code> function. 6. Free module memory.</li>
+</ol>
+</blockquote>
+<p><strong>Q20: What is EXPORT_SYMBOL?</strong></p>
+<blockquote>
+<p>Makes a kernel function/variable available to other modules. Without it, a function is only usable within its own module. <code>EXPORT_SYMBOL_GPL</code> limits to GPL-licensed modules. Exported symbols appear in <code>/proc/kallsyms</code>.</p>
+</blockquote>
+<p><strong>Q21: What happens if module_init returns non-zero?</strong></p>
+<blockquote>
+<p>Module loading fails. Error code returned to insmod. Module_exit is NOT called! You MUST clean up any partially-allocated resources before returning the error (this is why goto cleanup pattern exists).</p>
+</blockquote>
+<p><strong>Q22: What is <code>printk</code> vs <code>pr_info</code>?</strong></p>
+<blockquote>
+<p><code>printk(KERN_INFO "msg")</code> is the raw function. <code>pr_info("msg")</code> is a convenience macro that adds KERN_INFO level. <code>pr_err</code>, <code>pr_warn</code>, <code>pr_debug</code> for other levels. <code>dev_info(dev, "msg")</code> adds device name prefix — preferred in drivers.</p>
+</blockquote>
+<p><strong>Q23: When can you sleep in kernel code?</strong></p>
+<blockquote>
+<p>Only in <strong>process context</strong> (system calls, work queues, kernel threads). NEVER in: interrupt handlers (top half), softirqs, tasklets, or while holding spinlocks. Use <code>might_sleep()</code> debug assertion to verify.</p>
+</blockquote>
+<p><strong>Q24: What are the kernel log levels?</strong></p>
+<blockquote>
+<p>0=EMERG, 1=ALERT, 2=CRIT, 3=ERR, 4=WARNING, 5=NOTICE, 6=INFO, 7=DEBUG. Messages below console_loglevel appear on console. Default: 4 (KERN_WARNING and above).</p>
+</blockquote>
+<p><strong>Q25: What is the __init and __initdata annotation?</strong></p>
+<blockquote>
+<p><code>__init</code>: function only needed during initialization. Memory freed after init. <code>__initdata</code>: same for data. Saves memory in running kernel. If module is built-in, this memory is reclaimed. If loadable module, __init memory freed after successful insmod.</p>
+</blockquote>
+<hr />
+<h2 id="category-3-memory-management-20-questions">CATEGORY 3: MEMORY MANAGEMENT (20 Questions)</h2>
+<p><strong>Q26: kmalloc vs vmalloc vs kzalloc — when to use each?</strong></p>
+<blockquote>
+<p><code>kmalloc</code>: physically contiguous, fast, &lt; 128KB, for DMA-able buffers. <code>vmalloc</code>: virtually contiguous only, large allocations, slower, can&rsquo;t DMA. <code>kzalloc</code>: kmalloc + zero-initialized. Rule: use kzalloc for structures, kmalloc for DMA, vmalloc for large non-DMA.</p>
+</blockquote>
+<p><strong>Q27: What is GFP_KERNEL vs GFP_ATOMIC?</strong></p>
+<blockquote>
+<p><code>GFP_KERNEL</code>: normal allocation, can sleep (block) waiting for memory. Use in process context. <code>GFP_ATOMIC</code>: cannot sleep, for interrupt context or spinlock-held context. May fail more often because can&rsquo;t reclaim memory.</p>
+</blockquote>
+<p><strong>Q28: What is the slab allocator?</strong></p>
+<blockquote>
+<p>Caches of commonly-sized objects. Reduces fragmentation vs raw page allocation. Kernel uses SLUB (default), SLAB, or SLOB. <code>kmem_cache_create()</code> for driver-specific caches. View: <code>cat /proc/slabinfo</code>.</p>
+</blockquote>
+<p><strong>Q29: Explain the page allocator (buddy system).</strong></p>
+<blockquote>
+<p>Allocates physical pages in powers of 2 (1, 2, 4, 8&hellip; pages). Fast allocation/freeing. Handles fragmentation by splitting and merging buddies. <code>alloc_pages()</code> returns <code>struct page*</code>.</p>
+</blockquote>
+<p><strong>Q30: What is <code>devm_kzalloc</code> and why use it?</strong></p>
+<blockquote>
+<p>&ldquo;Managed&rdquo; allocation — automatically freed when device is removed or probe fails. No need to manually free in remove() or error paths. Almost always preferred in modern drivers. <code>devm_*</code> family includes devm_ioremap, devm_request_irq, etc.</p>
+</blockquote>
+<p><strong>Q31: What is DMA-able memory? How do you allocate it?</strong></p>
+<blockquote>
+<p>Memory accessible by hardware DMA engines. Must be physically contiguous. Use <code>dma_alloc_coherent()</code> for consistent DMA, <code>dma_map_single()</code> for streaming DMA. Never use vmalloc for DMA.</p>
+</blockquote>
+<p><strong>Q32: What is the difference between <code>ioremap</code> and <code>mmap</code>?</strong></p>
+<blockquote>
+<p><code>ioremap()</code>: kernel function, maps physical I/O addresses into kernel virtual space. Returns <code>void __iomem*</code>. Use to access hardware registers from driver. <code>mmap()</code>: user syscall, maps files/memory into user virtual space.</p>
+</blockquote>
+<p><strong>Q33: What is <code>__iomem</code> annotation?</strong></p>
+<blockquote>
+<p>Sparse annotation marking pointers to I/O memory (not regular RAM). Must use <code>readl()</code>/<code>writel()</code> to access, not direct dereference. Sparse checker warns if you dereference __iomem directly.</p>
+</blockquote>
+<p><strong>Q34: What is copy_to_user / copy_from_user?</strong></p>
+<blockquote>
+<p>Safe data transfer between kernel and user address spaces. Validates user pointer, handles page faults, returns number of bytes NOT copied (0=success). Using memcpy with user pointers would crash kernel on bad addresses.</p>
+</blockquote>
+<p><strong>Q35: What is the high memory problem (32-bit)?</strong></p>
+<blockquote>
+<p>32-bit kernel: ~1GB virtual address space. If system has &gt;1GB RAM, some physical pages can&rsquo;t be permanently mapped. These are &ldquo;high memory&rdquo; pages, accessed via temporary mappings (<code>kmap()</code>/<code>kunmap()</code>). Not an issue on 64-bit.</p>
+</blockquote>
+<p><strong>Q36: What is MMIO vs Port I/O?</strong></p>
+<blockquote>
+<p>MMIO: hardware registers mapped to memory addresses, accessed with readl/writel. Standard on ARM/modern x86. Port I/O: separate I/O address space on x86, accessed with inb/outb. Legacy x86 peripherals use port I/O.</p>
+</blockquote>
+<p><strong>Q37: Explain kernel virtual address space layout.</strong></p>
+<blockquote>
+<p>On 64-bit x86: User space 0x0-0x7FFF&hellip; (128TB). Kernel starts at 0xFFFF&hellip; Direct mapping of all physical RAM. vmalloc area. Module space. fixmap area.</p>
+</blockquote>
+<p><strong>Q38: What is a memory barrier and why needed?</strong></p>
+<blockquote>
+<p>CPUs/compilers reorder memory operations for performance. Barriers enforce ordering. <code>smp_rmb()</code>: read barrier. <code>smp_wmb()</code>: write barrier. <code>smp_mb()</code>: full barrier. I/O functions and locks include appropriate barriers.</p>
+</blockquote>
+<p><strong>Q39: What is NUMA-aware allocation?</strong></p>
+<blockquote>
+<p>Non-Uniform Memory Access: different CPU/memory node distances. <code>kmalloc_node()</code> allocates from specific NUMA node. Important for performance on multi-socket servers.</p>
+</blockquote>
+<p><strong>Q40: What is kernel OOM (Out of Memory) killer?</strong></p>
+<blockquote>
+<p>When system runs out of memory, OOM killer selects and terminates a process to free memory. Selection based on memory usage, oom_score_adj. Kernel drivers should handle allocation failures gracefully.</p>
+</blockquote>
+<hr />
+<h2 id="category-4-device-drivers-30-questions">CATEGORY 4: DEVICE DRIVERS (30 Questions)</h2>
+<p><strong>Q41: Character vs Block vs Network devices — explain each.</strong></p>
+<blockquote>
+<p>Character: byte-stream, sequential, no caching (serial ports, sensors). Block: random access, sector-based, kernel provides caching (disks, flash). Network: packet-based, special subsystem, no /dev entry (eth0, wlan0).</p>
+</blockquote>
+<p><strong>Q42: Walk me through what happens when user calls <code>open("/dev/mydev")</code>.</strong></p>
+<blockquote>
+<ol>
+<li>VFS resolves path to inode. 2. Inode has major/minor number. 3. Kernel looks up character device by major number → finds your <code>struct cdev</code>. 4. Gets <code>file_operations</code> from cdev. 5. Allocates <code>struct file</code>. 6. Calls your <code>.open()</code> handler, passing inode and file. 7. Returns fd to user.</li>
+</ol>
+</blockquote>
+<p><strong>Q43: What is <code>file_operations</code> structure?</strong></p>
+<blockquote>
+<p>Table of function pointers that defines how a character device responds to file operations: <code>.open()</code>, <code>.read()</code>, <code>.write()</code>, <code>.release()</code>, <code>.unlocked_ioctl()</code>, <code>.llseek()</code>, <code>.mmap()</code>, <code>.poll()</code>. This is effectively a vtable — polymorphism in C.</p>
+</blockquote>
+<p><strong>Q44: Explain <code>struct file</code> vs <code>struct inode</code>.</strong></p>
+<blockquote>
+<p><code>inode</code>: represents a file on disk/filesystem. One per file. Contains permissions, size, device numbers. Persists as long as file exists. <code>file</code>: represents an open instance of a file. One per open() call. Contains position (f_pos), flags, private_data. Multiple file structs can point to same inode.</p>
+</blockquote>
+<p><strong>Q45: What is <code>file-&gt;private_data</code> and how do you use it?</strong></p>
+<blockquote>
+<p><code>void*</code> in struct file for driver-private data. Set in <code>.open()</code>: <code>filp-&gt;private_data = my_device_struct;</code>. Read in <code>.read()</code>, <code>.write()</code>, <code>.ioctl()</code>. Allows one driver to handle multiple devices — private_data points to per-device state.</p>
+</blockquote>
+<p><strong>Q46: Why <code>container_of</code> in open() instead of global variable?</strong></p>
+<blockquote>
+<p>Multiple device instances. <code>container_of(inode-&gt;i_cdev, struct my_dev, cdev)</code> recovers your device struct from the cdev embedded in it. Global variable only works for single device.</p>
+</blockquote>
+<p><strong>Q47: Explain <code>alloc_chrdev_region</code> vs <code>register_chrdev_region</code>.</strong></p>
+<blockquote>
+<p><code>alloc_chrdev_region</code>: kernel chooses major number dynamically. Preferred — avoids conflicts. <code>register_chrdev_region</code>: you specify major number. Static allocation — risk of conflict. Old API.</p>
+</blockquote>
+<p><strong>Q48: What is <code>cdev_init</code> + <code>cdev_add</code>?</strong></p>
+<blockquote>
+<p><code>cdev_init(&amp;cdev, &amp;fops)</code>: initialize cdev with your file_operations. <code>cdev_add(&amp;cdev, dev_t, count)</code>: register with kernel, making device callable. Must do both — init sets up fops, add makes it findable by VFS.</p>
+</blockquote>
+<p><strong>Q49: What is <code>class_create</code> + <code>device_create</code>?</strong></p>
+<blockquote>
+<p><code>class_create("my_class")</code>: creates device class in <code>/sys/class/my_class/</code>. <code>device_create(class, parent, dev_t, data, "mydev%d", minor)</code>: creates device entry → triggers udev → creates <code>/dev/mydevN</code> automatically. Without this, user must manually <code>mknod</code>.</p>
+</blockquote>
+<p><strong>Q50: Explain IOCTL — what it is and how to implement.</strong></p>
+<blockquote>
+<p>IOCTL (I/O Control): custom device commands beyond read/write. Define commands with macros: <code>_IO(magic, nr)</code> (no data), <code>_IOR(magic, nr, type)</code> (read from driver), <code>_IOW(magic, nr, type)</code> (write to driver), <code>_IOWR</code> (both). Handler validates magic with <code>_IOC_TYPE(cmd)</code>, uses switch on command, copy_to/from_user for data.</p>
+</blockquote>
+<p><strong>Q51: What is the difference between <code>mutex_lock</code> and <code>mutex_lock_interruptible</code>?</strong></p>
+<blockquote>
+<p><code>mutex_lock</code>: blocks until available, cannot be interrupted by signals. <code>mutex_lock_interruptible</code>: can be interrupted — returns <code>-ERESTARTSYS</code> if signal received. Use interruptible in drivers so Ctrl+C works when user process is blocked.</p>
+</blockquote>
+<p><strong>Q52: How do you handle concurrent access to your driver?</strong></p>
+<blockquote>
+<p>Use mutex for process-context operations (read/write/ioctl). Lock before accessing shared data, unlock after. Use <code>mutex_lock_interruptible()</code> for tasks that user should be able to cancel. For ISR+process interaction: spinlock + irqsave.</p>
+</blockquote>
+<p><strong>Q53: What is a device node and how is it created?</strong></p>
+<blockquote>
+<p>Special file in /dev with major:minor numbers. Created by: 1) <code>device_create()</code> + udev (automatic, preferred), 2) <code>mknod /dev/mydev c MAJOR MINOR</code> (manual), 3) devtmpfs (early boot).</p>
+</blockquote>
+<p><strong>Q54: What is the probe/remove lifecycle?</strong></p>
+<blockquote>
+<p>Modern Linux driver model. <code>probe()</code>: called when kernel matches device to driver (by compatible string or name). Initialize hardware, allocate resources, register interfaces. <code>remove()</code>: called on unload. Release resources. With <code>devm_*</code>, remove() can often be empty.</p>
+</blockquote>
+<p><strong>Q55: What is deferred probing (<code>-EPROBE_DEFER</code>)?</strong></p>
+<blockquote>
+<p>If probe() depends on resource not yet available (clock, regulator, GPIO controller), return <code>-EPROBE_DEFER</code>. Kernel retries later when more subsystems are initialized. Essential for handling driver initialization ordering.</p>
+</blockquote>
+<p><strong>Q56: What is <code>sysfs</code> and how do drivers use it?</strong></p>
+<blockquote>
+<p>Kernel object filesystem at /sys. Drivers create attributes using <code>DEVICE_ATTR_RO/RW/WO</code> macros. Each attribute → one file in sysfs. User reads/writes: <code>cat /sys/class/myclass/mydev/temp</code>. Preferred over ioctl for simple values.</p>
+</blockquote>
+<p><strong>Q57: Explain the top-half / bottom-half interrupt model.</strong></p>
+<blockquote>
+<p>Top half (ISR): runs in interrupt context, must be fast. Acknowledge interrupt, grab urgent data, schedule bottom half. Bottom half: runs in process context (can sleep). Work queue: <code>schedule_work()</code>. Tasklet: <code>tasklet_schedule()</code> (softirq context, can&rsquo;t sleep). Threaded IRQ: <code>devm_request_threaded_irq()</code> — preferred modern approach.</p>
+</blockquote>
+<p><strong>Q58: What is a work queue?</strong></p>
+<blockquote>
+<p>Kernel mechanism to defer work to process context. <code>INIT_WORK(&amp;work, handler_func)</code> + <code>schedule_work(&amp;work)</code>. Handler runs in kernel thread (can sleep, use mutex). Preferred bottom-half mechanism in modern drivers.</p>
+</blockquote>
+<p><strong>Q59: What is a threaded IRQ?</strong></p>
+<blockquote>
+<p><code>request_threaded_irq(irq, hardirq_handler, thread_handler, flags, ...)</code>. Hard IRQ: runs in interrupt context, quickly acknowledges. Thread handler: runs in dedicated kernel thread, can sleep, can use mutex. Modern preferred approach when bottom-half needs to sleep.</p>
+</blockquote>
+<p><strong>Q60: How does DMA work in Linux drivers?</strong></p>
+<blockquote>
+<ol>
+<li>Allocate DMA-able buffer: <code>dma_alloc_coherent()</code> for consistent, or <code>dma_map_single()</code> for streaming. 2. Program DMA controller with physical address. 3. Start transfer. 4. Wait for completion (interrupt or polling). 5. Unmap/free buffer.</li>
+</ol>
+</blockquote>
+<hr />
+<h2 id="category-5-device-tree-15-questions">CATEGORY 5: DEVICE TREE (15 Questions)</h2>
+<p><strong>Q61: What problem does Device Tree solve?</strong></p>
+<blockquote>
+<p>Before DT, ARM had board-specific C code in <code>arch/arm/mach-*</code>. Each board = kernel recompile. DT separates hardware description from code. Same kernel binary works on multiple boards — only DTB changes.</p>
+</blockquote>
+<p><strong>Q62: How does compatible string matching work?</strong></p>
+<blockquote>
+<p>Device node: <code>compatible = "vendor,device-v2", "vendor,device-v1", "generic"</code>. Driver: <code>of_match_table</code> lists compatible strings. Kernel tries each device string until it finds a match in some driver&rsquo;s table. First entry = most specific.</p>
+</blockquote>
+<p><strong>Q63: What is <code>#address-cells</code> and <code>#size-cells</code>?</strong></p>
+<blockquote>
+<p>Defines format of <code>reg</code> property in child nodes. <code>#address-cells = &lt;1&gt;</code>: 32-bit addresses. <code>#size-cells = &lt;0&gt;</code>: no size (I2C addresses). Example: parent has <code>#size-cells = &lt;0&gt;</code>, child <code>reg = &lt;0x48&gt;</code> = just address.</p>
+</blockquote>
+<p><strong>Q64: How do you read DT properties in driver code?</strong></p>
+<blockquote>
+<p><code>of_property_read_u32(node, "my-prop", &amp;val)</code>, <code>of_property_read_string(node, "name", &amp;str)</code>, <code>of_property_read_bool(node, "flag")</code> (presence = true), <code>of_property_read_u32_array(node, "arr", arr, count)</code>.</p>
+</blockquote>
+<p><strong>Q65: What is a DT overlay?</strong></p>
+<blockquote>
+<p>Modifies base DT at runtime without replacing it. Used for: hot-pluggable hardware (capes, HATs), enabling/disabling peripherals. Syntax: <code>fragment@0 { target = &lt;&amp;node&gt;; __overlay__ { ... }; };</code>.</p>
+</blockquote>
+<p><strong>Q66: What is <code>of_device_get_match_data</code>?</strong></p>
+<blockquote>
+<p>Returns <code>.data</code> from matching <code>of_device_id</code> entry. Use to pass version-specific configuration. No need for runtime string comparison — kernel already matched.</p>
+</blockquote>
+<p><strong>Q67: What is the <code>status</code> property?</strong></p>
+<blockquote>
+<p><code>"okay"</code>: device enabled. <code>"disabled"</code>: device present on SoC but not populated/used on this board. Kernel skips disabled nodes. Overlays can change disabled→okay.</p>
+</blockquote>
+<p><strong>Q68: What is <code>ranges</code> property?</strong></p>
+<blockquote>
+<p>Address translation between parent and child address spaces. <code>ranges;</code> (empty): 1:1 mapping. <code>ranges = &lt;child_addr parent_addr size&gt;</code>: explicit translation. Without ranges, child addresses are in their own space.</p>
+</blockquote>
+<p><strong>Q69: How are interrupts described in DT?</strong></p>
+<blockquote>
+<p><code>interrupt-parent = &lt;&amp;intc&gt;</code>: which interrupt controller. <code>interrupts = &lt;TYPE NUM FLAGS&gt;</code>: interrupt specification. For ARM GIC: <code>interrupts = &lt;GIC_SPI 45 IRQ_TYPE_LEVEL_HIGH&gt;</code>.</p>
+</blockquote>
+<p><strong>Q70: What is a phandle?</strong></p>
+<blockquote>
+<p>Handle to reference another node. <code>clocks = &lt;&amp;clock_controller 5&gt;</code>: reference to clock_controller node, clock ID 5. <code>&amp;label</code> syntax creates phandle.</p>
+</blockquote>
+<hr />
+<h2 id="category-6-i2cspi-protocols-15-questions">CATEGORY 6: I2C/SPI PROTOCOLS (15 Questions)</h2>
+<p><strong>Q71: Describe the I2C protocol.</strong></p>
+<blockquote>
+<p>Two wires: SDA (data), SCL (clock). Open-drain with pull-ups. Master generates clock. 7-bit addressing (10-bit optional). START → Address(7)+R/W(1) → ACK → Data(8) → ACK → &hellip; → STOP. Speeds: 100kHz (standard), 400kHz (fast), 1MHz (fast+), 3.4MHz (high-speed).</p>
+</blockquote>
+<p><strong>Q72: I2C vs SPI — when to use each?</strong></p>
+<blockquote>
+<p>I2C: 2 wires, multi-master, 7-bit addressing, slower (100-400kHz). Good for: sensors, EEPROMs, many slow devices. SPI: 4+ wires (MOSI, MISO, SCK, CS), chip-select per device, faster (MHz-100MHz), full duplex. Good for: flash, displays, ADCs.</p>
+</blockquote>
+<p><strong>Q73: What is the difference between i2c_client and i2c_adapter?</strong></p>
+<blockquote>
+<p><code>i2c_adapter</code>: the I2C bus/controller hardware. Provides <code>master_xfer()</code>. One per I2C bus. <code>i2c_client</code>: specific device on bus. Contains address, adapter reference. Your driver gets i2c_client in probe().</p>
+</blockquote>
+<p><strong>Q74: Explain <code>i2c_smbus_read_word_swapped</code>.</strong></p>
+<blockquote>
+<p>I2C sends MSB first. On little-endian host (x86, ARM-LE), bytes need swapping. <code>_swapped</code> variant does this automatically. Without it: manual <code>be16_to_cpu()</code> needed.</p>
+</blockquote>
+<p><strong>Q75: How does your I2C driver handle errors?</strong></p>
+<blockquote>
+<p>Check every <code>i2c_smbus_*</code> return value. Negative = error. Common errors: -ENODEV (no ACK from device), -ETIMEDOUT (bus stuck), -EIO (general I/O error). Propagate errors to caller. Consider retry for transient errors.</p>
+</blockquote>
+<p><strong>Q76: What is SMBus and how does it relate to I2C?</strong></p>
+<blockquote>
+<p>SMBus is a subset of I2C for system management. Defines specific transaction types (byte data, word data, block). <code>i2c_smbus_*</code> functions implement SMBus protocol. Most I2C devices support SMBus transactions.</p>
+</blockquote>
+<p><strong>Q77: How do you instantiate an I2C device in Linux?</strong></p>
+<blockquote>
+<ol>
+<li>Device Tree: <code>temp_sensor@48 { compatible = "ti,tmp102"; reg = &lt;0x48&gt;; };</code></li>
+<li>ACPI tables (x86)</li>
+<li>Platform code: <code>i2c_register_board_info()</code></li>
+<li>Sysfs: <code>echo tmp102 0x48 &gt; /sys/bus/i2c/devices/i2c-1/new_device</code></li>
+</ol>
+</blockquote>
+<p><strong>Q78: What is I2C bus arbitration?</strong></p>
+<blockquote>
+<p>Multi-master: if two masters start simultaneously, they monitor SDA. When a master sends 1 but sees 0, it lost arbitration and backs off. Bit-level arbitration — the master sending the lower address wins.</p>
+</blockquote>
+<p><strong>Q79: What is clock stretching in I2C?</strong></p>
+<blockquote>
+<p>Slave holds SCL low to pause master. Used when slave needs time to process data. Master must wait. Some masters don&rsquo;t support it (e.g., bit-banged GPIO I2C on some SoCs).</p>
+</blockquote>
+<p><strong>Q80: How do you handle I2C devices without DT (e.g., for testing)?</strong></p>
+<blockquote>
+<p>Use sysfs: <code>echo tmp102 0x48 &gt; /sys/bus/i2c/devices/i2c-1/new_device</code> creates i2c_client and triggers probe. Remove: <code>echo 0x48 &gt; /sys/bus/i2c/devices/i2c-1/delete_device</code>.</p>
+</blockquote>
+<p><strong>Q81: What is the hwmon subsystem?</strong></p>
+<blockquote>
+<p>Standardized framework for hardware monitoring (temp, voltage, fan speed). Provides consistent sysfs interface (<code>/sys/class/hwmon/</code>). Integrates with <code>sensors</code> command. Temperature values in milli-degrees Celsius.</p>
+</blockquote>
+<p><strong>Q82: What is SPI chip select?</strong></p>
+<blockquote>
+<p>Dedicated line per SPI slave. Master asserts (low) CS before communication, deasserts after. Allows multiple devices on same bus. In DT: <code>reg = &lt;0&gt;</code> = chip select 0.</p>
+</blockquote>
+<p><strong>Q83: Explain SPI modes (CPOL, CPHA).</strong></p>
+<blockquote>
+<p>CPOL: clock polarity (idle high or low). CPHA: clock phase (sample on leading or trailing edge). Mode 0 (00): most common. Mode 3 (11): also common. Must match between master and slave.</p>
+</blockquote>
+<p><strong>Q84: What is I2C repeated start?</strong></p>
+<blockquote>
+<p>Send new START without STOP between transactions. Used for atomic read operations: Write register address → Repeated START → Read data. Prevents other masters from intervening.</p>
+</blockquote>
+<p><strong>Q85: How does Linux I2C device/driver matching work?</strong></p>
+<blockquote>
+<p>Kernel checks: 1) <code>of_match_table</code> (DT compatible string) — preferred. 2) <code>id_table</code> (static device name matching). 3) <code>driver.name</code> == device name. <code>MODULE_DEVICE_TABLE(of, ...)</code> creates alias for auto-loading.</p>
+</blockquote>
+<hr />
+<h2 id="category-7-synchronization-concurrency-20-questions">CATEGORY 7: SYNCHRONIZATION &amp; CONCURRENCY (20 Questions)</h2>
+<p><strong>Q86: What types of locks exist in Linux kernel?</strong></p>
+<blockquote>
+<p>Spinlock: busy-wait, ISR-safe. Mutex: sleeping, process context only. Semaphore: counting, sleeping. RW spinlock: multiple readers OR one writer. RW semaphore: sleeping RW. Seqlock: optimistic writer, retry reader. RCU: lockless reads, deferred free.</p>
+</blockquote>
+<p><strong>Q87: When must you use spinlock vs mutex in kernel?</strong></p>
+<blockquote>
+<p>Spinlock: interrupt context, holding for &lt; ~microsecond, can&rsquo;t sleep. Mutex: process context, holding for longer, sleeping OK. NEVER: mutex in ISR (crash), spinlock + sleep (deadlock).</p>
+</blockquote>
+<p><strong>Q88: What is <code>spin_lock_irqsave</code> vs <code>spin_lock</code>?</strong></p>
+<blockquote>
+<p><code>spin_lock</code>: disables preemption. <code>spin_lock_irqsave</code>: also saves and disables interrupts. Use irqsave when data is shared between process context and ISR. Without it: ISR could interrupt, try to lock same spinlock → deadlock.</p>
+</blockquote>
+<p><strong>Q89: What is RCU?</strong></p>
+<blockquote>
+<p>Read-Copy-Update. Readers: <code>rcu_read_lock()</code> (just disables preemption). Zero overhead reads. Writers: copy data, modify copy, atomically swap pointer (<code>rcu_assign_pointer</code>), wait for grace period (<code>synchronize_rcu</code>), free old copy. Used for: routing tables, process list, etc.</p>
+</blockquote>
+<p><strong>Q90: What is a completion in kernel?</strong></p>
+<blockquote>
+<p>Synchronization primitive for &ldquo;wait until done&rdquo; pattern. <code>init_completion(&amp;done)</code>. Waiter: <code>wait_for_completion(&amp;done)</code>. Signaler: <code>complete(&amp;done)</code>. One-shot synchronization. Used in: DMA completion, probe synchronization.</p>
+</blockquote>
+<p><strong>Q91: What is a seqlock?</strong></p>
+<blockquote>
+<p>Writer always proceeds (fast). Reader checks sequence counter before and after reading. If changed, retry. Good for: jiffies counter, time keeping. Writer can&rsquo;t fail. Reader might retry.</p>
+</blockquote>
+<p><strong>Q92: What is wait_event / wake_up?</strong></p>
+<blockquote>
+<p>Kernel equivalent of condition variables. <code>wait_event(wq, condition)</code>: sleeps until condition true. <code>wake_up(&amp;wq)</code>: wakes waiters to recheck condition. <code>wait_event_interruptible</code>: can be interrupted by signals.</p>
+</blockquote>
+<p><strong>Q93: What is a workqueue?</strong></p>
+<blockquote>
+<p>Defers work to kernel threads. <code>INIT_WORK(&amp;work, handler)</code> + <code>schedule_work(&amp;work)</code>. Handler runs in process context (can sleep). Types: <code>system_wq</code> (shared), <code>create_workqueue()</code> (dedicated).</p>
+</blockquote>
+<p><strong>Q94: What is <code>preempt_disable</code> / <code>preempt_enable</code>?</strong></p>
+<blockquote>
+<p>Prevents current task from being preempted. Used to protect per-CPU data. Lighter than spinlock (no bus locking). Automatically done by spin_lock.</p>
+</blockquote>
+<p><strong>Q95: Explain the locking rules for data shared between process and interrupt context.</strong></p>
+<blockquote>
+<p>Process context: <code>spin_lock_irqsave(&amp;lock, flags)</code>. ISR: <code>spin_lock(&amp;lock)</code>. IRQsave in process context prevents local CPU from taking the interrupt while holding the lock (avoiding self-deadlock).</p>
+</blockquote>
+<p><strong>Q96: What is lockdep?</strong></p>
+<blockquote>
+<p>Kernel lock dependency validator (<code>CONFIG_PROVE_LOCKING</code>). Automatically detects potential deadlocks at runtime by tracking lock acquisition order. Essential development tool. Reports lock ordering violations even if deadlock hasn&rsquo;t actually occurred yet.</p>
+</blockquote>
+<p><strong>Q97: What is a per-CPU variable?</strong></p>
+<blockquote>
+<p>Variable with separate copy for each CPU. No locking needed! <code>DEFINE_PER_CPU(type, name)</code>. Access: <code>this_cpu_read(name)</code>, <code>this_cpu_write(name, val)</code>. Must disable preemption during access. Used for: statistics, counters, cached data.</p>
+</blockquote>
+<hr />
+<h2 id="category-8-debugging-tools-15-questions">CATEGORY 8: DEBUGGING &amp; TOOLS (15 Questions)</h2>
+<p><strong>Q98: How do you debug a kernel oops?</strong></p>
+<blockquote>
+<ol>
+<li>Read the oops message (registers, stack trace). 2. Find the faulting instruction address. 3. Map to source: <code>addr2line -e vmlinux ADDRESS</code>. 4. Check for NULL pointer deref, buffer overflow, etc. 5. Enable CONFIG_DEBUG_INFO for better traces.</li>
+</ol>
+</blockquote>
+<p><strong>Q99: What is <code>strace</code> and when do you use it?</strong></p>
+<blockquote>
+<p>Traces system calls of a process. Shows each syscall, arguments, return value. Use for: understanding app-kernel interaction, debugging permission issues, finding missing files, profiling syscall overhead.</p>
+</blockquote>
+<p><strong>Q100: What is <code>ftrace</code>?</strong></p>
+<blockquote>
+<p>Kernel function tracer. Available at: <code>/sys/kernel/debug/tracing/</code>. Can trace every function call, measure latency, trace specific functions. <code>echo function &gt; current_tracer; cat trace</code>.</p>
+</blockquote>
+<p><strong>Q101: How do you use <code>gdb</code> with kernel modules?</strong></p>
+<blockquote>
+<p>Debug loadable module: <code>gdb vmlinux</code>. <code>add-symbol-file module.ko MODULE_LOAD_ADDRESS</code> (from /sys/module/mymod/sections/.text). Set breakpoints. Requires KGDB or QEMU for actual debugging.</p>
+</blockquote>
+<p><strong>Q102: What is <code>dmesg</code> and its options?</strong></p>
+<blockquote>
+<p>Prints kernel ring buffer. <code>dmesg -w</code>: follow (like tail -f). <code>dmesg -l err</code>: filter by level. <code>dmesg -T</code>: human-readable timestamps. Messages from your <code>pr_info()</code> calls appear here.</p>
+</blockquote>
+<p><strong>Q103: What is <code>perf</code>?</strong></p>
+<blockquote>
+<p>Linux performance analysis tool. <code>perf record ./app</code>: capture profile. <code>perf stat</code>: count events. <code>perf top</code>: live function hotspots. Uses hardware performance counters and software tracepoints.</p>
+</blockquote>
+<p><strong>Q104: How do you detect memory errors in kernel?</strong></p>
+<blockquote>
+<p>KASAN (Kernel Address Sanitizer): detects out-of-bounds, use-after-free. KMEMLEAK: detects memory leaks. SLUB_DEBUG: slab corruption detection. All enabled via kernel config.</p>
+</blockquote>
+<p><strong>Q105: What tools help debug I2C issues?</strong></p>
+<blockquote>
+<p><code>i2cdetect -l</code>: list buses. <code>i2cdetect -y 1</code>: scan bus 1. <code>i2cdump -y 1 0x48</code>: dump registers. <code>i2cget/i2cset</code>: read/write specific registers. <code>dmesg</code> for driver messages.</p>
+</blockquote>
+<hr />
+<h2 id="category-9-real-interview-scenarios-15-questions">CATEGORY 9: REAL INTERVIEW SCENARIOS (15 Questions)</h2>
+<p><strong>Q106: &ldquo;Walk me through your character driver project.&rdquo;</strong></p>
+<blockquote>
+<p>&ldquo;I built a production-quality character device driver exposing <code>/dev/chardev0</code>. Architecture: user open() → VFS → my driver via file_operations. I use container_of() to get per-device state from inode&rsquo;s cdev. Read/write uses copy_to/from_user for safe kernel↔user transfer. Concurrent access protected by mutex_lock_interruptible (so Ctrl+C works). I implemented IOCTL for control commands using _IO/_IOR/_IOW macros. Device nodes are auto-created via class_create + device_create + udev. I also exposed sysfs attributes for runtime monitoring.&rdquo;</p>
+</blockquote>
+<p><strong>Q107: &ldquo;Walk me through your I2C driver project.&rdquo;</strong></p>
+<blockquote>
+<p>&ldquo;I wrote a temperature sensor driver using the Linux I2C subsystem. Device Tree describes the sensor with compatible string &lsquo;ti,tmp102&rsquo;. When kernel matches this to my driver&rsquo;s of_match_table, probe() is called. I use devm_kzalloc for managed allocation, configure the sensor via i2c_smbus_write_byte_data, and register with hwmon subsystem. Temperature reading uses i2c_smbus_read_word_swapped with 1-second caching to avoid bus flooding. I expose milli-celsius values through standard hwmon sysfs and custom attributes.&rdquo;</p>
+</blockquote>
+<p><strong>Q108: &ldquo;Your driver is crashing with a kernel oops on read(). How do you debug it?&rdquo;</strong></p>
+<blockquote>
+<ol>
+<li>Check dmesg for oops trace — find faulting instruction. 2. Use addr2line to map to source. 3. Common causes: NULL private_data (forgot to set in open?), buffer overrun, wrong pointer arithmetic. 4. Add pr_info() at entry/exit of read(). 5. Check if f_pos &gt; buffer size. 6. Verify copy_to_user arguments. 7. Enable CONFIG_KASAN for memory errors.</li>
+</ol>
+</blockquote>
+<p><strong>Q109: &ldquo;How would you handle a device that&rsquo;s shared between multiple processes?&rdquo;</strong></p>
+<blockquote>
+<p>&ldquo;Each open() gets its own struct file with separate f_pos. They all share the device buffer via private_data. I protect concurrent access with mutex. For exclusive access: check a flag in open(), return -EBUSY if already opened. For truly independent access: allocate per-open-instance buffers in open(), store in private_data.&rdquo;</p>
+</blockquote>
+<p><strong>Q110: &ldquo;Design a driver for a device that needs fast interrupt response.&rdquo;</strong></p>
+<blockquote>
+<p>&ldquo;Use threaded IRQ: fast top-half acknowledges interrupt and reads critical data, threaded bottom-half does processing. Top half: spin_lock_irqsave for shared data, return IRQ_WAKE_THREAD. Thread handler: can use mutex, I2C/SPI transactions, workqueues. Use DMA for bulk data transfer to avoid PIO in ISR.&rdquo;</p>
+</blockquote>
+<p><strong>Q111: &ldquo;How do you ensure your driver doesn&rsquo;t leak memory?&rdquo;</strong></p>
+<blockquote>
+<p>&ldquo;1. Use devm_* functions for all allocations — auto-freed on error/remove. 2. Follow goto cleanup pattern: allocate in order, free in reverse on error. 3. Test with KMEMLEAK enabled. 4. Code review: every alloc has matching free. 5. Error path testing: deliberately fail each error path.&rdquo;</p>
+</blockquote>
+<p><strong>Q112: &ldquo;You need to add support for a new revision of your sensor chip. How?&rdquo;</strong></p>
+<blockquote>
+<p>&ldquo;1. Add new compatible string to of_match_table with config data pointer for new revision. 2. In probe(), of_device_get_match_data() returns version-specific config. 3. Use config struct for differences (register offsets, conversion factors, features). 4. No if/else chains — data-driven approach scales cleanly.&rdquo;</p>
+</blockquote>
+<p><strong>Q113: &ldquo;Your driver works in test but fails on different hardware. What do you check?&rdquo;</strong></p>
+<blockquote>
+<p>&ldquo;1. DT: correct register addresses, interrupt numbers? 2. Clock/power: device clocked and powered? Check regulator/clock DT bindings. 3. Pin mux: correct pin function configured? 4. I2C address: check with i2cdetect. 5. Pull-ups: I2C needs them. 6. Timing: check bus speed configuration.&rdquo;</p>
+</blockquote>
+<p><strong>Q114: &ldquo;Explain the difference between platform_driver and i2c_driver.&rdquo;</strong></p>
+<blockquote>
+<p>&ldquo;Both use probe/remove model. platform_driver: for SoC-internal peripherals addressable via MMIO (timers, GPIO, UART). Resources via platform_get_resource. i2c_driver: for I2C bus devices. Receives i2c_client with bus address. Uses i2c_smbus_* for communication. Also: spi_driver for SPI devices.&rdquo;</p>
+</blockquote>
+<p><strong>Q115: &ldquo;How do you make your driver debuggable in production?&rdquo;</strong></p>
+<blockquote>
+<p>&ldquo;1. Use dev_dbg() — disabled by default, enabled with dyndbg. 2. Sysfs attributes for status/stats monitoring. 3. debugfs files for internal state. 4. Tracepoints for ftrace integration. 5. Module parameter for debug level: <code>module_param(debug, int, 0644)</code>. 6. Meaningful error messages with dev_err().&rdquo;</p>
+</blockquote>
+<hr />
+<h2 id="category-10-system-design-architecture-10-questions">CATEGORY 10: SYSTEM DESIGN &amp; ARCHITECTURE (10 Questions)</h2>
+<p><strong>Q116: How does Linux support thousands of different hardware platforms?</strong></p>
+<blockquote>
+<p>&ldquo;Uses a bus/device/driver abstraction. Drivers register with bus subsystem (platform, I2C, SPI, PCI, USB). Hardware described by Device Tree (ARM) or ACPI (x86). Kernel matches devices to drivers at runtime. Same driver binary works across platforms — only DT/ACPI changes.&rdquo;</p>
+</blockquote>
+<p><strong>Q117: What is the Linux Driver Model (LDM)?</strong></p>
+<blockquote>
+<p>&ldquo;Unified framework: struct bus_type, struct device, struct device_driver. Bus matches device to driver. probe() called on match. Sysfs automatically exposes hierarchy. Power management hooks. Consistent across all bus types.&rdquo;</p>
+</blockquote>
+<p><strong>Q118: How do you choose between polling and interrupt-driven I/O?</strong></p>
+<blockquote>
+<p>&ldquo;Interrupts: for infrequent or unpredictable events (button press, packet arrival). Efficient — CPU does other work. Polling: for high-frequency data (high-speed ADC), when latency must be deterministic, or in ISR when can&rsquo;t sleep. Hybrid: NAPI (network) — interrupt triggers poll mode during bursts.&rdquo;</p>
+</blockquote>
+<p><strong>Q119: Design a driver for a custom SoC peripheral.</strong></p>
+<blockquote>
+<p>&ldquo;1. Study hardware spec (registers, interrupts, DMA). 2. Write DT node with base address, IRQ, clocks. 3. Create platform_driver with of_match_table. 4. In probe: devm_platform_ioremap_resource, devm_request_irq, register subsystem (hwmon/input/net/etc.). 5. Implement file_ops or subsystem callbacks. 6. Test on real hardware with dmesg + ftrace.&rdquo;</p>
+</blockquote>
+<p><strong>Q120: What is Bus Mastering and why do we need DMA?</strong></p>
+<blockquote>
+<p>&ldquo;CPU-driven I/O (PIO): CPU reads/writes each byte. Blocks CPU. DMA: hardware DMA controller reads/writes memory independently. CPU does other work. When done, DMA raises interrupt. Critical for: network, storage, multimedia. Modern SoCs have multiple DMA channels.&rdquo;</p>
+</blockquote>
+<hr />
+<h2 id="quick-reference-must-know-code-snippets">QUICK REFERENCE: Must-Know Code Snippets</h2>
+<h3 id="1-basic-module-template">1. Basic Module Template</h3>
+<pre data-lang="c"><code class="language-c">#include &lt;linux/init.h&gt;
+#include &lt;linux/module.h&gt;
+MODULE_LICENSE(&quot;GPL&quot;);
+static int __init my_init(void) { pr_info(&quot;loaded\n&quot;); return 0; }
+static void __exit my_exit(void) { pr_info(&quot;unloaded\n&quot;); }
+module_init(my_init);
+module_exit(my_exit);
+</code></pre>
+<h3 id="2-file-operations">2. File Operations</h3>
+<pre data-lang="c"><code class="language-c">static struct file_operations fops = {
+    .owner   = THIS_MODULE,
+    .open    = my_open,
+    .release = my_release,
+    .read    = my_read,
+    .write   = my_write,
+    .unlocked_ioctl = my_ioctl,
+};
+</code></pre>
+<h3 id="3-character-device-registration">3. Character Device Registration</h3>
+<pre data-lang="c"><code class="language-c">alloc_chrdev_region(&amp;dev, 0, 1, &quot;mydev&quot;);
+cdev_init(&amp;my_cdev, &amp;fops);
+cdev_add(&amp;my_cdev, dev, 1);
+my_class = class_create(&quot;myclass&quot;);
+device_create(my_class, NULL, dev, NULL, &quot;mydevice&quot;);
+</code></pre>
+<h3 id="4-ioctl-command-definition">4. IOCTL Command Definition</h3>
+<pre data-lang="c"><code class="language-c">#define MY_MAGIC 'M'
+#define MY_RESET   _IO(MY_MAGIC, 0)
+#define MY_GET_VAL _IOR(MY_MAGIC, 1, int)
+#define MY_SET_VAL _IOW(MY_MAGIC, 2, int)
+</code></pre>
+<h3 id="5-platform-driver-template">5. Platform Driver Template</h3>
+<pre data-lang="c"><code class="language-c">static const struct of_device_id my_of_match[] = {
+    { .compatible = &quot;vendor,device&quot;, }, { }
+};
+MODULE_DEVICE_TABLE(of, my_of_match);
+static struct platform_driver my_driver = {
+    .probe = my_probe, .remove = my_remove,
+    .driver = { .name = &quot;mydriver&quot;, .of_match_table = my_of_match, },
+};
+module_platform_driver(my_driver);
+</code></pre>
+<h3 id="6-i2c-driver-template">6. I2C Driver Template</h3>
+<pre data-lang="c"><code class="language-c">static const struct of_device_id my_of_match[] = {
+    { .compatible = &quot;vendor,sensor&quot;, }, { }
+};
+static const struct i2c_device_id my_id[] = { { &quot;sensor&quot;, 0 }, { } };
+MODULE_DEVICE_TABLE(of, my_of_match);
+MODULE_DEVICE_TABLE(i2c, my_id);
+static struct i2c_driver my_driver = {
+    .driver = { .name = &quot;mysensor&quot;, .of_match_table = my_of_match, },
+    .probe = my_probe, .remove = my_remove, .id_table = my_id,
+};
+module_i2c_driver(my_driver);
+</code></pre>
+<h3 id="7-error-handling-pattern">7. Error Handling Pattern</h3>
+<pre data-lang="c"><code class="language-c">static int my_init(void) {
+    int ret;
+    res1 = alloc1();
+    if (!res1) { ret = -ENOMEM; goto fail; }
+    ret = alloc2();
+    if (ret &lt; 0) goto fail_res1;
+    return 0;
+fail_res1: free1(res1);
+fail:      return ret;
+}
+</code></pre>
+<h3 id="8-quick-error-codes">8. Quick Error Codes</h3>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Value</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>EPERM</td>
+<td>1</td>
+<td>Not permitted</td>
+</tr>
+<tr>
+<td>ENOENT</td>
+<td>2</td>
+<td>No such file</td>
+</tr>
+<tr>
+<td>EIO</td>
+<td>5</td>
+<td>I/O error</td>
+</tr>
+<tr>
+<td>ENOMEM</td>
+<td>12</td>
+<td>Out of memory</td>
+</tr>
+<tr>
+<td>EFAULT</td>
+<td>14</td>
+<td>Bad address</td>
+</tr>
+<tr>
+<td>EBUSY</td>
+<td>16</td>
+<td>Device busy</td>
+</tr>
+<tr>
+<td>ENODEV</td>
+<td>19</td>
+<td>No such device</td>
+</tr>
+<tr>
+<td>EINVAL</td>
+<td>22</td>
+<td>Invalid argument</td>
+</tr>
+<tr>
+<td>ENOSPC</td>
+<td>28</td>
+<td>No space</td>
+</tr>
+<tr>
+<td>ERESTARTSYS</td>
+<td>512</td>
+<td>Signal during syscall</td>
+</tr>
+<tr>
+<td>EPROBE_DEFER</td>
+<td>517</td>
+<td>Retry probe later</td>
+</tr>
+</tbody>
+</table>
+
+      <!-- Page Navigation -->
+      <div class="page-nav">
+        <a class="prev" href="07_phase7.html"><span class="nav-label">← Previous</span><span class="nav-title">Phase 7: Thread Pool &amp; Interview</span></a>
+<a class="next" href="09_appendix_kernel.html"><span class="nav-label">Next →</span><span class="nav-title">Appendix: Kernel Internals</span></a>
+      </div>
+    </div>
+  </main>
+
+  <!-- Back to Top -->
+  <button class="back-to-top" aria-label="Back to top">↑</button>
+
+  <!-- Search Index Data -->
+  <script type="application/json" id="search-data">[{"title": "README \u2014 Overview", "url": "00_readme.html", "headings": [{"text": "\ud83d\udc27 EMBEDDED LINUX &amp; DEVICE DRIVERS \u2014 ENHANCED FOOL-PROOF GUIDE", "id": "embedded-linux-device-drivers-enhanced-fool-proof-guide"}, {"text": "Complete 40-Day Execution Plan (Enhanced Edition)", "id": "complete-40-day-execution-plan-enhanced-edition"}, {"text": "From Systems C Programmer \u2192 Embedded Linux Engineer", "id": "from-systems-c-programmer-embedded-linux-engineer"}, {"text": "\ud83d\udd25 What&rsquo;s NEW in the Enhanced Edition", "id": "whats-new-in-the-enhanced-edition"}, {"text": "\ud83d\udcc1 Enhanced File Structure", "id": "enhanced-file-structure"}, {"text": "\ud83d\udcca Timeline Overview", "id": "timeline-overview"}, {"text": "\ud83c\udfaf Who This Is For", "id": "who-this-is-for"}, {"text": "\ud83d\udccb Daily Workflow (Enhanced)", "id": "daily-workflow-enhanced"}, {"text": "Morning (2.5-3 hours):", "id": "morning-25-3-hours"}, {"text": "Evening (1.5-2 hours):", "id": "evening-15-2-hours"}, {"text": "Before Sleep (15 min):", "id": "before-sleep-15-min"}, {"text": "\ud83c\udf93 Rules for Success", "id": "rules-for-success"}, {"text": "\ud83c\udfc6 End Goal: After 40 Days", "id": "end-goal-after-40-days"}, {"text": "\u26a1 Start Now", "id": "start-now"}]}, {"title": "Phase 1: C Revision", "url": "01_phase1.html", "headings": [{"text": "PHASE 1: SYSTEMS C REVISION (Days 0-3)", "id": "phase-1-systems-c-revision-days-0-3"}, {"text": "DAY 0: ENVIRONMENT SETUP", "id": "day-0-environment-setup"}, {"text": "Installation Commands (Ubuntu 22.04/20.04)", "id": "installation-commands-ubuntu-22042004"}, {"text": "Verify Setup", "id": "verify-setup"}, {"text": "\u2705 Verification Criteria", "id": "verification-criteria"}, {"text": "DAY 1: POINTERS &amp; MEMORY \u2014 DEEP DIVE", "id": "day-1-pointers-memory-deep-dive"}, {"text": "\ud83e\udde0 THEORY: Memory Layout of a C Program", "id": "theory-memory-layout-of-a-c-program"}, {"text": "Why This Matters for Embedded Linux:", "id": "why-this-matters-for-embedded-linux"}, {"text": "Internal Detail: How malloc() Works", "id": "internal-detail-how-malloc-works"}, {"text": "\ud83e\udde0 THEORY: Pointer Fundamentals \u2014 What You MUST Know", "id": "theory-pointer-fundamentals-what-you-must-know"}, {"text": "A pointer is just an address. Period.", "id": "a-pointer-is-just-an-address-period"}, {"text": "Pointer Sizes:", "id": "pointer-sizes"}, {"text": "Pointer Arithmetic \u2014 The #1 Interview Topic", "id": "pointer-arithmetic-the-1-interview-topic"}, {"text": "\ud83e\udde0 THEORY: Function Pointers \u2014 Essential for Kernel", "id": "theory-function-pointers-essential-for-kernel"}, {"text": "\ud83e\udde0 THEORY: Struct Padding &amp; Alignment", "id": "theory-struct-padding-alignment"}, {"text": "\ud83d\udcbb COMPLETE CODE: Comprehensive Pointer &amp; Memory Demo", "id": "complete-code-comprehensive-pointer-memory-demo"}, {"text": "\ud83c\udfd7\ufe0f MINI-EXERCISES \u2014 Day 1", "id": "mini-exercises-day-1"}, {"text": "\u26a0\ufe0f COMMON PITFALLS \u2014 Day 1", "id": "common-pitfalls-day-1"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Day 1 (15 Questions)", "id": "interview-questions-day-1-15-questions"}, {"text": "DAY 2: BITWISE OPERATIONS \u2014 MASTERY", "id": "day-2-bitwise-operations-mastery"}, {"text": "\ud83e\udde0 THEORY: Why Bitwise Operations Are Essential", "id": "theory-why-bitwise-operations-are-essential"}, {"text": "\ud83e\udde0 THEORY: Bitwise Operators (Complete Reference)", "id": "theory-bitwise-operators-complete-reference"}, {"text": "\ud83e\udde0 THEORY: The Fundamental Bit Operations", "id": "theory-the-fundamental-bit-operations"}, {"text": "\ud83e\udde0 THEORY: Kernel Bit Manipulation APIs", "id": "theory-kernel-bit-manipulation-apis"}, {"text": "\ud83d\udcbb COMPLETE CODE: Bitwise Mastery", "id": "complete-code-bitwise-mastery"}, {"text": "\ud83c\udfd7\ufe0f MINI-EXERCISES \u2014 Day 2", "id": "mini-exercises-day-2"}, {"text": "\u26a0\ufe0f COMMON PITFALLS \u2014 Day 2", "id": "common-pitfalls-day-2"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Day 2 (14 Questions)", "id": "interview-questions-day-2-14-questions"}, {"text": "DAY 3: THREADING \u2014 CONCURRENCY ESSENTIALS", "id": "day-3-threading-concurrency-essentials"}, {"text": "\ud83e\udde0 THEORY: Why Threading Matters for Kernel Development", "id": "theory-why-threading-matters-for-kernel-development"}, {"text": "\ud83e\udde0 THEORY: Thread vs Process", "id": "theory-thread-vs-process"}, {"text": "\ud83e\udde0 THEORY: Synchronization Primitives \u2014 Deep Dive", "id": "theory-synchronization-primitives-deep-dive"}, {"text": "Mutex (Mutual Exclusion)", "id": "mutex-mutual-exclusion"}, {"text": "Spinlock", "id": "spinlock"}, {"text": "Condition Variable", "id": "condition-variable"}, {"text": "Semaphore", "id": "semaphore"}, {"text": "\ud83e\udde0 THEORY: The Deadlock Problem", "id": "theory-the-deadlock-problem"}, {"text": "\ud83d\udcbb COMPLETE CODE: Threading Patterns", "id": "complete-code-threading-patterns"}, {"text": "\ud83c\udfd7\ufe0f MINI-EXERCISES \u2014 Day 3", "id": "mini-exercises-day-3"}, {"text": "\u26a0\ufe0f COMMON PITFALLS \u2014 Day 3", "id": "common-pitfalls-day-3"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Day 3 (16 Questions)", "id": "interview-questions-day-3-16-questions"}]}, {"title": "Phase 2: Linux Fundamentals", "url": "02_phase2.html", "headings": [{"text": "PHASE 2: LINUX FUNDAMENTALS (Days 4-8)", "id": "phase-2-linux-fundamentals-days-4-8"}, {"text": "DAY 4: SYSTEM CALLS \u2014 THE KERNEL BOUNDARY", "id": "day-4-system-calls-the-kernel-boundary"}, {"text": "\ud83e\udde0 THEORY: User Space vs Kernel Space (Why It Exists)", "id": "theory-user-space-vs-kernel-space-why-it-exists"}, {"text": "Why the split?", "id": "why-the-split"}, {"text": "\ud83e\udde0 THEORY: System Call Mechanism \u2014 Step by Step", "id": "theory-system-call-mechanism-step-by-step"}, {"text": "\ud83e\udde0 THEORY: Key System Calls for Embedded", "id": "theory-key-system-calls-for-embedded"}, {"text": "\ud83e\udde0 THEORY: File Descriptors \u2014 The Universal Handle", "id": "theory-file-descriptors-the-universal-handle"}, {"text": "\ud83d\udcbb COMPLETE CODE: System Calls Deep Dive", "id": "complete-code-system-calls-deep-dive"}, {"text": "\u26a0\ufe0f COMMON PITFALLS \u2014 Day 4", "id": "common-pitfalls-day-4"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Day 4 (10 Questions)", "id": "interview-questions-day-4-10-questions"}, {"text": "DAY 5: PROCESS CREATION (FORK &amp; EXEC)", "id": "day-5-process-creation-fork-exec"}, {"text": "\ud83e\udde0 THEORY: Process Creation in Linux", "id": "theory-process-creation-in-linux"}, {"text": "\ud83e\udde0 THEORY: Copy-On-Write (COW) \u2014 Performance Critical", "id": "theory-copy-on-write-cow-performance-critical"}, {"text": "\ud83e\udde0 THEORY: Process States", "id": "theory-process-states"}, {"text": "\ud83d\udcbb COMPLETE CODE: Process Patterns", "id": "complete-code-process-patterns"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Day 5 (12 Questions)", "id": "interview-questions-day-5-12-questions"}, {"text": "DAY 6: MEMORY MAPPED FILES (MMAP)", "id": "day-6-memory-mapped-files-mmap"}, {"text": "\ud83e\udde0 THEORY: Why mmap() Matters", "id": "theory-why-mmap-matters"}, {"text": "\ud83e\udde0 THEORY: mmap() Parameters Explained", "id": "theory-mmap-parameters-explained"}, {"text": "\ud83d\udcbb COMPLETE CODE: mmap Patterns", "id": "complete-code-mmap-patterns"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Day 6 (8 Questions)", "id": "interview-questions-day-6-8-questions"}, {"text": "DAYS 7-8: LINUX BOOT PROCESS &amp; FILESYSTEMS", "id": "days-7-8-linux-boot-process-filesystems"}, {"text": "\ud83e\udde0 THEORY: Complete Boot Sequence", "id": "theory-complete-boot-sequence"}, {"text": "\ud83e\udde0 THEORY: Critical Pseudo-Filesystems", "id": "theory-critical-pseudo-filesystems"}, {"text": "/proc \u2014 What your driver should know:", "id": "proc-what-your-driver-should-know"}, {"text": "/sys \u2014 The driver developer&rsquo;s best friend:", "id": "sys-the-driver-developers-best-friend"}, {"text": "/dev \u2014 Device nodes:", "id": "dev-device-nodes"}, {"text": "\ud83e\udde0 THEORY: For Embedded \u2014 U-Boot &amp; Device Tree Boot", "id": "theory-for-embedded-u-boot-device-tree-boot"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Days 7-8 (12 Questions)", "id": "interview-questions-days-7-8-12-questions"}]}, {"title": "Phase 3: Kernel Modules", "url": "03_phase3.html", "headings": [{"text": "PHASE 3: KERNEL MODULES &amp; PATTERNS (Days 9-13)", "id": "phase-3-kernel-modules-patterns-days-9-13"}, {"text": "DAY 9: FIRST KERNEL MODULE", "id": "day-9-first-kernel-module"}, {"text": "\ud83e\udde0 THEORY: What IS a Kernel Module?", "id": "theory-what-is-a-kernel-module"}, {"text": "\ud83e\udde0 THEORY: Module vs Built-in", "id": "theory-module-vs-built-in"}, {"text": "\ud83e\udde0 THEORY: Module Lifecycle", "id": "theory-module-lifecycle"}, {"text": "\ud83e\udde0 THEORY: Kernel vs Userspace Environment", "id": "theory-kernel-vs-userspace-environment"}, {"text": "\ud83d\udcbb COMPLETE CODE: Comprehensive First Module", "id": "complete-code-comprehensive-first-module"}, {"text": "\ud83d\udcbb Makefile for Out-of-Tree Module", "id": "makefile-for-out-of-tree-module"}, {"text": "\ud83e\udde0 THEORY: Makefile Explanation", "id": "theory-makefile-explanation"}, {"text": "Usage:", "id": "usage"}, {"text": "\ud83c\udfd7\ufe0f MINI-EXERCISES \u2014 Day 9", "id": "mini-exercises-day-9"}, {"text": "\u26a0\ufe0f COMMON PITFALLS \u2014 Day 9", "id": "common-pitfalls-day-9"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Day 9 (10 Questions)", "id": "interview-questions-day-9-10-questions"}, {"text": "DAYS 10-11: KERNEL ERROR HANDLING &amp; MEMORY", "id": "days-10-11-kernel-error-handling-memory"}, {"text": "\ud83e\udde0 THEORY: The goto Cleanup Pattern \u2014 Kernel&rsquo;s #1 Pattern", "id": "theory-the-goto-cleanup-pattern-kernels-1-pattern"}, {"text": "\ud83d\udcbb COMPLETE CODE: Error Handling Patterns", "id": "complete-code-error-handling-patterns"}, {"text": "\ud83e\udde0 THEORY: Kernel Memory Allocation", "id": "theory-kernel-memory-allocation"}, {"text": "\ud83e\udde0 THEORY: IS_ERR / PTR_ERR / ERR_PTR Pattern", "id": "theory-is_err-ptr_err-err_ptr-pattern"}, {"text": "DAYS 12-13: KERNEL DATA STRUCTURES &amp; TIMERS", "id": "days-12-13-kernel-data-structures-timers"}, {"text": "\ud83e\udde0 THEORY: Kernel Linked Lists", "id": "theory-kernel-linked-lists"}, {"text": "\ud83d\udcbb COMPLETE CODE: Kernel List &amp; Timer Module", "id": "complete-code-kernel-list-timer-module"}, {"text": "\ud83e\udde0 THEORY: Key Kernel Data Structures", "id": "theory-key-kernel-data-structures"}, {"text": "\ud83e\udde0 THEORY: Timers &amp; Delayed Work", "id": "theory-timers-delayed-work"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Days 10-13 (14 Questions)", "id": "interview-questions-days-10-13-14-questions"}]}, {"title": "Phase 4: Char Driver Project", "url": "04_phase4.html", "headings": [{"text": "PHASE 4: CHARACTER DEVICE DRIVER PROJECT (Days 14-22)", "id": "phase-4-character-device-driver-project-days-14-22"}, {"text": "DAY 14: CHARACTER DRIVER ARCHITECTURE", "id": "day-14-character-driver-architecture"}, {"text": "\ud83e\udde0 THEORY: The Big Picture \u2014 How User Reaches Your Driver", "id": "theory-the-big-picture-how-user-reaches-your-driver"}, {"text": "\ud83e\udde0 THEORY: Device Numbers", "id": "theory-device-numbers"}, {"text": "\ud83e\udde0 THEORY: Key Structures Deep Dive", "id": "theory-key-structures-deep-dive"}, {"text": "struct file \u2014 Represents an OPEN file", "id": "struct-file-represents-an-open-file"}, {"text": "struct inode \u2014 Represents a FILE on filesystem", "id": "struct-inode-represents-a-file-on-filesystem"}, {"text": "\ud83e\udde0 THEORY: copy_to_user / copy_from_user \u2014 WHY They Exist", "id": "theory-copy_to_user-copy_from_user-why-they-exist"}, {"text": "DAYS 15-22: COMPLETE CHARACTER DRIVER IMPLEMENTATION", "id": "days-15-22-complete-character-driver-implementation"}, {"text": "\ud83d\udcbb THE DRIVER \u2014 Production Quality", "id": "the-driver-production-quality"}, {"text": "\ud83d\udcbb MAKEFILE", "id": "makefile"}, {"text": "\ud83d\udcbb TEST APPLICATION", "id": "test-application"}, {"text": "\ud83c\udfd7\ufe0f MINI-EXERCISES \u2014 Days 14-22", "id": "mini-exercises-days-14-22"}, {"text": "\u26a0\ufe0f COMMON PITFALLS \u2014 Character Driver", "id": "common-pitfalls-character-driver"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Character Driver (15 Questions)", "id": "interview-questions-character-driver-15-questions"}]}, {"title": "Phase 5: Device Tree & Platform", "url": "05_phase5.html", "headings": [{"text": "PHASE 5: DEVICE TREE &amp; PLATFORM DRIVERS (Days 23-27)", "id": "phase-5-device-tree-platform-drivers-days-23-27"}, {"text": "DAYS 23-24: DEVICE TREE FUNDAMENTALS", "id": "days-23-24-device-tree-fundamentals"}, {"text": "\ud83e\udde0 THEORY: Why Device Tree Exists", "id": "theory-why-device-tree-exists"}, {"text": "\ud83e\udde0 THEORY: Device Tree Syntax", "id": "theory-device-tree-syntax"}, {"text": "\ud83e\udde0 THEORY: Key Properties Reference", "id": "theory-key-properties-reference"}, {"text": "\ud83e\udde0 THEORY: Compatible String Matching \u2014 The Heart of DT", "id": "theory-compatible-string-matching-the-heart-of-dt"}, {"text": "\ud83d\udcbb COMPLETE CODE: DT Property Reading Demo", "id": "complete-code-dt-property-reading-demo"}, {"text": "DT Overlay for Testing (without real hardware)", "id": "dt-overlay-for-testing-without-real-hardware"}, {"text": "DAYS 25-27: PLATFORM DRIVER", "id": "days-25-27-platform-driver"}, {"text": "\ud83e\udde0 THEORY: Platform Driver Model", "id": "theory-platform-driver-model"}, {"text": "\ud83e\udde0 THEORY: probe() and remove() \u2014 The Full Story", "id": "theory-probe-and-remove-the-full-story"}, {"text": "\ud83d\udcbb COMPLETE CODE: Platform Driver", "id": "complete-code-platform-driver"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Device Tree &amp; Platform (16 Questions)", "id": "interview-questions-device-tree-platform-16-questions"}]}, {"title": "Phase 6: I2C Project", "url": "06_phase6.html", "headings": [{"text": "PHASE 6: I2C SENSOR DRIVER PROJECT (Days 28-37)", "id": "phase-6-i2c-sensor-driver-project-days-28-37"}, {"text": "DAYS 28-29: I2C SUBSYSTEM DEEP DIVE", "id": "days-28-29-i2c-subsystem-deep-dive"}, {"text": "\ud83e\udde0 THEORY: I2C Protocol \u2014 Hardware Level", "id": "theory-i2c-protocol-hardware-level"}, {"text": "\ud83e\udde0 THEORY: I2C Transaction Format", "id": "theory-i2c-transaction-format"}, {"text": "\ud83e\udde0 THEORY: Linux I2C Stack", "id": "theory-linux-i2c-stack"}, {"text": "\ud83e\udde0 THEORY: Key I2C API Functions", "id": "theory-key-i2c-api-functions"}, {"text": "DAYS 30-37: COMPLETE I2C TEMPERATURE SENSOR DRIVER", "id": "days-30-37-complete-i2c-temperature-sensor-driver"}, {"text": "\ud83d\udcbb THE DRIVER \u2014 Production Quality", "id": "the-driver-production-quality"}, {"text": "\ud83d\udcbb MAKEFILE", "id": "makefile"}, {"text": "\ud83e\udde0 THEORY: Testing Without Real Hardware", "id": "theory-testing-without-real-hardware"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 I2C Driver (12 Questions)", "id": "interview-questions-i2c-driver-12-questions"}]}, {"title": "Phase 7: Thread Pool & Interview", "url": "07_phase7.html", "headings": [{"text": "PHASE 7: THREAD POOL PROJECT + FINAL PREP (Days 38-40)", "id": "phase-7-thread-pool-project-final-prep-days-38-40"}, {"text": "DAYS 38-39: THREAD POOL IMPLEMENTATION", "id": "days-38-39-thread-pool-implementation"}, {"text": "\ud83e\udde0 THEORY: Why Thread Pools?", "id": "theory-why-thread-pools"}, {"text": "\ud83e\udde0 THEORY: Architecture Deep Dive", "id": "theory-architecture-deep-dive"}, {"text": "\ud83d\udcbb COMPLETE CODE: Thread Pool Header", "id": "complete-code-thread-pool-header"}, {"text": "\ud83d\udcbb COMPLETE CODE: Thread Pool Implementation", "id": "complete-code-thread-pool-implementation"}, {"text": "\ud83d\udcbb TEST APPLICATION", "id": "test-application"}, {"text": "\ud83d\udcbb MAKEFILE", "id": "makefile"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Thread Pool (10 Questions)", "id": "interview-questions-thread-pool-10-questions"}, {"text": "DAY 40: DOCUMENTATION, POLISH &amp; FINAL PREP", "id": "day-40-documentation-polish-final-prep"}, {"text": "\u2705 FINAL CHECKLIST", "id": "final-checklist"}, {"text": "\ud83c\udfaf PROJECT PRESENTATION SCRIPTS", "id": "project-presentation-scripts"}]}, {"title": "Appendix: Interview Bank", "url": "08_appendix_interviews.html", "headings": [{"text": "\ud83d\udcda COMPREHENSIVE INTERVIEW QUESTION BANK", "id": "comprehensive-interview-question-bank"}, {"text": "150+ Questions Categorized by Topic \u2014 with Model Answers for 0-2 YOE", "id": "150-questions-categorized-by-topic-with-model-answers-for-0-2-yoe"}, {"text": "CATEGORY 1: C PROGRAMMING FUNDAMENTALS (25 Questions)", "id": "category-1-c-programming-fundamentals-25-questions"}, {"text": "Memory &amp; Pointers", "id": "memory-pointers"}, {"text": "Bitwise", "id": "bitwise"}, {"text": "Threading", "id": "threading"}, {"text": "CATEGORY 2: LINUX KERNEL FUNDAMENTALS (25 Questions)", "id": "category-2-linux-kernel-fundamentals-25-questions"}, {"text": "CATEGORY 3: MEMORY MANAGEMENT (20 Questions)", "id": "category-3-memory-management-20-questions"}, {"text": "CATEGORY 4: DEVICE DRIVERS (30 Questions)", "id": "category-4-device-drivers-30-questions"}, {"text": "CATEGORY 5: DEVICE TREE (15 Questions)", "id": "category-5-device-tree-15-questions"}, {"text": "CATEGORY 6: I2C/SPI PROTOCOLS (15 Questions)", "id": "category-6-i2cspi-protocols-15-questions"}, {"text": "CATEGORY 7: SYNCHRONIZATION &amp; CONCURRENCY (20 Questions)", "id": "category-7-synchronization-concurrency-20-questions"}, {"text": "CATEGORY 8: DEBUGGING &amp; TOOLS (15 Questions)", "id": "category-8-debugging-tools-15-questions"}, {"text": "CATEGORY 9: REAL INTERVIEW SCENARIOS (15 Questions)", "id": "category-9-real-interview-scenarios-15-questions"}, {"text": "CATEGORY 10: SYSTEM DESIGN &amp; ARCHITECTURE (10 Questions)", "id": "category-10-system-design-architecture-10-questions"}, {"text": "QUICK REFERENCE: Must-Know Code Snippets", "id": "quick-reference-must-know-code-snippets"}, {"text": "1. Basic Module Template", "id": "1-basic-module-template"}, {"text": "2. File Operations", "id": "2-file-operations"}, {"text": "3. Character Device Registration", "id": "3-character-device-registration"}, {"text": "4. IOCTL Command Definition", "id": "4-ioctl-command-definition"}, {"text": "5. Platform Driver Template", "id": "5-platform-driver-template"}, {"text": "6. I2C Driver Template", "id": "6-i2c-driver-template"}, {"text": "7. Error Handling Pattern", "id": "7-error-handling-pattern"}, {"text": "8. Quick Error Codes", "id": "8-quick-error-codes"}]}, {"title": "Appendix: Kernel Internals", "url": "09_appendix_kernel.html", "headings": [{"text": "\ud83d\udcd6 APPENDIX: KERNEL INTERNALS DEEP DIVE", "id": "appendix-kernel-internals-deep-dive"}, {"text": "Virtual Memory, Scheduling, Interrupts \u2014 For Interview Depth", "id": "virtual-memory-scheduling-interrupts-for-interview-depth"}, {"text": "VIRTUAL MEMORY \u2014 How It Actually Works", "id": "virtual-memory-how-it-actually-works"}, {"text": "Address Translation", "id": "address-translation"}, {"text": "Page Fault Handling", "id": "page-fault-handling"}, {"text": "Why This Matters for Driver Development", "id": "why-this-matters-for-driver-development"}, {"text": "PROCESS SCHEDULING", "id": "process-scheduling"}, {"text": "The Completely Fair Scheduler (CFS)", "id": "the-completely-fair-scheduler-cfs"}, {"text": "Real-Time Scheduling Classes", "id": "real-time-scheduling-classes"}, {"text": "INTERRUPT HANDLING \u2014 COMPLETE PICTURE", "id": "interrupt-handling-complete-picture"}, {"text": "Interrupt Flow", "id": "interrupt-flow"}, {"text": "Threaded IRQ Example", "id": "threaded-irq-example"}, {"text": "POWER MANAGEMENT", "id": "power-management"}, {"text": "Runtime PM (for drivers)", "id": "runtime-pm-for-drivers"}, {"text": "KERNEL DEBUGGING TOOLS REFERENCE", "id": "kernel-debugging-tools-reference"}, {"text": "Dynamic Debug (Enable dev_dbg at runtime)", "id": "dynamic-debug-enable-dev_dbg-at-runtime"}]}, {"title": "Appendix: Debugging", "url": "10_appendix_debugging.html", "headings": [{"text": "\ud83d\udd27 APPENDIX: DEBUGGING TECHNIQUES", "id": "appendix-debugging-techniques"}, {"text": "Complete Debugging Toolkit for Embedded Linux Development", "id": "complete-debugging-toolkit-for-embedded-linux-development"}, {"text": "SECTION 1: USER-SPACE DEBUGGING", "id": "section-1-user-space-debugging"}, {"text": "strace \u2014 System Call Tracer", "id": "strace-system-call-tracer"}, {"text": "GDB \u2014 The GNU Debugger", "id": "gdb-the-gnu-debugger"}, {"text": "Valgrind \u2014 Memory Error Detector", "id": "valgrind-memory-error-detector"}, {"text": "Address Sanitizer (ASan) \u2014 Compile-Time Instrumentation", "id": "address-sanitizer-asan-compile-time-instrumentation"}, {"text": "SECTION 2: KERNEL-SPACE DEBUGGING", "id": "section-2-kernel-space-debugging"}, {"text": "dmesg \u2014 Kernel Message Buffer", "id": "dmesg-kernel-message-buffer"}, {"text": "Dynamic Debug (dev_dbg at runtime)", "id": "dynamic-debug-dev_dbg-at-runtime"}, {"text": "/proc and /sys Inspection", "id": "proc-and-sys-inspection"}, {"text": "ftrace \u2014 Kernel Function Tracer", "id": "ftrace-kernel-function-tracer"}, {"text": "Kernel Oops \u2014 Reading Crash Outputs", "id": "kernel-oops-reading-crash-outputs"}, {"text": "SECTION 3: DEBUGGING WORKFLOW", "id": "section-3-debugging-workflow"}, {"text": "When Your Module Won&rsquo;t Load", "id": "when-your-module-wont-load"}, {"text": "When Your Driver Crashes", "id": "when-your-driver-crashes"}, {"text": "When I2C Communication Fails", "id": "when-i2c-communication-fails"}, {"text": "SECTION 4: PERFORMANCE DEBUGGING", "id": "section-4-performance-debugging"}, {"text": "perf \u2014 The Swiss Army Knife", "id": "perf-the-swiss-army-knife"}, {"text": "Kernel Config Options for Debugging", "id": "kernel-config-options-for-debugging"}, {"text": "QUICK REFERENCE: What Tool When?", "id": "quick-reference-what-tool-when"}]}]</script>
+
+  <!-- Scripts -->
+  <script>hljs.highlightAll();</script>
+  <script src="app.js"></script>
+</body>
+</html>

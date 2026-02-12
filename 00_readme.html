@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="README — Overview — Embedded Linux & Device Drivers Enhanced 40-Day Guide">
+  <title>README — Overview — Enhanced Plan</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <!-- Highlight.js for syntax highlighting -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+  <!-- App styles -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Progress Bar -->
+  <div id="progress-bar"></div>
+
+  <!-- Sidebar Overlay (mobile) -->
+  <div class="sidebar-overlay"></div>
+
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-brand">
+      <h1>🐧 Embedded Linux</h1>
+      <p>Enhanced 40-Day Guide</p>
+    </div>
+    <div class="sidebar-nav">
+  <div class="sidebar-section-label">Getting Started</div>
+  <a class="sidebar-link active" href="00_readme.html"><span class="link-icon">🏠</span><span>README — Overview</span></a>
+  <div class="sidebar-section-label">Learning Phases</div>
+  <a class="sidebar-link" href="01_phase1.html"><span class="link-icon">⚙️</span><span>Phase 1: C Revision</span><span class="link-badge">Days 0-3</span></a>
+  <a class="sidebar-link" href="02_phase2.html"><span class="link-icon">🐧</span><span>Phase 2: Linux Fundamentals</span><span class="link-badge">Days 4-8</span></a>
+  <a class="sidebar-link" href="03_phase3.html"><span class="link-icon">🧩</span><span>Phase 3: Kernel Modules</span><span class="link-badge">Days 9-13</span></a>
+  <a class="sidebar-link" href="04_phase4.html"><span class="link-icon">💾</span><span>Phase 4: Char Driver Project</span><span class="link-badge">Days 14-22</span></a>
+  <a class="sidebar-link" href="05_phase5.html"><span class="link-icon">🌳</span><span>Phase 5: Device Tree &amp; Platform</span><span class="link-badge">Days 23-27</span></a>
+  <a class="sidebar-link" href="06_phase6.html"><span class="link-icon">🔌</span><span>Phase 6: I2C Project</span><span class="link-badge">Days 28-37</span></a>
+  <a class="sidebar-link" href="07_phase7.html"><span class="link-icon">🎯</span><span>Phase 7: Thread Pool &amp; Interview</span><span class="link-badge">Days 38-40</span></a>
+  <div class="sidebar-section-label">Appendices</div>
+  <a class="sidebar-link" href="08_appendix_interviews.html"><span class="link-icon">📝</span><span>Appendix: Interview Bank</span><span class="link-badge">150+ Q&amp;A</span></a>
+  <a class="sidebar-link" href="09_appendix_kernel.html"><span class="link-icon">🔬</span><span>Appendix: Kernel Internals</span></a>
+  <a class="sidebar-link" href="10_appendix_debugging.html"><span class="link-icon">🔧</span><span>Appendix: Debugging</span></a>
+    </div>
+  </nav>
+
+  <!-- Header -->
+  <header class="header">
+    <button class="hamburger" aria-label="Toggle sidebar">☰</button>
+    <div class="header-title">
+      <span class="emoji">🏠</span> README — Overview
+    </div>
+    <div class="header-search">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="search-input" placeholder="Search topics..." autocomplete="off">
+      <div class="search-results" id="search-results"></div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="embedded-linux-device-drivers-enhanced-fool-proof-guide">🐧 EMBEDDED LINUX &amp; DEVICE DRIVERS — ENHANCED FOOL-PROOF GUIDE</h1>
+<h2 id="complete-40-day-execution-plan-enhanced-edition">Complete 40-Day Execution Plan (Enhanced Edition)</h2>
+<h3 id="from-systems-c-programmer-embedded-linux-engineer">From Systems C Programmer → Embedded Linux Engineer</h3>
+<hr />
+<h2 id="whats-new-in-the-enhanced-edition">🔥 What&rsquo;s NEW in the Enhanced Edition</h2>
+<p>Your original 40-day plan was good. This enhanced edition adds <strong>significant depth</strong> in the areas that were thin:</p>
+<table>
+<thead>
+<tr>
+<th>Enhancement</th>
+<th>Details</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>🧠 Deep Theory</strong></td>
+<td>Every concept now has a &ldquo;why it exists&rdquo; + &ldquo;how it works internally&rdquo; section</td>
+</tr>
+<tr>
+<td><strong>📝 150+ Interview Questions</strong></td>
+<td>Up from ~50. Each with model answers suitable for 0-2 YOE roles</td>
+</tr>
+<tr>
+<td><strong>💻 More Code Examples</strong></td>
+<td>Additional practical examples per day, especially for tricky kernel APIs</td>
+</tr>
+<tr>
+<td><strong>⚠️ Common Pitfalls</strong></td>
+<td>&ldquo;Gotchas&rdquo; section for each day — things that trip up beginners</td>
+</tr>
+<tr>
+<td><strong>🔗 Kernel Source Connections</strong></td>
+<td>Pointers to actual kernel source for each concept</td>
+</tr>
+<tr>
+<td><strong>🏗️ Mini-Exercises</strong></td>
+<td>Small exercises per day to verify understanding before moving on</td>
+</tr>
+<tr>
+<td><strong>📌 Gap-Filled Days</strong></td>
+<td>Days 10-13, 19-22, 36-37 were sparse — now fully fleshed out</td>
+</tr>
+<tr>
+<td><strong>🎯 Real Interview Scenarios</strong></td>
+<td>&ldquo;Walk me through&hellip;&rdquo; style Q&amp;A for every project</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="enhanced-file-structure">📁 Enhanced File Structure</h2>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Days</th>
+<th>Content</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>01_Phase1_C_Revision.md</code></td>
+<td>0–3</td>
+<td>Setup + Pointers, Bitwise, Threading (DEEP)</td>
+</tr>
+<tr>
+<td><code>02_Phase2_Linux_Fundamentals.md</code></td>
+<td>4–8</td>
+<td>Syscalls, Fork/Exec, mmap, Boot, Filesystems</td>
+</tr>
+<tr>
+<td><code>03_Phase3_Kernel_Modules.md</code></td>
+<td>9–13</td>
+<td>Modules, Parameters, Memory, Error Handling, Linked Lists, Timers</td>
+</tr>
+<tr>
+<td><code>04_Phase4_CharDriver_Project.md</code></td>
+<td>14–22</td>
+<td>CHARACTER DRIVER PROJECT (complete with testing &amp; debug)</td>
+</tr>
+<tr>
+<td><code>05_Phase5_DeviceTree_Platform.md</code></td>
+<td>23–27</td>
+<td>Device Tree Deep Dive + Platform Driver</td>
+</tr>
+<tr>
+<td><code>06_Phase6_I2C_Project.md</code></td>
+<td>28–37</td>
+<td>I2C SENSOR DRIVER PROJECT (complete)</td>
+</tr>
+<tr>
+<td><code>07_Phase7_ThreadPool_Interview.md</code></td>
+<td>38–40</td>
+<td>Thread Pool + Comprehensive Interview Prep</td>
+</tr>
+<tr>
+<td><code>08_Appendix_InterviewBank.md</code></td>
+<td>—</td>
+<td><strong>150+ categorized interview Q&amp;A</strong></td>
+</tr>
+<tr>
+<td><code>09_Appendix_KernelInternals.md</code></td>
+<td>—</td>
+<td>Virtual Memory, Scheduling, Interrupts deep-dive</td>
+</tr>
+<tr>
+<td><code>10_Appendix_Debugging.md</code></td>
+<td>—</td>
+<td>Complete debugging toolkit &amp; techniques</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="timeline-overview">📊 Timeline Overview</h2>
+<pre><code>Week 1 (Days 0-7):   C Revision + Linux Fundamentals + Boot
+Week 2 (Days 8-13):  Kernel Modules + Kernel Programming Patterns
+Week 3 (Days 14-21): CHARACTER DRIVER PROJECT (build, test, iterate)
+Week 4 (Days 22-27): Device Tree + Platform Drivers
+Week 5 (Days 28-35): I2C SENSOR DRIVER PROJECT
+Week 6 (Days 36-40): Polish + Thread Pool + INTERVIEW PREP
+</code></pre>
+<hr />
+<h2 id="who-this-is-for">🎯 Who This Is For</h2>
+<ul>
+<li><strong>Background</strong>: Systems C programmer (you know C well, you&rsquo;ve worked on 5G stack)</li>
+<li><strong>Goal</strong>: Embedded Linux / Device Driver Engineer role (0-2 YOE)</li>
+<li><strong>Time</strong>: 4-5 hours/day for 40 days</li>
+<li><strong>Environment</strong>: Ubuntu 22.04 (VM is fine)</li>
+</ul>
+<hr />
+<h2 id="daily-workflow-enhanced">📋 Daily Workflow (Enhanced)</h2>
+<h3 id="morning-25-3-hours">Morning (2.5-3 hours):</h3>
+<ol>
+<li>Read <strong>Theory</strong> section completely — understand the &ldquo;why&rdquo;</li>
+<li><strong>Type</strong> the code by hand (builds muscle memory)</li>
+<li>Build, test, and <strong>debug</strong> any issues</li>
+<li>Complete the <strong>Mini-Exercises</strong></li>
+<li>Read the <strong>Common Pitfalls</strong> section</li>
+</ol>
+<h3 id="evening-15-2-hours">Evening (1.5-2 hours):</h3>
+<ol start="6">
+<li>Review <strong>Interview Q&amp;A</strong> for that day</li>
+<li><strong>Practice explaining</strong> concepts aloud (record yourself)</li>
+<li>Do the <strong>&ldquo;Explain it to a rubber duck&rdquo;</strong> exercise</li>
+<li><code>git commit</code> your work</li>
+</ol>
+<h3 id="before-sleep-15-min">Before Sleep (15 min):</h3>
+<ol start="10">
+<li>Flash-review your notes from the morning</li>
+</ol>
+<hr />
+<h2 id="rules-for-success">🎓 Rules for Success</h2>
+<table>
+<thead>
+<tr>
+<th>Rule</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>RULE 1</strong></td>
+<td>Follow days <strong>sequentially</strong> — no skipping</td>
+</tr>
+<tr>
+<td><strong>RULE 2</strong></td>
+<td>Complete <strong>verification criteria</strong> before moving forward</td>
+</tr>
+<tr>
+<td><strong>RULE 3</strong></td>
+<td><strong>Type all code</strong> yourself — don&rsquo;t copy-paste</td>
+</tr>
+<tr>
+<td><strong>RULE 4</strong></td>
+<td><strong>git commit</strong> daily — build your portfolio</td>
+</tr>
+<tr>
+<td><strong>RULE 5</strong></td>
+<td>Don&rsquo;t add extra topics — <strong>scope control</strong> is critical</td>
+</tr>
+<tr>
+<td><strong>RULE 6</strong></td>
+<td><strong>Explain concepts aloud</strong> — if you can&rsquo;t explain it, you don&rsquo;t know it</td>
+</tr>
+<tr>
+<td><strong>RULE 7</strong></td>
+<td>When stuck, <strong>re-read theory first</strong> before Googling</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="end-goal-after-40-days">🏆 End Goal: After 40 Days</h2>
+<ul>
+<li>✅ <strong>GitHub Portfolio</strong> with 3 complete, documented projects</li>
+<li>✅ <strong>Resume</strong> with specific technical achievements</li>
+<li>✅ <strong>Interview Confidence</strong> from 150+ practiced Q&amp;A</li>
+<li>✅ <strong>Kernel Skills</strong> that 95% of freshers don&rsquo;t have</li>
+<li>✅ <strong>Deep Understanding</strong> of Linux driver model, not just surface knowledge</li>
+</ul>
+<hr />
+<h2 id="start-now">⚡ Start Now</h2>
+<ol>
+<li>Open <code>01_Phase1_C_Revision.md</code></li>
+<li>Complete Day 0 setup</li>
+<li>Start Day 1 tomorrow morning</li>
+<li><strong>Don&rsquo;t overthink — just start!</strong></li>
+</ol>
+<p>Good luck! 🚀</p>
+
+      <!-- Page Navigation -->
+      <div class="page-nav">
+        <a class="next" href="01_phase1.html"><span class="nav-label">Next →</span><span class="nav-title">Phase 1: C Revision</span></a>
+      </div>
+    </div>
+  </main>
+
+  <!-- Back to Top -->
+  <button class="back-to-top" aria-label="Back to top">↑</button>
+
+  <!-- Search Index Data -->
+  <script type="application/json" id="search-data">[{"title": "README \u2014 Overview", "url": "00_readme.html", "headings": [{"text": "\ud83d\udc27 EMBEDDED LINUX &amp; DEVICE DRIVERS \u2014 ENHANCED FOOL-PROOF GUIDE", "id": "embedded-linux-device-drivers-enhanced-fool-proof-guide"}, {"text": "Complete 40-Day Execution Plan (Enhanced Edition)", "id": "complete-40-day-execution-plan-enhanced-edition"}, {"text": "From Systems C Programmer \u2192 Embedded Linux Engineer", "id": "from-systems-c-programmer-embedded-linux-engineer"}, {"text": "\ud83d\udd25 What&rsquo;s NEW in the Enhanced Edition", "id": "whats-new-in-the-enhanced-edition"}, {"text": "\ud83d\udcc1 Enhanced File Structure", "id": "enhanced-file-structure"}, {"text": "\ud83d\udcca Timeline Overview", "id": "timeline-overview"}, {"text": "\ud83c\udfaf Who This Is For", "id": "who-this-is-for"}, {"text": "\ud83d\udccb Daily Workflow (Enhanced)", "id": "daily-workflow-enhanced"}, {"text": "Morning (2.5-3 hours):", "id": "morning-25-3-hours"}, {"text": "Evening (1.5-2 hours):", "id": "evening-15-2-hours"}, {"text": "Before Sleep (15 min):", "id": "before-sleep-15-min"}, {"text": "\ud83c\udf93 Rules for Success", "id": "rules-for-success"}, {"text": "\ud83c\udfc6 End Goal: After 40 Days", "id": "end-goal-after-40-days"}, {"text": "\u26a1 Start Now", "id": "start-now"}]}, {"title": "Phase 1: C Revision", "url": "01_phase1.html", "headings": [{"text": "PHASE 1: SYSTEMS C REVISION (Days 0-3)", "id": "phase-1-systems-c-revision-days-0-3"}, {"text": "DAY 0: ENVIRONMENT SETUP", "id": "day-0-environment-setup"}, {"text": "Installation Commands (Ubuntu 22.04/20.04)", "id": "installation-commands-ubuntu-22042004"}, {"text": "Verify Setup", "id": "verify-setup"}, {"text": "\u2705 Verification Criteria", "id": "verification-criteria"}, {"text": "DAY 1: POINTERS &amp; MEMORY \u2014 DEEP DIVE", "id": "day-1-pointers-memory-deep-dive"}, {"text": "\ud83e\udde0 THEORY: Memory Layout of a C Program", "id": "theory-memory-layout-of-a-c-program"}, {"text": "Why This Matters for Embedded Linux:", "id": "why-this-matters-for-embedded-linux"}, {"text": "Internal Detail: How malloc() Works", "id": "internal-detail-how-malloc-works"}, {"text": "\ud83e\udde0 THEORY: Pointer Fundamentals \u2014 What You MUST Know", "id": "theory-pointer-fundamentals-what-you-must-know"}, {"text": "A pointer is just an address. Period.", "id": "a-pointer-is-just-an-address-period"}, {"text": "Pointer Sizes:", "id": "pointer-sizes"}, {"text": "Pointer Arithmetic \u2014 The #1 Interview Topic", "id": "pointer-arithmetic-the-1-interview-topic"}, {"text": "\ud83e\udde0 THEORY: Function Pointers \u2014 Essential for Kernel", "id": "theory-function-pointers-essential-for-kernel"}, {"text": "\ud83e\udde0 THEORY: Struct Padding &amp; Alignment", "id": "theory-struct-padding-alignment"}, {"text": "\ud83d\udcbb COMPLETE CODE: Comprehensive Pointer &amp; Memory Demo", "id": "complete-code-comprehensive-pointer-memory-demo"}, {"text": "\ud83c\udfd7\ufe0f MINI-EXERCISES \u2014 Day 1", "id": "mini-exercises-day-1"}, {"text": "\u26a0\ufe0f COMMON PITFALLS \u2014 Day 1", "id": "common-pitfalls-day-1"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Day 1 (15 Questions)", "id": "interview-questions-day-1-15-questions"}, {"text": "DAY 2: BITWISE OPERATIONS \u2014 MASTERY", "id": "day-2-bitwise-operations-mastery"}, {"text": "\ud83e\udde0 THEORY: Why Bitwise Operations Are Essential", "id": "theory-why-bitwise-operations-are-essential"}, {"text": "\ud83e\udde0 THEORY: Bitwise Operators (Complete Reference)", "id": "theory-bitwise-operators-complete-reference"}, {"text": "\ud83e\udde0 THEORY: The Fundamental Bit Operations", "id": "theory-the-fundamental-bit-operations"}, {"text": "\ud83e\udde0 THEORY: Kernel Bit Manipulation APIs", "id": "theory-kernel-bit-manipulation-apis"}, {"text": "\ud83d\udcbb COMPLETE CODE: Bitwise Mastery", "id": "complete-code-bitwise-mastery"}, {"text": "\ud83c\udfd7\ufe0f MINI-EXERCISES \u2014 Day 2", "id": "mini-exercises-day-2"}, {"text": "\u26a0\ufe0f COMMON PITFALLS \u2014 Day 2", "id": "common-pitfalls-day-2"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Day 2 (14 Questions)", "id": "interview-questions-day-2-14-questions"}, {"text": "DAY 3: THREADING \u2014 CONCURRENCY ESSENTIALS", "id": "day-3-threading-concurrency-essentials"}, {"text": "\ud83e\udde0 THEORY: Why Threading Matters for Kernel Development", "id": "theory-why-threading-matters-for-kernel-development"}, {"text": "\ud83e\udde0 THEORY: Thread vs Process", "id": "theory-thread-vs-process"}, {"text": "\ud83e\udde0 THEORY: Synchronization Primitives \u2014 Deep Dive", "id": "theory-synchronization-primitives-deep-dive"}, {"text": "Mutex (Mutual Exclusion)", "id": "mutex-mutual-exclusion"}, {"text": "Spinlock", "id": "spinlock"}, {"text": "Condition Variable", "id": "condition-variable"}, {"text": "Semaphore", "id": "semaphore"}, {"text": "\ud83e\udde0 THEORY: The Deadlock Problem", "id": "theory-the-deadlock-problem"}, {"text": "\ud83d\udcbb COMPLETE CODE: Threading Patterns", "id": "complete-code-threading-patterns"}, {"text": "\ud83c\udfd7\ufe0f MINI-EXERCISES \u2014 Day 3", "id": "mini-exercises-day-3"}, {"text": "\u26a0\ufe0f COMMON PITFALLS \u2014 Day 3", "id": "common-pitfalls-day-3"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Day 3 (16 Questions)", "id": "interview-questions-day-3-16-questions"}]}, {"title": "Phase 2: Linux Fundamentals", "url": "02_phase2.html", "headings": [{"text": "PHASE 2: LINUX FUNDAMENTALS (Days 4-8)", "id": "phase-2-linux-fundamentals-days-4-8"}, {"text": "DAY 4: SYSTEM CALLS \u2014 THE KERNEL BOUNDARY", "id": "day-4-system-calls-the-kernel-boundary"}, {"text": "\ud83e\udde0 THEORY: User Space vs Kernel Space (Why It Exists)", "id": "theory-user-space-vs-kernel-space-why-it-exists"}, {"text": "Why the split?", "id": "why-the-split"}, {"text": "\ud83e\udde0 THEORY: System Call Mechanism \u2014 Step by Step", "id": "theory-system-call-mechanism-step-by-step"}, {"text": "\ud83e\udde0 THEORY: Key System Calls for Embedded", "id": "theory-key-system-calls-for-embedded"}, {"text": "\ud83e\udde0 THEORY: File Descriptors \u2014 The Universal Handle", "id": "theory-file-descriptors-the-universal-handle"}, {"text": "\ud83d\udcbb COMPLETE CODE: System Calls Deep Dive", "id": "complete-code-system-calls-deep-dive"}, {"text": "\u26a0\ufe0f COMMON PITFALLS \u2014 Day 4", "id": "common-pitfalls-day-4"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Day 4 (10 Questions)", "id": "interview-questions-day-4-10-questions"}, {"text": "DAY 5: PROCESS CREATION (FORK &amp; EXEC)", "id": "day-5-process-creation-fork-exec"}, {"text": "\ud83e\udde0 THEORY: Process Creation in Linux", "id": "theory-process-creation-in-linux"}, {"text": "\ud83e\udde0 THEORY: Copy-On-Write (COW) \u2014 Performance Critical", "id": "theory-copy-on-write-cow-performance-critical"}, {"text": "\ud83e\udde0 THEORY: Process States", "id": "theory-process-states"}, {"text": "\ud83d\udcbb COMPLETE CODE: Process Patterns", "id": "complete-code-process-patterns"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Day 5 (12 Questions)", "id": "interview-questions-day-5-12-questions"}, {"text": "DAY 6: MEMORY MAPPED FILES (MMAP)", "id": "day-6-memory-mapped-files-mmap"}, {"text": "\ud83e\udde0 THEORY: Why mmap() Matters", "id": "theory-why-mmap-matters"}, {"text": "\ud83e\udde0 THEORY: mmap() Parameters Explained", "id": "theory-mmap-parameters-explained"}, {"text": "\ud83d\udcbb COMPLETE CODE: mmap Patterns", "id": "complete-code-mmap-patterns"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Day 6 (8 Questions)", "id": "interview-questions-day-6-8-questions"}, {"text": "DAYS 7-8: LINUX BOOT PROCESS &amp; FILESYSTEMS", "id": "days-7-8-linux-boot-process-filesystems"}, {"text": "\ud83e\udde0 THEORY: Complete Boot Sequence", "id": "theory-complete-boot-sequence"}, {"text": "\ud83e\udde0 THEORY: Critical Pseudo-Filesystems", "id": "theory-critical-pseudo-filesystems"}, {"text": "/proc \u2014 What your driver should know:", "id": "proc-what-your-driver-should-know"}, {"text": "/sys \u2014 The driver developer&rsquo;s best friend:", "id": "sys-the-driver-developers-best-friend"}, {"text": "/dev \u2014 Device nodes:", "id": "dev-device-nodes"}, {"text": "\ud83e\udde0 THEORY: For Embedded \u2014 U-Boot &amp; Device Tree Boot", "id": "theory-for-embedded-u-boot-device-tree-boot"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Days 7-8 (12 Questions)", "id": "interview-questions-days-7-8-12-questions"}]}, {"title": "Phase 3: Kernel Modules", "url": "03_phase3.html", "headings": [{"text": "PHASE 3: KERNEL MODULES &amp; PATTERNS (Days 9-13)", "id": "phase-3-kernel-modules-patterns-days-9-13"}, {"text": "DAY 9: FIRST KERNEL MODULE", "id": "day-9-first-kernel-module"}, {"text": "\ud83e\udde0 THEORY: What IS a Kernel Module?", "id": "theory-what-is-a-kernel-module"}, {"text": "\ud83e\udde0 THEORY: Module vs Built-in", "id": "theory-module-vs-built-in"}, {"text": "\ud83e\udde0 THEORY: Module Lifecycle", "id": "theory-module-lifecycle"}, {"text": "\ud83e\udde0 THEORY: Kernel vs Userspace Environment", "id": "theory-kernel-vs-userspace-environment"}, {"text": "\ud83d\udcbb COMPLETE CODE: Comprehensive First Module", "id": "complete-code-comprehensive-first-module"}, {"text": "\ud83d\udcbb Makefile for Out-of-Tree Module", "id": "makefile-for-out-of-tree-module"}, {"text": "\ud83e\udde0 THEORY: Makefile Explanation", "id": "theory-makefile-explanation"}, {"text": "Usage:", "id": "usage"}, {"text": "\ud83c\udfd7\ufe0f MINI-EXERCISES \u2014 Day 9", "id": "mini-exercises-day-9"}, {"text": "\u26a0\ufe0f COMMON PITFALLS \u2014 Day 9", "id": "common-pitfalls-day-9"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Day 9 (10 Questions)", "id": "interview-questions-day-9-10-questions"}, {"text": "DAYS 10-11: KERNEL ERROR HANDLING &amp; MEMORY", "id": "days-10-11-kernel-error-handling-memory"}, {"text": "\ud83e\udde0 THEORY: The goto Cleanup Pattern \u2014 Kernel&rsquo;s #1 Pattern", "id": "theory-the-goto-cleanup-pattern-kernels-1-pattern"}, {"text": "\ud83d\udcbb COMPLETE CODE: Error Handling Patterns", "id": "complete-code-error-handling-patterns"}, {"text": "\ud83e\udde0 THEORY: Kernel Memory Allocation", "id": "theory-kernel-memory-allocation"}, {"text": "\ud83e\udde0 THEORY: IS_ERR / PTR_ERR / ERR_PTR Pattern", "id": "theory-is_err-ptr_err-err_ptr-pattern"}, {"text": "DAYS 12-13: KERNEL DATA STRUCTURES &amp; TIMERS", "id": "days-12-13-kernel-data-structures-timers"}, {"text": "\ud83e\udde0 THEORY: Kernel Linked Lists", "id": "theory-kernel-linked-lists"}, {"text": "\ud83d\udcbb COMPLETE CODE: Kernel List &amp; Timer Module", "id": "complete-code-kernel-list-timer-module"}, {"text": "\ud83e\udde0 THEORY: Key Kernel Data Structures", "id": "theory-key-kernel-data-structures"}, {"text": "\ud83e\udde0 THEORY: Timers &amp; Delayed Work", "id": "theory-timers-delayed-work"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Days 10-13 (14 Questions)", "id": "interview-questions-days-10-13-14-questions"}]}, {"title": "Phase 4: Char Driver Project", "url": "04_phase4.html", "headings": [{"text": "PHASE 4: CHARACTER DEVICE DRIVER PROJECT (Days 14-22)", "id": "phase-4-character-device-driver-project-days-14-22"}, {"text": "DAY 14: CHARACTER DRIVER ARCHITECTURE", "id": "day-14-character-driver-architecture"}, {"text": "\ud83e\udde0 THEORY: The Big Picture \u2014 How User Reaches Your Driver", "id": "theory-the-big-picture-how-user-reaches-your-driver"}, {"text": "\ud83e\udde0 THEORY: Device Numbers", "id": "theory-device-numbers"}, {"text": "\ud83e\udde0 THEORY: Key Structures Deep Dive", "id": "theory-key-structures-deep-dive"}, {"text": "struct file \u2014 Represents an OPEN file", "id": "struct-file-represents-an-open-file"}, {"text": "struct inode \u2014 Represents a FILE on filesystem", "id": "struct-inode-represents-a-file-on-filesystem"}, {"text": "\ud83e\udde0 THEORY: copy_to_user / copy_from_user \u2014 WHY They Exist", "id": "theory-copy_to_user-copy_from_user-why-they-exist"}, {"text": "DAYS 15-22: COMPLETE CHARACTER DRIVER IMPLEMENTATION", "id": "days-15-22-complete-character-driver-implementation"}, {"text": "\ud83d\udcbb THE DRIVER \u2014 Production Quality", "id": "the-driver-production-quality"}, {"text": "\ud83d\udcbb MAKEFILE", "id": "makefile"}, {"text": "\ud83d\udcbb TEST APPLICATION", "id": "test-application"}, {"text": "\ud83c\udfd7\ufe0f MINI-EXERCISES \u2014 Days 14-22", "id": "mini-exercises-days-14-22"}, {"text": "\u26a0\ufe0f COMMON PITFALLS \u2014 Character Driver", "id": "common-pitfalls-character-driver"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Character Driver (15 Questions)", "id": "interview-questions-character-driver-15-questions"}]}, {"title": "Phase 5: Device Tree & Platform", "url": "05_phase5.html", "headings": [{"text": "PHASE 5: DEVICE TREE &amp; PLATFORM DRIVERS (Days 23-27)", "id": "phase-5-device-tree-platform-drivers-days-23-27"}, {"text": "DAYS 23-24: DEVICE TREE FUNDAMENTALS", "id": "days-23-24-device-tree-fundamentals"}, {"text": "\ud83e\udde0 THEORY: Why Device Tree Exists", "id": "theory-why-device-tree-exists"}, {"text": "\ud83e\udde0 THEORY: Device Tree Syntax", "id": "theory-device-tree-syntax"}, {"text": "\ud83e\udde0 THEORY: Key Properties Reference", "id": "theory-key-properties-reference"}, {"text": "\ud83e\udde0 THEORY: Compatible String Matching \u2014 The Heart of DT", "id": "theory-compatible-string-matching-the-heart-of-dt"}, {"text": "\ud83d\udcbb COMPLETE CODE: DT Property Reading Demo", "id": "complete-code-dt-property-reading-demo"}, {"text": "DT Overlay for Testing (without real hardware)", "id": "dt-overlay-for-testing-without-real-hardware"}, {"text": "DAYS 25-27: PLATFORM DRIVER", "id": "days-25-27-platform-driver"}, {"text": "\ud83e\udde0 THEORY: Platform Driver Model", "id": "theory-platform-driver-model"}, {"text": "\ud83e\udde0 THEORY: probe() and remove() \u2014 The Full Story", "id": "theory-probe-and-remove-the-full-story"}, {"text": "\ud83d\udcbb COMPLETE CODE: Platform Driver", "id": "complete-code-platform-driver"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Device Tree &amp; Platform (16 Questions)", "id": "interview-questions-device-tree-platform-16-questions"}]}, {"title": "Phase 6: I2C Project", "url": "06_phase6.html", "headings": [{"text": "PHASE 6: I2C SENSOR DRIVER PROJECT (Days 28-37)", "id": "phase-6-i2c-sensor-driver-project-days-28-37"}, {"text": "DAYS 28-29: I2C SUBSYSTEM DEEP DIVE", "id": "days-28-29-i2c-subsystem-deep-dive"}, {"text": "\ud83e\udde0 THEORY: I2C Protocol \u2014 Hardware Level", "id": "theory-i2c-protocol-hardware-level"}, {"text": "\ud83e\udde0 THEORY: I2C Transaction Format", "id": "theory-i2c-transaction-format"}, {"text": "\ud83e\udde0 THEORY: Linux I2C Stack", "id": "theory-linux-i2c-stack"}, {"text": "\ud83e\udde0 THEORY: Key I2C API Functions", "id": "theory-key-i2c-api-functions"}, {"text": "DAYS 30-37: COMPLETE I2C TEMPERATURE SENSOR DRIVER", "id": "days-30-37-complete-i2c-temperature-sensor-driver"}, {"text": "\ud83d\udcbb THE DRIVER \u2014 Production Quality", "id": "the-driver-production-quality"}, {"text": "\ud83d\udcbb MAKEFILE", "id": "makefile"}, {"text": "\ud83e\udde0 THEORY: Testing Without Real Hardware", "id": "theory-testing-without-real-hardware"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 I2C Driver (12 Questions)", "id": "interview-questions-i2c-driver-12-questions"}]}, {"title": "Phase 7: Thread Pool & Interview", "url": "07_phase7.html", "headings": [{"text": "PHASE 7: THREAD POOL PROJECT + FINAL PREP (Days 38-40)", "id": "phase-7-thread-pool-project-final-prep-days-38-40"}, {"text": "DAYS 38-39: THREAD POOL IMPLEMENTATION", "id": "days-38-39-thread-pool-implementation"}, {"text": "\ud83e\udde0 THEORY: Why Thread Pools?", "id": "theory-why-thread-pools"}, {"text": "\ud83e\udde0 THEORY: Architecture Deep Dive", "id": "theory-architecture-deep-dive"}, {"text": "\ud83d\udcbb COMPLETE CODE: Thread Pool Header", "id": "complete-code-thread-pool-header"}, {"text": "\ud83d\udcbb COMPLETE CODE: Thread Pool Implementation", "id": "complete-code-thread-pool-implementation"}, {"text": "\ud83d\udcbb TEST APPLICATION", "id": "test-application"}, {"text": "\ud83d\udcbb MAKEFILE", "id": "makefile"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Thread Pool (10 Questions)", "id": "interview-questions-thread-pool-10-questions"}, {"text": "DAY 40: DOCUMENTATION, POLISH &amp; FINAL PREP", "id": "day-40-documentation-polish-final-prep"}, {"text": "\u2705 FINAL CHECKLIST", "id": "final-checklist"}, {"text": "\ud83c\udfaf PROJECT PRESENTATION SCRIPTS", "id": "project-presentation-scripts"}]}, {"title": "Appendix: Interview Bank", "url": "08_appendix_interviews.html", "headings": [{"text": "\ud83d\udcda COMPREHENSIVE INTERVIEW QUESTION BANK", "id": "comprehensive-interview-question-bank"}, {"text": "150+ Questions Categorized by Topic \u2014 with Model Answers for 0-2 YOE", "id": "150-questions-categorized-by-topic-with-model-answers-for-0-2-yoe"}, {"text": "CATEGORY 1: C PROGRAMMING FUNDAMENTALS (25 Questions)", "id": "category-1-c-programming-fundamentals-25-questions"}, {"text": "Memory &amp; Pointers", "id": "memory-pointers"}, {"text": "Bitwise", "id": "bitwise"}, {"text": "Threading", "id": "threading"}, {"text": "CATEGORY 2: LINUX KERNEL FUNDAMENTALS (25 Questions)", "id": "category-2-linux-kernel-fundamentals-25-questions"}, {"text": "CATEGORY 3: MEMORY MANAGEMENT (20 Questions)", "id": "category-3-memory-management-20-questions"}, {"text": "CATEGORY 4: DEVICE DRIVERS (30 Questions)", "id": "category-4-device-drivers-30-questions"}, {"text": "CATEGORY 5: DEVICE TREE (15 Questions)", "id": "category-5-device-tree-15-questions"}, {"text": "CATEGORY 6: I2C/SPI PROTOCOLS (15 Questions)", "id": "category-6-i2cspi-protocols-15-questions"}, {"text": "CATEGORY 7: SYNCHRONIZATION &amp; CONCURRENCY (20 Questions)", "id": "category-7-synchronization-concurrency-20-questions"}, {"text": "CATEGORY 8: DEBUGGING &amp; TOOLS (15 Questions)", "id": "category-8-debugging-tools-15-questions"}, {"text": "CATEGORY 9: REAL INTERVIEW SCENARIOS (15 Questions)", "id": "category-9-real-interview-scenarios-15-questions"}, {"text": "CATEGORY 10: SYSTEM DESIGN &amp; ARCHITECTURE (10 Questions)", "id": "category-10-system-design-architecture-10-questions"}, {"text": "QUICK REFERENCE: Must-Know Code Snippets", "id": "quick-reference-must-know-code-snippets"}, {"text": "1. Basic Module Template", "id": "1-basic-module-template"}, {"text": "2. File Operations", "id": "2-file-operations"}, {"text": "3. Character Device Registration", "id": "3-character-device-registration"}, {"text": "4. IOCTL Command Definition", "id": "4-ioctl-command-definition"}, {"text": "5. Platform Driver Template", "id": "5-platform-driver-template"}, {"text": "6. I2C Driver Template", "id": "6-i2c-driver-template"}, {"text": "7. Error Handling Pattern", "id": "7-error-handling-pattern"}, {"text": "8. Quick Error Codes", "id": "8-quick-error-codes"}]}, {"title": "Appendix: Kernel Internals", "url": "09_appendix_kernel.html", "headings": [{"text": "\ud83d\udcd6 APPENDIX: KERNEL INTERNALS DEEP DIVE", "id": "appendix-kernel-internals-deep-dive"}, {"text": "Virtual Memory, Scheduling, Interrupts \u2014 For Interview Depth", "id": "virtual-memory-scheduling-interrupts-for-interview-depth"}, {"text": "VIRTUAL MEMORY \u2014 How It Actually Works", "id": "virtual-memory-how-it-actually-works"}, {"text": "Address Translation", "id": "address-translation"}, {"text": "Page Fault Handling", "id": "page-fault-handling"}, {"text": "Why This Matters for Driver Development", "id": "why-this-matters-for-driver-development"}, {"text": "PROCESS SCHEDULING", "id": "process-scheduling"}, {"text": "The Completely Fair Scheduler (CFS)", "id": "the-completely-fair-scheduler-cfs"}, {"text": "Real-Time Scheduling Classes", "id": "real-time-scheduling-classes"}, {"text": "INTERRUPT HANDLING \u2014 COMPLETE PICTURE", "id": "interrupt-handling-complete-picture"}, {"text": "Interrupt Flow", "id": "interrupt-flow"}, {"text": "Threaded IRQ Example", "id": "threaded-irq-example"}, {"text": "POWER MANAGEMENT", "id": "power-management"}, {"text": "Runtime PM (for drivers)", "id": "runtime-pm-for-drivers"}, {"text": "KERNEL DEBUGGING TOOLS REFERENCE", "id": "kernel-debugging-tools-reference"}, {"text": "Dynamic Debug (Enable dev_dbg at runtime)", "id": "dynamic-debug-enable-dev_dbg-at-runtime"}]}, {"title": "Appendix: Debugging", "url": "10_appendix_debugging.html", "headings": [{"text": "\ud83d\udd27 APPENDIX: DEBUGGING TECHNIQUES", "id": "appendix-debugging-techniques"}, {"text": "Complete Debugging Toolkit for Embedded Linux Development", "id": "complete-debugging-toolkit-for-embedded-linux-development"}, {"text": "SECTION 1: USER-SPACE DEBUGGING", "id": "section-1-user-space-debugging"}, {"text": "strace \u2014 System Call Tracer", "id": "strace-system-call-tracer"}, {"text": "GDB \u2014 The GNU Debugger", "id": "gdb-the-gnu-debugger"}, {"text": "Valgrind \u2014 Memory Error Detector", "id": "valgrind-memory-error-detector"}, {"text": "Address Sanitizer (ASan) \u2014 Compile-Time Instrumentation", "id": "address-sanitizer-asan-compile-time-instrumentation"}, {"text": "SECTION 2: KERNEL-SPACE DEBUGGING", "id": "section-2-kernel-space-debugging"}, {"text": "dmesg \u2014 Kernel Message Buffer", "id": "dmesg-kernel-message-buffer"}, {"text": "Dynamic Debug (dev_dbg at runtime)", "id": "dynamic-debug-dev_dbg-at-runtime"}, {"text": "/proc and /sys Inspection", "id": "proc-and-sys-inspection"}, {"text": "ftrace \u2014 Kernel Function Tracer", "id": "ftrace-kernel-function-tracer"}, {"text": "Kernel Oops \u2014 Reading Crash Outputs", "id": "kernel-oops-reading-crash-outputs"}, {"text": "SECTION 3: DEBUGGING WORKFLOW", "id": "section-3-debugging-workflow"}, {"text": "When Your Module Won&rsquo;t Load", "id": "when-your-module-wont-load"}, {"text": "When Your Driver Crashes", "id": "when-your-driver-crashes"}, {"text": "When I2C Communication Fails", "id": "when-i2c-communication-fails"}, {"text": "SECTION 4: PERFORMANCE DEBUGGING", "id": "section-4-performance-debugging"}, {"text": "perf \u2014 The Swiss Army Knife", "id": "perf-the-swiss-army-knife"}, {"text": "Kernel Config Options for Debugging", "id": "kernel-config-options-for-debugging"}, {"text": "QUICK REFERENCE: What Tool When?", "id": "quick-reference-what-tool-when"}]}]</script>
+
+  <!-- Scripts -->
+  <script>hljs.highlightAll();</script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Appendix: Kernel Internals — Embedded Linux & Device Drivers Enhanced 40-Day Guide">
+  <title>Appendix: Kernel Internals — Enhanced Plan</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <!-- Highlight.js for syntax highlighting -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+  <!-- App styles -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Progress Bar -->
+  <div id="progress-bar"></div>
+
+  <!-- Sidebar Overlay (mobile) -->
+  <div class="sidebar-overlay"></div>
+
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-brand">
+      <h1>🐧 Embedded Linux</h1>
+      <p>Enhanced 40-Day Guide</p>
+    </div>
+    <div class="sidebar-nav">
+  <div class="sidebar-section-label">Getting Started</div>
+  <a class="sidebar-link" href="00_readme.html"><span class="link-icon">🏠</span><span>README — Overview</span></a>
+  <div class="sidebar-section-label">Learning Phases</div>
+  <a class="sidebar-link" href="01_phase1.html"><span class="link-icon">⚙️</span><span>Phase 1: C Revision</span><span class="link-badge">Days 0-3</span></a>
+  <a class="sidebar-link" href="02_phase2.html"><span class="link-icon">🐧</span><span>Phase 2: Linux Fundamentals</span><span class="link-badge">Days 4-8</span></a>
+  <a class="sidebar-link" href="03_phase3.html"><span class="link-icon">🧩</span><span>Phase 3: Kernel Modules</span><span class="link-badge">Days 9-13</span></a>
+  <a class="sidebar-link" href="04_phase4.html"><span class="link-icon">💾</span><span>Phase 4: Char Driver Project</span><span class="link-badge">Days 14-22</span></a>
+  <a class="sidebar-link" href="05_phase5.html"><span class="link-icon">🌳</span><span>Phase 5: Device Tree &amp; Platform</span><span class="link-badge">Days 23-27</span></a>
+  <a class="sidebar-link" href="06_phase6.html"><span class="link-icon">🔌</span><span>Phase 6: I2C Project</span><span class="link-badge">Days 28-37</span></a>
+  <a class="sidebar-link" href="07_phase7.html"><span class="link-icon">🎯</span><span>Phase 7: Thread Pool &amp; Interview</span><span class="link-badge">Days 38-40</span></a>
+  <div class="sidebar-section-label">Appendices</div>
+  <a class="sidebar-link" href="08_appendix_interviews.html"><span class="link-icon">📝</span><span>Appendix: Interview Bank</span><span class="link-badge">150+ Q&amp;A</span></a>
+  <a class="sidebar-link active" href="09_appendix_kernel.html"><span class="link-icon">🔬</span><span>Appendix: Kernel Internals</span></a>
+  <a class="sidebar-link" href="10_appendix_debugging.html"><span class="link-icon">🔧</span><span>Appendix: Debugging</span></a>
+    </div>
+  </nav>
+
+  <!-- Header -->
+  <header class="header">
+    <button class="hamburger" aria-label="Toggle sidebar">☰</button>
+    <div class="header-title">
+      <span class="emoji">🔬</span> Appendix: Kernel Internals
+    </div>
+    <div class="header-search">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="search-input" placeholder="Search topics..." autocomplete="off">
+      <div class="search-results" id="search-results"></div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="appendix-kernel-internals-deep-dive">📖 APPENDIX: KERNEL INTERNALS DEEP DIVE</h1>
+<h2 id="virtual-memory-scheduling-interrupts-for-interview-depth">Virtual Memory, Scheduling, Interrupts — For Interview Depth</h2>
+<hr />
+<h2 id="virtual-memory-how-it-actually-works">VIRTUAL MEMORY — How It Actually Works</h2>
+<h3 id="address-translation">Address Translation</h3>
+<pre><code>User Process View:
+  Virtual Address 0x00007FFF_12345678
+
+  ┌─────────┬─────────┬─────────┬─────────┬──────────┐
+  │  PGD    │  PUD    │  PMD    │  PTE    │  Offset  │
+  │ (9 bits)│ (9 bits)│ (9 bits)│ (9 bits)│ (12 bits)│
+  └────┬────┴────┬────┴────┬────┴────┬────┴─────┬────┘
+       │         │         │         │          │
+       ▼         ▼         ▼         ▼          │
+  ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐  │
+  │ Page   │→│ Page   │→│ Page   │→│ Page   │  │
+  │ Global │ │ Upper  │ │ Middle │ │ Table  │  │
+  │ Dir.   │ │ Dir.   │ │ Dir.   │ │ Entry  │  │
+  └────────┘ └────────┘ └────────┘ └───┬────┘  │
+                                        │       │
+                                        ▼       │
+                              Physical Page ────┤
+                              Frame Address  + Offset
+                                                │
+                                                ▼
+                              Physical Address 0x0000_1234_5678
+
+TLB (Translation Lookaside Buffer):
+  Cache of recent translations. Hit → 1 cycle. Miss → page table walk.
+  Context switch → TLB flush (expensive!) unless using ASID.
+</code></pre>
+<h3 id="page-fault-handling">Page Fault Handling</h3>
+<pre><code>Types of page faults:
+1. MINOR fault: Page exists but not in memory
+   → Allocate physical frame, fill from backing store, update PTE
+   → Example: first access to mmap'd file page
+
+2. MAJOR fault: Page must be fetched from disk
+   → Read from swap or file, very expensive (~10ms)
+   → Example: swapped-out page
+
+3. INVALID fault: Accessing unmapped address
+   → SIGSEGV → process killed
+   → In kernel: oops/panic
+
+4. PROTECTION fault: Writing to read-only page
+   → If COW: copy page, make writable (minor fault)
+   → If truly read-only: SIGSEGV
+</code></pre>
+<h3 id="why-this-matters-for-driver-development">Why This Matters for Driver Development</h3>
+<pre><code>1. copy_to_user() may trigger page fault
+   → User page might be swapped out
+   → That's OK — kernel handles it transparently
+   → But can't call copy_to_user from ISR (can't sleep to handle fault!)
+
+2. mmap() in your driver
+   → You set up virtual → physical mapping for device registers
+   → User accesses device through normal memory operations
+
+3. DMA considerations
+   → Physical addresses for DMA ≠ virtual addresses
+   → Pages might not be physically contiguous
+   → Use DMA API for proper address translation
+</code></pre>
+<hr />
+<h2 id="process-scheduling">PROCESS SCHEDULING</h2>
+<h3 id="the-completely-fair-scheduler-cfs">The Completely Fair Scheduler (CFS)</h3>
+<pre><code>CFS uses a red-black tree ordered by &quot;virtual runtime&quot; (vruntime):
+
+  Tasks sorted by vruntime:
+
+         ┌───────────────────────┐
+         │      RB-Tree Root     │
+         └───────────┬───────────┘
+                     │
+              ┌──────┴──────┐
+              │             │
+         ┌────┴───┐    ┌───┴────┐
+         │Task A  │    │Task C  │
+         │vrt=100 │    │vrt=300 │
+         └────┬───┘    └───┬────┘
+              │            │
+         ┌────┴───┐   ┌───┴────┐
+         │Task B  │   │Task D  │
+         │vrt=200 │   │vrt=400 │  ← Highest vruntime
+         └────────┘   └────────┘
+
+  Leftmost node (lowest vruntime) runs next.
+  When task runs, its vruntime increases.
+  Nice value affects rate of vruntime increase:
+    Nice -20 (high priority): vruntime increases slowly → runs more
+    Nice +19 (low priority): vruntime increases fast → runs less
+
+  Result: all tasks tend toward equal CPU time.
+</code></pre>
+<h3 id="real-time-scheduling-classes">Real-Time Scheduling Classes</h3>
+<pre><code>Priority levels (lower number = higher priority):
+
+  SCHED_DEADLINE   ─── Earliest Deadline First (highest)
+  SCHED_FIFO      ─── First In, First Out (real-time)
+  SCHED_RR        ─── Round Robin (real-time)
+  SCHED_NORMAL    ─── CFS (default for user processes)
+  SCHED_BATCH     ─── CFS, optimized for throughput
+  SCHED_IDLE      ─── Only when system is idle (lowest)
+
+For embedded RT:
+  - Critical tasks: SCHED_FIFO with high priority
+  - Kernel thread priority: set via kthread API
+  - PREEMPT_RT: makes most kernel code preemptible
+</code></pre>
+<hr />
+<h2 id="interrupt-handling-complete-picture">INTERRUPT HANDLING — COMPLETE PICTURE</h2>
+<h3 id="interrupt-flow">Interrupt Flow</h3>
+<pre><code>Hardware Interrupt Occurs (e.g., I2C transfer complete)
+        │
+        ▼
+1. CPU saves context, switches to interrupt stack
+2. Interrupt controller identifies IRQ number
+3. Kernel calls registered handler (your top half)
+        │
+        ▼
+┌──────────────────────────────────────────────────────┐
+│  TOP HALF (Hard IRQ Handler)                          │
+│  - Runs with interrupts disabled on this CPU          │
+│  - MUST be fast! (&lt; 1μs ideally)                     │
+│  - Can: read HW status, ack interrupt, set flags      │
+│  - Can: spin_lock (not _irqsave — already in IRQ)    │
+│  - CANNOT: sleep, mutex, kmalloc(GFP_KERNEL), I2C    │
+│  - Schedule bottom half if needed                     │
+│  - Return IRQ_HANDLED or IRQ_WAKE_THREAD              │
+└──────────────────────┬───────────────────────────────┘
+                       │
+                       ▼
+┌──────────────────────────────────────────────────────┐
+│  BOTTOM HALF (choose one):                            │
+│                                                       │
+│  SOFTIRQ (lowest latency)                             │
+│  - Pre-defined, used by networking, block I/O         │
+│  - Cannot sleep                                       │
+│                                                       │
+│  TASKLET (obsolescent)                                │
+│  - Built on softirq                                   │
+│  - Cannot sleep, serialized per-CPU                   │
+│                                                       │
+│  WORKQUEUE (most flexible) ← RECOMMENDED              │
+│  - Runs in kernel thread                              │
+│  - CAN sleep, CAN use mutex, CAN do I2C/SPI          │
+│  - schedule_work(&amp;my_work)                            │
+│                                                       │
+│  THREADED IRQ (modern preferred) ← BEST FOR DRIVERS   │
+│  - request_threaded_irq(irq, hard, thread, ...)       │
+│  - Hard handler: quick ack → IRQ_WAKE_THREAD          │
+│  - Thread handler: full processing, CAN sleep          │
+│  - Dedicated kernel thread per IRQ                     │
+└──────────────────────────────────────────────────────┘
+</code></pre>
+<h3 id="threaded-irq-example">Threaded IRQ Example</h3>
+<pre data-lang="c"><code class="language-c">/* Modern interrupt handling — preferred in new drivers */
+
+static irqreturn_t sensor_hard_irq(int irq, void *dev_id)
+{
+    struct my_device *dev = dev_id;
+    uint32_t status;
+
+    /* Quick: read status register */
+    status = readl(dev-&gt;regs + STATUS_REG);
+
+    if (!(status &amp; INT_PENDING))
+        return IRQ_NONE;  /* Not our interrupt */
+
+    /* Acknowledge interrupt in hardware */
+    writel(status, dev-&gt;regs + STATUS_REG);
+
+    /* Store status for thread handler */
+    dev-&gt;irq_status = status;
+
+    return IRQ_WAKE_THREAD;  /* Schedule threaded handler */
+}
+
+static irqreturn_t sensor_thread_handler(int irq, void *dev_id)
+{
+    struct my_device *dev = dev_id;
+
+    /* This runs in process context — CAN sleep! */
+    mutex_lock(&amp;dev-&gt;lock);
+
+    /* Read data via I2C (would block in hard IRQ!) */
+    dev-&gt;last_reading = i2c_smbus_read_word_data(dev-&gt;client, DATA_REG);
+
+    /* Wake userspace */
+    dev-&gt;data_ready = true;
+    wake_up_interruptible(&amp;dev-&gt;wait_queue);
+
+    mutex_unlock(&amp;dev-&gt;lock);
+    return IRQ_HANDLED;
+}
+
+/* In probe: */
+devm_request_threaded_irq(dev, irq,
+    sensor_hard_irq,       /* Top half */
+    sensor_thread_handler,  /* Bottom half (threaded) */
+    IRQF_ONESHOT,          /* Don't re-enable IRQ until thread finishes */
+    &quot;my-sensor&quot;, data);
+</code></pre>
+<hr />
+<h2 id="power-management">POWER MANAGEMENT</h2>
+<h3 id="runtime-pm-for-drivers">Runtime PM (for drivers)</h3>
+<pre data-lang="c"><code class="language-c">/* In probe: */
+pm_runtime_enable(dev);
+pm_runtime_set_active(dev);
+
+/* Before accessing hardware: */
+pm_runtime_get_sync(dev);   // Wakes device
+/* ... access hardware ... */
+pm_runtime_put(dev);        // Marks idle, may power down
+
+/* Callbacks in driver: */
+static int my_runtime_suspend(struct device *dev) {
+    /* Power down hardware */
+    return 0;
+}
+
+static int my_runtime_resume(struct device *dev) {
+    /* Power up, re-initialize */
+    return 0;
+}
+
+static const struct dev_pm_ops my_pm_ops = {
+    SET_RUNTIME_PM_OPS(my_runtime_suspend, my_runtime_resume, NULL)
+};
+</code></pre>
+<hr />
+<h2 id="kernel-debugging-tools-reference">KERNEL DEBUGGING TOOLS REFERENCE</h2>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Purpose</th>
+<th>Context</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>printk/pr_info</code></td>
+<td>Print messages to dmesg</td>
+<td>Kernel</td>
+</tr>
+<tr>
+<td><code>dev_info/dev_err</code></td>
+<td>Print with device prefix</td>
+<td>Drivers</td>
+</tr>
+<tr>
+<td><code>dmesg -w</code></td>
+<td>Watch kernel log in real-time</td>
+<td>Userspace</td>
+</tr>
+<tr>
+<td><code>strace</code></td>
+<td>Trace syscalls</td>
+<td>Userspace</td>
+</tr>
+<tr>
+<td><code>ftrace</code></td>
+<td>Trace kernel functions</td>
+<td>Kernel</td>
+</tr>
+<tr>
+<td><code>perf</code></td>
+<td>Performance profiling</td>
+<td>Both</td>
+</tr>
+<tr>
+<td><code>gdb + KGDB</code></td>
+<td>Interactive kernel debugging</td>
+<td>Kernel</td>
+</tr>
+<tr>
+<td><code>KASAN</code></td>
+<td>Memory error detection</td>
+<td>Kernel config</td>
+</tr>
+<tr>
+<td><code>KMEMLEAK</code></td>
+<td>Memory leak detection</td>
+<td>Kernel config</td>
+</tr>
+<tr>
+<td><code>lockdep</code></td>
+<td>Lock ordering validation</td>
+<td>Kernel config</td>
+</tr>
+<tr>
+<td><code>UBSAN</code></td>
+<td>Undefined behavior detection</td>
+<td>Kernel config</td>
+</tr>
+<tr>
+<td><code>dynamic debug</code></td>
+<td>Runtime debug enable/disable</td>
+<td>Kernel</td>
+</tr>
+<tr>
+<td><code>lsof</code></td>
+<td>List open files</td>
+<td>Userspace</td>
+</tr>
+<tr>
+<td><code>ltrace</code></td>
+<td>Trace library calls</td>
+<td>Userspace</td>
+</tr>
+</tbody>
+</table>
+<h3 id="dynamic-debug-enable-dev_dbg-at-runtime">Dynamic Debug (Enable dev_dbg at runtime)</h3>
+<pre data-lang="bash"><code class="language-bash"># Enable all debug messages from your module:
+echo 'module temp_sensor +p' &gt; /sys/kernel/debug/dynamic_debug/control
+
+# Enable debug for specific file:
+echo 'file temp_sensor.c +p' &gt; /sys/kernel/debug/dynamic_debug/control
+
+# Enable debug for specific function:
+echo 'func temp_sensor_probe +p' &gt; /sys/kernel/debug/dynamic_debug/control
+
+# Disable:
+echo 'module temp_sensor -p' &gt; /sys/kernel/debug/dynamic_debug/control
+</code></pre>
+
+      <!-- Page Navigation -->
+      <div class="page-nav">
+        <a class="prev" href="08_appendix_interviews.html"><span class="nav-label">← Previous</span><span class="nav-title">Appendix: Interview Bank</span></a>
+<a class="next" href="10_appendix_debugging.html"><span class="nav-label">Next →</span><span class="nav-title">Appendix: Debugging</span></a>
+      </div>
+    </div>
+  </main>
+
+  <!-- Back to Top -->
+  <button class="back-to-top" aria-label="Back to top">↑</button>
+
+  <!-- Search Index Data -->
+  <script type="application/json" id="search-data">[{"title": "README \u2014 Overview", "url": "00_readme.html", "headings": [{"text": "\ud83d\udc27 EMBEDDED LINUX &amp; DEVICE DRIVERS \u2014 ENHANCED FOOL-PROOF GUIDE", "id": "embedded-linux-device-drivers-enhanced-fool-proof-guide"}, {"text": "Complete 40-Day Execution Plan (Enhanced Edition)", "id": "complete-40-day-execution-plan-enhanced-edition"}, {"text": "From Systems C Programmer \u2192 Embedded Linux Engineer", "id": "from-systems-c-programmer-embedded-linux-engineer"}, {"text": "\ud83d\udd25 What&rsquo;s NEW in the Enhanced Edition", "id": "whats-new-in-the-enhanced-edition"}, {"text": "\ud83d\udcc1 Enhanced File Structure", "id": "enhanced-file-structure"}, {"text": "\ud83d\udcca Timeline Overview", "id": "timeline-overview"}, {"text": "\ud83c\udfaf Who This Is For", "id": "who-this-is-for"}, {"text": "\ud83d\udccb Daily Workflow (Enhanced)", "id": "daily-workflow-enhanced"}, {"text": "Morning (2.5-3 hours):", "id": "morning-25-3-hours"}, {"text": "Evening (1.5-2 hours):", "id": "evening-15-2-hours"}, {"text": "Before Sleep (15 min):", "id": "before-sleep-15-min"}, {"text": "\ud83c\udf93 Rules for Success", "id": "rules-for-success"}, {"text": "\ud83c\udfc6 End Goal: After 40 Days", "id": "end-goal-after-40-days"}, {"text": "\u26a1 Start Now", "id": "start-now"}]}, {"title": "Phase 1: C Revision", "url": "01_phase1.html", "headings": [{"text": "PHASE 1: SYSTEMS C REVISION (Days 0-3)", "id": "phase-1-systems-c-revision-days-0-3"}, {"text": "DAY 0: ENVIRONMENT SETUP", "id": "day-0-environment-setup"}, {"text": "Installation Commands (Ubuntu 22.04/20.04)", "id": "installation-commands-ubuntu-22042004"}, {"text": "Verify Setup", "id": "verify-setup"}, {"text": "\u2705 Verification Criteria", "id": "verification-criteria"}, {"text": "DAY 1: POINTERS &amp; MEMORY \u2014 DEEP DIVE", "id": "day-1-pointers-memory-deep-dive"}, {"text": "\ud83e\udde0 THEORY: Memory Layout of a C Program", "id": "theory-memory-layout-of-a-c-program"}, {"text": "Why This Matters for Embedded Linux:", "id": "why-this-matters-for-embedded-linux"}, {"text": "Internal Detail: How malloc() Works", "id": "internal-detail-how-malloc-works"}, {"text": "\ud83e\udde0 THEORY: Pointer Fundamentals \u2014 What You MUST Know", "id": "theory-pointer-fundamentals-what-you-must-know"}, {"text": "A pointer is just an address. Period.", "id": "a-pointer-is-just-an-address-period"}, {"text": "Pointer Sizes:", "id": "pointer-sizes"}, {"text": "Pointer Arithmetic \u2014 The #1 Interview Topic", "id": "pointer-arithmetic-the-1-interview-topic"}, {"text": "\ud83e\udde0 THEORY: Function Pointers \u2014 Essential for Kernel", "id": "theory-function-pointers-essential-for-kernel"}, {"text": "\ud83e\udde0 THEORY: Struct Padding &amp; Alignment", "id": "theory-struct-padding-alignment"}, {"text": "\ud83d\udcbb COMPLETE CODE: Comprehensive Pointer &amp; Memory Demo", "id": "complete-code-comprehensive-pointer-memory-demo"}, {"text": "\ud83c\udfd7\ufe0f MINI-EXERCISES \u2014 Day 1", "id": "mini-exercises-day-1"}, {"text": "\u26a0\ufe0f COMMON PITFALLS \u2014 Day 1", "id": "common-pitfalls-day-1"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Day 1 (15 Questions)", "id": "interview-questions-day-1-15-questions"}, {"text": "DAY 2: BITWISE OPERATIONS \u2014 MASTERY", "id": "day-2-bitwise-operations-mastery"}, {"text": "\ud83e\udde0 THEORY: Why Bitwise Operations Are Essential", "id": "theory-why-bitwise-operations-are-essential"}, {"text": "\ud83e\udde0 THEORY: Bitwise Operators (Complete Reference)", "id": "theory-bitwise-operators-complete-reference"}, {"text": "\ud83e\udde0 THEORY: The Fundamental Bit Operations", "id": "theory-the-fundamental-bit-operations"}, {"text": "\ud83e\udde0 THEORY: Kernel Bit Manipulation APIs", "id": "theory-kernel-bit-manipulation-apis"}, {"text": "\ud83d\udcbb COMPLETE CODE: Bitwise Mastery", "id": "complete-code-bitwise-mastery"}, {"text": "\ud83c\udfd7\ufe0f MINI-EXERCISES \u2014 Day 2", "id": "mini-exercises-day-2"}, {"text": "\u26a0\ufe0f COMMON PITFALLS \u2014 Day 2", "id": "common-pitfalls-day-2"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Day 2 (14 Questions)", "id": "interview-questions-day-2-14-questions"}, {"text": "DAY 3: THREADING \u2014 CONCURRENCY ESSENTIALS", "id": "day-3-threading-concurrency-essentials"}, {"text": "\ud83e\udde0 THEORY: Why Threading Matters for Kernel Development", "id": "theory-why-threading-matters-for-kernel-development"}, {"text": "\ud83e\udde0 THEORY: Thread vs Process", "id": "theory-thread-vs-process"}, {"text": "\ud83e\udde0 THEORY: Synchronization Primitives \u2014 Deep Dive", "id": "theory-synchronization-primitives-deep-dive"}, {"text": "Mutex (Mutual Exclusion)", "id": "mutex-mutual-exclusion"}, {"text": "Spinlock", "id": "spinlock"}, {"text": "Condition Variable", "id": "condition-variable"}, {"text": "Semaphore", "id": "semaphore"}, {"text": "\ud83e\udde0 THEORY: The Deadlock Problem", "id": "theory-the-deadlock-problem"}, {"text": "\ud83d\udcbb COMPLETE CODE: Threading Patterns", "id": "complete-code-threading-patterns"}, {"text": "\ud83c\udfd7\ufe0f MINI-EXERCISES \u2014 Day 3", "id": "mini-exercises-day-3"}, {"text": "\u26a0\ufe0f COMMON PITFALLS \u2014 Day 3", "id": "common-pitfalls-day-3"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Day 3 (16 Questions)", "id": "interview-questions-day-3-16-questions"}]}, {"title": "Phase 2: Linux Fundamentals", "url": "02_phase2.html", "headings": [{"text": "PHASE 2: LINUX FUNDAMENTALS (Days 4-8)", "id": "phase-2-linux-fundamentals-days-4-8"}, {"text": "DAY 4: SYSTEM CALLS \u2014 THE KERNEL BOUNDARY", "id": "day-4-system-calls-the-kernel-boundary"}, {"text": "\ud83e\udde0 THEORY: User Space vs Kernel Space (Why It Exists)", "id": "theory-user-space-vs-kernel-space-why-it-exists"}, {"text": "Why the split?", "id": "why-the-split"}, {"text": "\ud83e\udde0 THEORY: System Call Mechanism \u2014 Step by Step", "id": "theory-system-call-mechanism-step-by-step"}, {"text": "\ud83e\udde0 THEORY: Key System Calls for Embedded", "id": "theory-key-system-calls-for-embedded"}, {"text": "\ud83e\udde0 THEORY: File Descriptors \u2014 The Universal Handle", "id": "theory-file-descriptors-the-universal-handle"}, {"text": "\ud83d\udcbb COMPLETE CODE: System Calls Deep Dive", "id": "complete-code-system-calls-deep-dive"}, {"text": "\u26a0\ufe0f COMMON PITFALLS \u2014 Day 4", "id": "common-pitfalls-day-4"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Day 4 (10 Questions)", "id": "interview-questions-day-4-10-questions"}, {"text": "DAY 5: PROCESS CREATION (FORK &amp; EXEC)", "id": "day-5-process-creation-fork-exec"}, {"text": "\ud83e\udde0 THEORY: Process Creation in Linux", "id": "theory-process-creation-in-linux"}, {"text": "\ud83e\udde0 THEORY: Copy-On-Write (COW) \u2014 Performance Critical", "id": "theory-copy-on-write-cow-performance-critical"}, {"text": "\ud83e\udde0 THEORY: Process States", "id": "theory-process-states"}, {"text": "\ud83d\udcbb COMPLETE CODE: Process Patterns", "id": "complete-code-process-patterns"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Day 5 (12 Questions)", "id": "interview-questions-day-5-12-questions"}, {"text": "DAY 6: MEMORY MAPPED FILES (MMAP)", "id": "day-6-memory-mapped-files-mmap"}, {"text": "\ud83e\udde0 THEORY: Why mmap() Matters", "id": "theory-why-mmap-matters"}, {"text": "\ud83e\udde0 THEORY: mmap() Parameters Explained", "id": "theory-mmap-parameters-explained"}, {"text": "\ud83d\udcbb COMPLETE CODE: mmap Patterns", "id": "complete-code-mmap-patterns"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Day 6 (8 Questions)", "id": "interview-questions-day-6-8-questions"}, {"text": "DAYS 7-8: LINUX BOOT PROCESS &amp; FILESYSTEMS", "id": "days-7-8-linux-boot-process-filesystems"}, {"text": "\ud83e\udde0 THEORY: Complete Boot Sequence", "id": "theory-complete-boot-sequence"}, {"text": "\ud83e\udde0 THEORY: Critical Pseudo-Filesystems", "id": "theory-critical-pseudo-filesystems"}, {"text": "/proc \u2014 What your driver should know:", "id": "proc-what-your-driver-should-know"}, {"text": "/sys \u2014 The driver developer&rsquo;s best friend:", "id": "sys-the-driver-developers-best-friend"}, {"text": "/dev \u2014 Device nodes:", "id": "dev-device-nodes"}, {"text": "\ud83e\udde0 THEORY: For Embedded \u2014 U-Boot &amp; Device Tree Boot", "id": "theory-for-embedded-u-boot-device-tree-boot"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Days 7-8 (12 Questions)", "id": "interview-questions-days-7-8-12-questions"}]}, {"title": "Phase 3: Kernel Modules", "url": "03_phase3.html", "headings": [{"text": "PHASE 3: KERNEL MODULES &amp; PATTERNS (Days 9-13)", "id": "phase-3-kernel-modules-patterns-days-9-13"}, {"text": "DAY 9: FIRST KERNEL MODULE", "id": "day-9-first-kernel-module"}, {"text": "\ud83e\udde0 THEORY: What IS a Kernel Module?", "id": "theory-what-is-a-kernel-module"}, {"text": "\ud83e\udde0 THEORY: Module vs Built-in", "id": "theory-module-vs-built-in"}, {"text": "\ud83e\udde0 THEORY: Module Lifecycle", "id": "theory-module-lifecycle"}, {"text": "\ud83e\udde0 THEORY: Kernel vs Userspace Environment", "id": "theory-kernel-vs-userspace-environment"}, {"text": "\ud83d\udcbb COMPLETE CODE: Comprehensive First Module", "id": "complete-code-comprehensive-first-module"}, {"text": "\ud83d\udcbb Makefile for Out-of-Tree Module", "id": "makefile-for-out-of-tree-module"}, {"text": "\ud83e\udde0 THEORY: Makefile Explanation", "id": "theory-makefile-explanation"}, {"text": "Usage:", "id": "usage"}, {"text": "\ud83c\udfd7\ufe0f MINI-EXERCISES \u2014 Day 9", "id": "mini-exercises-day-9"}, {"text": "\u26a0\ufe0f COMMON PITFALLS \u2014 Day 9", "id": "common-pitfalls-day-9"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Day 9 (10 Questions)", "id": "interview-questions-day-9-10-questions"}, {"text": "DAYS 10-11: KERNEL ERROR HANDLING &amp; MEMORY", "id": "days-10-11-kernel-error-handling-memory"}, {"text": "\ud83e\udde0 THEORY: The goto Cleanup Pattern \u2014 Kernel&rsquo;s #1 Pattern", "id": "theory-the-goto-cleanup-pattern-kernels-1-pattern"}, {"text": "\ud83d\udcbb COMPLETE CODE: Error Handling Patterns", "id": "complete-code-error-handling-patterns"}, {"text": "\ud83e\udde0 THEORY: Kernel Memory Allocation", "id": "theory-kernel-memory-allocation"}, {"text": "\ud83e\udde0 THEORY: IS_ERR / PTR_ERR / ERR_PTR Pattern", "id": "theory-is_err-ptr_err-err_ptr-pattern"}, {"text": "DAYS 12-13: KERNEL DATA STRUCTURES &amp; TIMERS", "id": "days-12-13-kernel-data-structures-timers"}, {"text": "\ud83e\udde0 THEORY: Kernel Linked Lists", "id": "theory-kernel-linked-lists"}, {"text": "\ud83d\udcbb COMPLETE CODE: Kernel List &amp; Timer Module", "id": "complete-code-kernel-list-timer-module"}, {"text": "\ud83e\udde0 THEORY: Key Kernel Data Structures", "id": "theory-key-kernel-data-structures"}, {"text": "\ud83e\udde0 THEORY: Timers &amp; Delayed Work", "id": "theory-timers-delayed-work"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Days 10-13 (14 Questions)", "id": "interview-questions-days-10-13-14-questions"}]}, {"title": "Phase 4: Char Driver Project", "url": "04_phase4.html", "headings": [{"text": "PHASE 4: CHARACTER DEVICE DRIVER PROJECT (Days 14-22)", "id": "phase-4-character-device-driver-project-days-14-22"}, {"text": "DAY 14: CHARACTER DRIVER ARCHITECTURE", "id": "day-14-character-driver-architecture"}, {"text": "\ud83e\udde0 THEORY: The Big Picture \u2014 How User Reaches Your Driver", "id": "theory-the-big-picture-how-user-reaches-your-driver"}, {"text": "\ud83e\udde0 THEORY: Device Numbers", "id": "theory-device-numbers"}, {"text": "\ud83e\udde0 THEORY: Key Structures Deep Dive", "id": "theory-key-structures-deep-dive"}, {"text": "struct file \u2014 Represents an OPEN file", "id": "struct-file-represents-an-open-file"}, {"text": "struct inode \u2014 Represents a FILE on filesystem", "id": "struct-inode-represents-a-file-on-filesystem"}, {"text": "\ud83e\udde0 THEORY: copy_to_user / copy_from_user \u2014 WHY They Exist", "id": "theory-copy_to_user-copy_from_user-why-they-exist"}, {"text": "DAYS 15-22: COMPLETE CHARACTER DRIVER IMPLEMENTATION", "id": "days-15-22-complete-character-driver-implementation"}, {"text": "\ud83d\udcbb THE DRIVER \u2014 Production Quality", "id": "the-driver-production-quality"}, {"text": "\ud83d\udcbb MAKEFILE", "id": "makefile"}, {"text": "\ud83d\udcbb TEST APPLICATION", "id": "test-application"}, {"text": "\ud83c\udfd7\ufe0f MINI-EXERCISES \u2014 Days 14-22", "id": "mini-exercises-days-14-22"}, {"text": "\u26a0\ufe0f COMMON PITFALLS \u2014 Character Driver", "id": "common-pitfalls-character-driver"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Character Driver (15 Questions)", "id": "interview-questions-character-driver-15-questions"}]}, {"title": "Phase 5: Device Tree & Platform", "url": "05_phase5.html", "headings": [{"text": "PHASE 5: DEVICE TREE &amp; PLATFORM DRIVERS (Days 23-27)", "id": "phase-5-device-tree-platform-drivers-days-23-27"}, {"text": "DAYS 23-24: DEVICE TREE FUNDAMENTALS", "id": "days-23-24-device-tree-fundamentals"}, {"text": "\ud83e\udde0 THEORY: Why Device Tree Exists", "id": "theory-why-device-tree-exists"}, {"text": "\ud83e\udde0 THEORY: Device Tree Syntax", "id": "theory-device-tree-syntax"}, {"text": "\ud83e\udde0 THEORY: Key Properties Reference", "id": "theory-key-properties-reference"}, {"text": "\ud83e\udde0 THEORY: Compatible String Matching \u2014 The Heart of DT", "id": "theory-compatible-string-matching-the-heart-of-dt"}, {"text": "\ud83d\udcbb COMPLETE CODE: DT Property Reading Demo", "id": "complete-code-dt-property-reading-demo"}, {"text": "DT Overlay for Testing (without real hardware)", "id": "dt-overlay-for-testing-without-real-hardware"}, {"text": "DAYS 25-27: PLATFORM DRIVER", "id": "days-25-27-platform-driver"}, {"text": "\ud83e\udde0 THEORY: Platform Driver Model", "id": "theory-platform-driver-model"}, {"text": "\ud83e\udde0 THEORY: probe() and remove() \u2014 The Full Story", "id": "theory-probe-and-remove-the-full-story"}, {"text": "\ud83d\udcbb COMPLETE CODE: Platform Driver", "id": "complete-code-platform-driver"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Device Tree &amp; Platform (16 Questions)", "id": "interview-questions-device-tree-platform-16-questions"}]}, {"title": "Phase 6: I2C Project", "url": "06_phase6.html", "headings": [{"text": "PHASE 6: I2C SENSOR DRIVER PROJECT (Days 28-37)", "id": "phase-6-i2c-sensor-driver-project-days-28-37"}, {"text": "DAYS 28-29: I2C SUBSYSTEM DEEP DIVE", "id": "days-28-29-i2c-subsystem-deep-dive"}, {"text": "\ud83e\udde0 THEORY: I2C Protocol \u2014 Hardware Level", "id": "theory-i2c-protocol-hardware-level"}, {"text": "\ud83e\udde0 THEORY: I2C Transaction Format", "id": "theory-i2c-transaction-format"}, {"text": "\ud83e\udde0 THEORY: Linux I2C Stack", "id": "theory-linux-i2c-stack"}, {"text": "\ud83e\udde0 THEORY: Key I2C API Functions", "id": "theory-key-i2c-api-functions"}, {"text": "DAYS 30-37: COMPLETE I2C TEMPERATURE SENSOR DRIVER", "id": "days-30-37-complete-i2c-temperature-sensor-driver"}, {"text": "\ud83d\udcbb THE DRIVER \u2014 Production Quality", "id": "the-driver-production-quality"}, {"text": "\ud83d\udcbb MAKEFILE", "id": "makefile"}, {"text": "\ud83e\udde0 THEORY: Testing Without Real Hardware", "id": "theory-testing-without-real-hardware"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 I2C Driver (12 Questions)", "id": "interview-questions-i2c-driver-12-questions"}]}, {"title": "Phase 7: Thread Pool & Interview", "url": "07_phase7.html", "headings": [{"text": "PHASE 7: THREAD POOL PROJECT + FINAL PREP (Days 38-40)", "id": "phase-7-thread-pool-project-final-prep-days-38-40"}, {"text": "DAYS 38-39: THREAD POOL IMPLEMENTATION", "id": "days-38-39-thread-pool-implementation"}, {"text": "\ud83e\udde0 THEORY: Why Thread Pools?", "id": "theory-why-thread-pools"}, {"text": "\ud83e\udde0 THEORY: Architecture Deep Dive", "id": "theory-architecture-deep-dive"}, {"text": "\ud83d\udcbb COMPLETE CODE: Thread Pool Header", "id": "complete-code-thread-pool-header"}, {"text": "\ud83d\udcbb COMPLETE CODE: Thread Pool Implementation", "id": "complete-code-thread-pool-implementation"}, {"text": "\ud83d\udcbb TEST APPLICATION", "id": "test-application"}, {"text": "\ud83d\udcbb MAKEFILE", "id": "makefile"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Thread Pool (10 Questions)", "id": "interview-questions-thread-pool-10-questions"}, {"text": "DAY 40: DOCUMENTATION, POLISH &amp; FINAL PREP", "id": "day-40-documentation-polish-final-prep"}, {"text": "\u2705 FINAL CHECKLIST", "id": "final-checklist"}, {"text": "\ud83c\udfaf PROJECT PRESENTATION SCRIPTS", "id": "project-presentation-scripts"}]}, {"title": "Appendix: Interview Bank", "url": "08_appendix_interviews.html", "headings": [{"text": "\ud83d\udcda COMPREHENSIVE INTERVIEW QUESTION BANK", "id": "comprehensive-interview-question-bank"}, {"text": "150+ Questions Categorized by Topic \u2014 with Model Answers for 0-2 YOE", "id": "150-questions-categorized-by-topic-with-model-answers-for-0-2-yoe"}, {"text": "CATEGORY 1: C PROGRAMMING FUNDAMENTALS (25 Questions)", "id": "category-1-c-programming-fundamentals-25-questions"}, {"text": "Memory &amp; Pointers", "id": "memory-pointers"}, {"text": "Bitwise", "id": "bitwise"}, {"text": "Threading", "id": "threading"}, {"text": "CATEGORY 2: LINUX KERNEL FUNDAMENTALS (25 Questions)", "id": "category-2-linux-kernel-fundamentals-25-questions"}, {"text": "CATEGORY 3: MEMORY MANAGEMENT (20 Questions)", "id": "category-3-memory-management-20-questions"}, {"text": "CATEGORY 4: DEVICE DRIVERS (30 Questions)", "id": "category-4-device-drivers-30-questions"}, {"text": "CATEGORY 5: DEVICE TREE (15 Questions)", "id": "category-5-device-tree-15-questions"}, {"text": "CATEGORY 6: I2C/SPI PROTOCOLS (15 Questions)", "id": "category-6-i2cspi-protocols-15-questions"}, {"text": "CATEGORY 7: SYNCHRONIZATION &amp; CONCURRENCY (20 Questions)", "id": "category-7-synchronization-concurrency-20-questions"}, {"text": "CATEGORY 8: DEBUGGING &amp; TOOLS (15 Questions)", "id": "category-8-debugging-tools-15-questions"}, {"text": "CATEGORY 9: REAL INTERVIEW SCENARIOS (15 Questions)", "id": "category-9-real-interview-scenarios-15-questions"}, {"text": "CATEGORY 10: SYSTEM DESIGN &amp; ARCHITECTURE (10 Questions)", "id": "category-10-system-design-architecture-10-questions"}, {"text": "QUICK REFERENCE: Must-Know Code Snippets", "id": "quick-reference-must-know-code-snippets"}, {"text": "1. Basic Module Template", "id": "1-basic-module-template"}, {"text": "2. File Operations", "id": "2-file-operations"}, {"text": "3. Character Device Registration", "id": "3-character-device-registration"}, {"text": "4. IOCTL Command Definition", "id": "4-ioctl-command-definition"}, {"text": "5. Platform Driver Template", "id": "5-platform-driver-template"}, {"text": "6. I2C Driver Template", "id": "6-i2c-driver-template"}, {"text": "7. Error Handling Pattern", "id": "7-error-handling-pattern"}, {"text": "8. Quick Error Codes", "id": "8-quick-error-codes"}]}, {"title": "Appendix: Kernel Internals", "url": "09_appendix_kernel.html", "headings": [{"text": "\ud83d\udcd6 APPENDIX: KERNEL INTERNALS DEEP DIVE", "id": "appendix-kernel-internals-deep-dive"}, {"text": "Virtual Memory, Scheduling, Interrupts \u2014 For Interview Depth", "id": "virtual-memory-scheduling-interrupts-for-interview-depth"}, {"text": "VIRTUAL MEMORY \u2014 How It Actually Works", "id": "virtual-memory-how-it-actually-works"}, {"text": "Address Translation", "id": "address-translation"}, {"text": "Page Fault Handling", "id": "page-fault-handling"}, {"text": "Why This Matters for Driver Development", "id": "why-this-matters-for-driver-development"}, {"text": "PROCESS SCHEDULING", "id": "process-scheduling"}, {"text": "The Completely Fair Scheduler (CFS)", "id": "the-completely-fair-scheduler-cfs"}, {"text": "Real-Time Scheduling Classes", "id": "real-time-scheduling-classes"}, {"text": "INTERRUPT HANDLING \u2014 COMPLETE PICTURE", "id": "interrupt-handling-complete-picture"}, {"text": "Interrupt Flow", "id": "interrupt-flow"}, {"text": "Threaded IRQ Example", "id": "threaded-irq-example"}, {"text": "POWER MANAGEMENT", "id": "power-management"}, {"text": "Runtime PM (for drivers)", "id": "runtime-pm-for-drivers"}, {"text": "KERNEL DEBUGGING TOOLS REFERENCE", "id": "kernel-debugging-tools-reference"}, {"text": "Dynamic Debug (Enable dev_dbg at runtime)", "id": "dynamic-debug-enable-dev_dbg-at-runtime"}]}, {"title": "Appendix: Debugging", "url": "10_appendix_debugging.html", "headings": [{"text": "\ud83d\udd27 APPENDIX: DEBUGGING TECHNIQUES", "id": "appendix-debugging-techniques"}, {"text": "Complete Debugging Toolkit for Embedded Linux Development", "id": "complete-debugging-toolkit-for-embedded-linux-development"}, {"text": "SECTION 1: USER-SPACE DEBUGGING", "id": "section-1-user-space-debugging"}, {"text": "strace \u2014 System Call Tracer", "id": "strace-system-call-tracer"}, {"text": "GDB \u2014 The GNU Debugger", "id": "gdb-the-gnu-debugger"}, {"text": "Valgrind \u2014 Memory Error Detector", "id": "valgrind-memory-error-detector"}, {"text": "Address Sanitizer (ASan) \u2014 Compile-Time Instrumentation", "id": "address-sanitizer-asan-compile-time-instrumentation"}, {"text": "SECTION 2: KERNEL-SPACE DEBUGGING", "id": "section-2-kernel-space-debugging"}, {"text": "dmesg \u2014 Kernel Message Buffer", "id": "dmesg-kernel-message-buffer"}, {"text": "Dynamic Debug (dev_dbg at runtime)", "id": "dynamic-debug-dev_dbg-at-runtime"}, {"text": "/proc and /sys Inspection", "id": "proc-and-sys-inspection"}, {"text": "ftrace \u2014 Kernel Function Tracer", "id": "ftrace-kernel-function-tracer"}, {"text": "Kernel Oops \u2014 Reading Crash Outputs", "id": "kernel-oops-reading-crash-outputs"}, {"text": "SECTION 3: DEBUGGING WORKFLOW", "id": "section-3-debugging-workflow"}, {"text": "When Your Module Won&rsquo;t Load", "id": "when-your-module-wont-load"}, {"text": "When Your Driver Crashes", "id": "when-your-driver-crashes"}, {"text": "When I2C Communication Fails", "id": "when-i2c-communication-fails"}, {"text": "SECTION 4: PERFORMANCE DEBUGGING", "id": "section-4-performance-debugging"}, {"text": "perf \u2014 The Swiss Army Knife", "id": "perf-the-swiss-army-knife"}, {"text": "Kernel Config Options for Debugging", "id": "kernel-config-options-for-debugging"}, {"text": "QUICK REFERENCE: What Tool When?", "id": "quick-reference-what-tool-when"}]}]</script>
+
+  <!-- Scripts -->
+  <script>hljs.highlightAll();</script>
+  <script src="app.js"></script>
+</body>
+</html>
