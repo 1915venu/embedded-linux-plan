@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Appendix: Interview Practice — Embedded Linux & Device Drivers Enhanced 40-Day Guide">
+  <title>Appendix: Interview Practice — Enhanced Plan</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <!-- Highlight.js for syntax highlighting -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+  <!-- App styles -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Progress Bar -->
+  <div id="progress-bar"></div>
+
+  <!-- Sidebar Overlay (mobile) -->
+  <div class="sidebar-overlay"></div>
+
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-brand">
+      <h1>🐧 Embedded Linux</h1>
+      <p>Enhanced 40-Day Guide</p>
+    </div>
+    <div class="sidebar-nav">
+  <div class="sidebar-section-label">Getting Started</div>
+  <a class="sidebar-link" href="00_readme.html"><span class="link-icon">🏠</span><span>README — Overview</span></a>
+  <div class="sidebar-section-label">Learning Phases</div>
+  <a class="sidebar-link" href="01_phase1.html"><span class="link-icon">⚙️</span><span>Phase 1: C Revision</span><span class="link-badge">Days 0-3</span></a>
+  <a class="sidebar-link" href="02_phase2.html"><span class="link-icon">🐧</span><span>Phase 2: Linux Fundamentals</span><span class="link-badge">Days 4-8</span></a>
+  <a class="sidebar-link" href="03_phase3.html"><span class="link-icon">🧩</span><span>Phase 3: Kernel Modules</span><span class="link-badge">Days 9-13</span></a>
+  <a class="sidebar-link" href="04_phase4.html"><span class="link-icon">💾</span><span>Phase 4: Char Driver Project</span><span class="link-badge">Days 14-22</span></a>
+  <a class="sidebar-link" href="05_phase5.html"><span class="link-icon">🌳</span><span>Phase 5: Device Tree &amp; Platform</span><span class="link-badge">Days 23-27</span></a>
+  <a class="sidebar-link" href="06_phase6.html"><span class="link-icon">🔌</span><span>Phase 6: I2C Project</span><span class="link-badge">Days 28-35</span></a>
+  <a class="sidebar-link" href="07_phase7.html"><span class="link-icon">🎯</span><span>Phase 7: SPI &amp; Final Prep</span><span class="link-badge">Days 36-40</span></a>
+  <div class="sidebar-section-label">Appendices</div>
+  <a class="sidebar-link" href="08_appendix_interviews.html"><span class="link-icon">📝</span><span>Appendix: Interview Bank</span><span class="link-badge">170+ Q&amp;A</span></a>
+  <a class="sidebar-link" href="09_appendix_kernel.html"><span class="link-icon">🔬</span><span>Appendix: Kernel Internals</span></a>
+  <a class="sidebar-link" href="10_appendix_debugging.html"><span class="link-icon">🔧</span><span>Appendix: Debugging</span></a>
+  <a class="sidebar-link active" href="11_interview_practice.html"><span class="link-icon">🗣️</span><span>Appendix: Interview Practice</span><span class="link-badge">Spoken Q&amp;A</span></a>
+    </div>
+  </nav>
+
+  <!-- Header -->
+  <header class="header">
+    <button class="hamburger" aria-label="Toggle sidebar">☰</button>
+    <div class="header-title">
+      <span class="emoji">🗣️</span> Appendix: Interview Practice
+    </div>
+    <div class="header-search">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="search-input" placeholder="Search topics..." autocomplete="off">
+      <div class="search-results" id="search-results"></div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="embedded-linux-interview-practice-guide">EMBEDDED LINUX INTERVIEW PRACTICE GUIDE</h1>
+<h2 id="spoken-answers-short-deep-follow-up-format">Spoken Answers — Short / Deep / Follow-Up Format</h2>
+<hr />
+<h2 id="how-to-use-this-guide">How To Use This Guide</h2>
+<p>Use each question in 3 rounds:</p>
+<ol>
+<li>Read the <strong>Short Answer</strong> and say it in your own words in 20 seconds.</li>
+<li>Read the <strong>Deep Answer</strong> and add the extra detail only if the interviewer asks more.</li>
+<li>Practice the <strong>Follow-Up Questions</strong> without looking at the answers.</li>
+</ol>
+<p>Do not memorize word-for-word. The goal is to sound clear, calm, and technically correct.</p>
+<hr />
+<h1 id="section-1-c-fundamentals">SECTION 1: C FUNDAMENTALS</h1>
+<h2 id="q1-what-is-the-difference-between-an-array-and-a-pointer-in-c">Q1. What is the difference between an array and a pointer in C?</h2>
+<h3 id="short-answer">Short Answer</h3>
+<p>An array is a fixed-size contiguous collection of elements, while a pointer is a variable that stores an address. Arrays often decay to pointers when passed to functions, but they are not the same thing.</p>
+<h3 id="deep-answer">Deep Answer</h3>
+<p>If <code>int arr[10];</code>, then <code>arr</code> is storage for 10 integers. If <code>int *p = arr;</code>, then <code>p</code> only stores the address of the first element. <code>sizeof(arr)</code> gives the total size of the array, but <code>sizeof(p)</code> gives the size of the pointer itself. This matters in embedded and kernel code because confusing arrays and pointers often leads to buffer bugs.</p>
+<h3 id="follow-up-questions">Follow-Up Questions</h3>
+<ul>
+<li>What does array-to-pointer decay mean?</li>
+<li>What is the difference between <code>sizeof(arr)</code> and <code>sizeof(p)</code>?</li>
+<li>Why is this important in function parameters?</li>
+</ul>
+<hr />
+<h2 id="q2-what-is-volatile-and-why-is-it-important-in-embedded-systems">Q2. What is <code>volatile</code> and why is it important in embedded systems?</h2>
+<h3 id="short-answer_1">Short Answer</h3>
+<p><code>volatile</code> tells the compiler that a variable may change unexpectedly, so it must not optimize away accesses to it. It is commonly used for hardware registers and variables affected by interrupts.</p>
+<h3 id="deep-answer_1">Deep Answer</h3>
+<p>In embedded programming, hardware registers can change outside normal program flow, so repeated reads must actually happen. <code>volatile</code> prevents the compiler from caching or removing those reads and writes. But <code>volatile</code> is not a lock, does not make code thread-safe, and does not replace proper synchronization.</p>
+<h3 id="follow-up-questions_1">Follow-Up Questions</h3>
+<ul>
+<li>Where would you use <code>volatile</code>?</li>
+<li>Why is <code>volatile</code> not enough for multithreading?</li>
+<li>Should every shared variable be <code>volatile</code>?</li>
+</ul>
+<hr />
+<h2 id="q3-what-is-structure-padding-and-alignment">Q3. What is structure padding and alignment?</h2>
+<h3 id="short-answer_2">Short Answer</h3>
+<p>Compilers insert padding inside structures so members are aligned according to architecture rules. This improves access efficiency but may make the structure bigger than the sum of its fields.</p>
+<h3 id="deep-answer_2">Deep Answer</h3>
+<p>For example, an <code>int</code> may require 4-byte alignment, so if a <code>char</code> appears before it, the compiler may insert extra bytes in between. This matters in embedded systems when working with hardware registers, binary protocols, or DMA descriptors. If you ignore padding, you may misread data layouts or corrupt protocol structures.</p>
+<h3 id="follow-up-questions_2">Follow-Up Questions</h3>
+<ul>
+<li>Why does the compiler add padding?</li>
+<li>How can you inspect structure size?</li>
+<li>When is packed layout needed, and what are the risks?</li>
+</ul>
+<hr />
+<h2 id="q4-what-are-function-pointers-and-why-are-they-important-in-linux-kernel-code">Q4. What are function pointers, and why are they important in Linux kernel code?</h2>
+<h3 id="short-answer_3">Short Answer</h3>
+<p>A function pointer stores the address of a function and lets code call it indirectly. The kernel uses them heavily for callbacks and operation tables.</p>
+<h3 id="deep-answer_3">Deep Answer</h3>
+<p>In Linux drivers, structures like <code>file_operations</code> contain function pointers for <code>open</code>, <code>read</code>, <code>write</code>, <code>ioctl</code>, and <code>poll</code>. This allows the kernel to call driver-specific behavior through a common interface. Function pointers are also used in interrupt handlers, timers, workqueues, and many subsystems.</p>
+<h3 id="follow-up-questions_3">Follow-Up Questions</h3>
+<ul>
+<li>Where do function pointers appear in drivers?</li>
+<li>Why are they better than a giant <code>switch</code> in many designs?</li>
+<li>What is the syntax for a simple function pointer?</li>
+</ul>
+<hr />
+<h1 id="section-2-linux-fundamentals">SECTION 2: LINUX FUNDAMENTALS</h1>
+<h2 id="q5-what-is-the-difference-between-user-space-and-kernel-space">Q5. What is the difference between user space and kernel space?</h2>
+<h3 id="short-answer_4">Short Answer</h3>
+<p>User space runs normal applications with restricted privileges, while kernel space runs the operating system core and drivers with full hardware access.</p>
+<h3 id="deep-answer_4">Deep Answer</h3>
+<p>This separation improves security and stability. Applications cannot directly touch hardware or kernel memory; they must go through system calls. Drivers live in kernel space because they need direct access to devices, interrupts, memory-mapped I/O, and privileged kernel APIs.</p>
+<h3 id="follow-up-questions_4">Follow-Up Questions</h3>
+<ul>
+<li>Why is this separation necessary?</li>
+<li>How does user space request kernel services?</li>
+<li>What happens if kernel code has a bug?</li>
+</ul>
+<hr />
+<h2 id="q6-what-is-a-system-call">Q6. What is a system call?</h2>
+<h3 id="short-answer_5">Short Answer</h3>
+<p>A system call is the controlled interface through which a user-space program requests a service from the kernel.</p>
+<h3 id="deep-answer_5">Deep Answer</h3>
+<p>Examples include <code>open</code>, <code>read</code>, <code>write</code>, <code>mmap</code>, <code>fork</code>, and <code>ioctl</code>. When a program makes a system call, the CPU switches into kernel mode, the kernel validates the request, performs the operation, and then returns back to user space. In driver interviews, this is important because user programs reach drivers through kernel-managed interfaces like file operations.</p>
+<h3 id="follow-up-questions_5">Follow-Up Questions</h3>
+<ul>
+<li>What is the path from <code>read()</code> in user space to a driver?</li>
+<li>Why can&rsquo;t user space directly call kernel functions?</li>
+<li>What is <code>ioctl()</code> used for?</li>
+</ul>
+<hr />
+<h2 id="q7-what-is-the-difference-between-a-process-and-a-thread">Q7. What is the difference between a process and a thread?</h2>
+<h3 id="short-answer_6">Short Answer</h3>
+<p>A process has its own virtual address space, while threads within the same process share memory and resources but have separate stacks and registers.</p>
+<h3 id="deep-answer_6">Deep Answer</h3>
+<p>Processes are heavier because they isolate memory and resources. Threads are lighter and useful when tasks within one application need to run concurrently and share data. In interviews, this question often leads into synchronization, race conditions, and the mapping between user-space threads and kernel concurrency concepts.</p>
+<h3 id="follow-up-questions_6">Follow-Up Questions</h3>
+<ul>
+<li>Why are threads lighter than processes?</li>
+<li>What resources are shared between threads?</li>
+<li>When would you prefer threads over processes?</li>
+</ul>
+<hr />
+<h2 id="q8-explain-fork-exec-and-copy-on-write">Q8. Explain <code>fork()</code>, <code>exec()</code>, and copy-on-write.</h2>
+<h3 id="short-answer_7">Short Answer</h3>
+<p><code>fork()</code> creates a new process, <code>exec()</code> replaces the current process image with a new program, and copy-on-write is the optimization that makes <code>fork()</code> efficient.</p>
+<h3 id="deep-answer_7">Deep Answer</h3>
+<p>After <code>fork()</code>, parent and child initially share the same memory pages as read-only. If either side writes to a page, the kernel creates a private copy of that page. <code>exec()</code> does not create a new process; it replaces the current program with a different executable. These concepts matter in Linux fundamentals and show how the kernel manages process creation efficiently.</p>
+<h3 id="follow-up-questions_7">Follow-Up Questions</h3>
+<ul>
+<li>What stays the same after <code>exec()</code>?</li>
+<li>Why is <code>fork()</code> not as expensive as a full memory copy?</li>
+<li>What is a typical <code>fork()</code> + <code>exec()</code> workflow?</li>
+</ul>
+<hr />
+<h2 id="q9-what-is-the-difference-between-mmap-and-ioremap">Q9. What is the difference between <code>mmap()</code> and <code>ioremap()</code>?</h2>
+<h3 id="short-answer_8">Short Answer</h3>
+<p><code>mmap()</code> is a user-space system call for mapping memory into a process address space, while <code>ioremap()</code> is a kernel function used by drivers to map physical I/O memory into kernel virtual address space.</p>
+<h3 id="deep-answer_8">Deep Answer</h3>
+<p><code>mmap()</code> is often used for files, shared memory, and sometimes device memory exposed to user space. <code>ioremap()</code> is used inside drivers for accessing MMIO registers of hardware devices. Both deal with mapping memory, but they operate in different contexts and for different users.</p>
+<h3 id="follow-up-questions_8">Follow-Up Questions</h3>
+<ul>
+<li>Why can&rsquo;t a driver directly dereference a physical address?</li>
+<li>Where would <code>mmap()</code> appear in a character driver?</li>
+<li>What APIs are used after <code>ioremap()</code>?</li>
+</ul>
+<hr />
+<h2 id="q10-explain-the-embedded-linux-boot-flow">Q10. Explain the embedded Linux boot flow.</h2>
+<h3 id="short-answer_9">Short Answer</h3>
+<p>A typical embedded Linux boot flow is: BootROM → bootloader like U-Boot → kernel → initramfs or root filesystem → init process.</p>
+<h3 id="deep-answer_9">Deep Answer</h3>
+<p>The SoC starts with BootROM, which loads a bootloader from flash, SD, or another source. The bootloader initializes basic hardware, loads the kernel image, Device Tree Blob, and sometimes initramfs, and passes boot arguments. Then the kernel initializes subsystems, mounts a temporary or final root filesystem, and starts <code>init</code> or another first userspace process.</p>
+<h3 id="follow-up-questions_9">Follow-Up Questions</h3>
+<ul>
+<li>What does U-Boot do?</li>
+<li>What is initramfs?</li>
+<li>What is the role of the Device Tree Blob?</li>
+</ul>
+<hr />
+<h1 id="section-3-kernel-modules-and-kernel-memory">SECTION 3: KERNEL MODULES AND KERNEL MEMORY</h1>
+<h2 id="q11-what-is-a-kernel-module">Q11. What is a kernel module?</h2>
+<h3 id="short-answer_10">Short Answer</h3>
+<p>A kernel module is code that can be loaded into or removed from the kernel at runtime.</p>
+<h3 id="deep-answer_10">Deep Answer</h3>
+<p>Modules are commonly used for device drivers, filesystems, and protocol support. They let you add functionality without rebuilding the entire kernel. A module usually has an initialization function and an exit function, declared using <code>module_init()</code> and <code>module_exit()</code>.</p>
+<h3 id="follow-up-questions_10">Follow-Up Questions</h3>
+<ul>
+<li>What is the difference between a built-in driver and a module?</li>
+<li>Why are modules useful during development?</li>
+<li>What commands are used to load and unload a module?</li>
+</ul>
+<hr />
+<h2 id="q12-what-is-the-difference-between-insmod-and-modprobe">Q12. What is the difference between <code>insmod</code> and <code>modprobe</code>?</h2>
+<h3 id="short-answer_11">Short Answer</h3>
+<p><code>insmod</code> loads a module directly by filename, while <code>modprobe</code> loads a module by name and also resolves dependencies automatically.</p>
+<h3 id="deep-answer_11">Deep Answer</h3>
+<p><code>insmod</code> is a simple low-level tool and does not handle dependencies. <code>modprobe</code> consults module dependency information and is generally the preferred command on real systems. If a module fails to load, <code>dmesg</code> is often the first place to check for errors like unresolved symbols or vermagic mismatch.</p>
+<h3 id="follow-up-questions_11">Follow-Up Questions</h3>
+<ul>
+<li>What is vermagic?</li>
+<li>Why might a module fail to load?</li>
+<li>When would you use <code>modprobe</code> instead of <code>insmod</code>?</li>
+</ul>
+<hr />
+<h2 id="q13-what-is-the-difference-between-kmalloc-kzalloc-and-vmalloc">Q13. What is the difference between <code>kmalloc()</code>, <code>kzalloc()</code>, and <code>vmalloc()</code>?</h2>
+<h3 id="short-answer_12">Short Answer</h3>
+<p><code>kmalloc()</code> allocates physically contiguous memory, <code>kzalloc()</code> does the same but zero-initializes it, and <code>vmalloc()</code> allocates virtually contiguous memory that may not be physically contiguous.</p>
+<h3 id="deep-answer_12">Deep Answer</h3>
+<p><code>kmalloc()</code> is the most common allocator for small driver structures. <code>kzalloc()</code> is often preferred because it avoids uninitialized fields. <code>vmalloc()</code> is useful for larger allocations where physical contiguity is not required, but it is slower and unsuitable for many DMA use cases.</p>
+<h3 id="follow-up-questions_12">Follow-Up Questions</h3>
+<ul>
+<li>Why is physical contiguity sometimes important?</li>
+<li>When would <code>vmalloc()</code> be a bad choice?</li>
+<li>Why is <code>kzalloc()</code> often safer than <code>kmalloc()</code>?</li>
+</ul>
+<hr />
+<h2 id="q14-what-are-gfp_kernel-and-gfp_atomic">Q14. What are <code>GFP_KERNEL</code> and <code>GFP_ATOMIC</code>?</h2>
+<h3 id="short-answer_13">Short Answer</h3>
+<p>They are memory allocation flags. <code>GFP_KERNEL</code> is used when sleeping is allowed, and <code>GFP_ATOMIC</code> is used when sleeping is not allowed.</p>
+<h3 id="deep-answer_13">Deep Answer</h3>
+<p><code>GFP_KERNEL</code> is the normal choice in process context because the allocator may block and reclaim memory. <code>GFP_ATOMIC</code> is used in interrupt context or while holding a spinlock, where sleeping would be illegal. Using the wrong flag can lead to failures or serious kernel bugs.</p>
+<h3 id="follow-up-questions_13">Follow-Up Questions</h3>
+<ul>
+<li>In which context is <code>GFP_ATOMIC</code> required?</li>
+<li>Why can&rsquo;t allocation sleep in interrupt context?</li>
+<li>What is process context versus atomic context?</li>
+</ul>
+<hr />
+<h2 id="q15-why-does-kernel-code-often-use-goto-for-cleanup">Q15. Why does kernel code often use <code>goto</code> for cleanup?</h2>
+<h3 id="short-answer_14">Short Answer</h3>
+<p>Kernel code uses <code>goto</code> cleanup to handle errors cleanly when multiple resources are allocated in sequence.</p>
+<h3 id="deep-answer_14">Deep Answer</h3>
+<p>If a driver allocates memory, maps registers, requests an IRQ, and then fails later, it must release earlier resources in reverse order. Without <code>goto</code>, cleanup logic gets duplicated and becomes error-prone. The <code>goto</code> cleanup pattern centralizes resource release and makes failure paths easier to maintain.</p>
+<h3 id="follow-up-questions_14">Follow-Up Questions</h3>
+<ul>
+<li>Why is this pattern common in <code>probe()</code>?</li>
+<li>Why is duplicated cleanup code risky?</li>
+<li>How do <code>devm_*</code> APIs reduce cleanup code?</li>
+</ul>
+<hr />
+<h1 id="section-4-character-driver">SECTION 4: CHARACTER DRIVER</h1>
+<h2 id="q16-what-is-a-character-device-driver">Q16. What is a character device driver?</h2>
+<h3 id="short-answer_15">Short Answer</h3>
+<p>A character device driver provides stream-oriented access to a device through file operations such as <code>open</code>, <code>read</code>, <code>write</code>, and <code>ioctl</code>.</p>
+<h3 id="deep-answer_15">Deep Answer</h3>
+<p>Character devices are exposed through device nodes under <code>/dev</code>. User space interacts with them using normal file APIs, and the kernel routes those operations into the driver&rsquo;s <code>file_operations</code> table. Many custom embedded drivers begin as character drivers because they are simple and flexible.</p>
+<h3 id="follow-up-questions_15">Follow-Up Questions</h3>
+<ul>
+<li>What is the difference between character and block devices?</li>
+<li>Where does the device node come from?</li>
+<li>Why are character drivers common in teaching and interviews?</li>
+</ul>
+<hr />
+<h2 id="q17-what-are-major-and-minor-numbers">Q17. What are major and minor numbers?</h2>
+<h3 id="short-answer_16">Short Answer</h3>
+<p>The major number identifies the driver, and the minor number identifies a specific device instance handled by that driver.</p>
+<h3 id="deep-answer_16">Deep Answer</h3>
+<p>This allows one driver to manage multiple devices. The device number is stored in <code>dev_t</code>, and helper macros like <code>MAJOR()</code>, <code>MINOR()</code>, and <code>MKDEV()</code> are used to work with it. In a multi-instance driver, the minor number often helps locate per-device private data.</p>
+<h3 id="follow-up-questions_16">Follow-Up Questions</h3>
+<ul>
+<li>What is <code>dev_t</code>?</li>
+<li>How do you allocate device numbers?</li>
+<li>How can one driver support multiple devices?</li>
+</ul>
+<hr />
+<h2 id="q18-what-are-cdev-and-file_operations">Q18. What are <code>cdev</code> and <code>file_operations</code>?</h2>
+<h3 id="short-answer_17">Short Answer</h3>
+<p><code>cdev</code> represents a character device in the kernel, and <code>file_operations</code> is the table of callbacks that defines how that device behaves.</p>
+<h3 id="deep-answer_17">Deep Answer</h3>
+<p>When user space opens a device node, the VFS uses the registered <code>cdev</code> to find the driver&rsquo;s <code>file_operations</code>. These callbacks implement methods like <code>open</code>, <code>release</code>, <code>read</code>, <code>write</code>, <code>unlocked_ioctl</code>, and <code>poll</code>. This is one of the most important driver concepts to understand clearly for interviews.</p>
+<h3 id="follow-up-questions_17">Follow-Up Questions</h3>
+<ul>
+<li>What callback is called when a user runs <code>read()</code>?</li>
+<li>Where is the driver&rsquo;s private state usually stored?</li>
+<li>Why are function pointers central here?</li>
+</ul>
+<hr />
+<h2 id="q19-why-do-drivers-use-copy_to_user-and-copy_from_user">Q19. Why do drivers use <code>copy_to_user()</code> and <code>copy_from_user()</code>?</h2>
+<h3 id="short-answer_18">Short Answer</h3>
+<p>Drivers use them to safely transfer data between kernel space and user space.</p>
+<h3 id="deep-answer_18">Deep Answer</h3>
+<p>The kernel cannot trust or directly dereference user pointers because user memory may be invalid, unmapped, or malicious. <code>copy_to_user()</code> and <code>copy_from_user()</code> perform controlled access across the boundary. This is a very common interview question because it checks whether you understand the user-kernel memory separation.</p>
+<h3 id="follow-up-questions_18">Follow-Up Questions</h3>
+<ul>
+<li>Why is direct access to user pointers unsafe?</li>
+<li>What happens if the copy fails?</li>
+<li>Where would you use these functions in a character driver?</li>
+</ul>
+<hr />
+<h2 id="q20-what-is-ioctl-and-when-would-you-use-it">Q20. What is <code>ioctl()</code> and when would you use it?</h2>
+<h3 id="short-answer_19">Short Answer</h3>
+<p><code>ioctl()</code> is used for device-specific control operations that do not fit naturally into <code>read()</code> or <code>write()</code>.</p>
+<h3 id="deep-answer_19">Deep Answer</h3>
+<p>Examples include resetting a device, changing configuration, reading status, or issuing commands. In Linux drivers, <code>ioctl</code> commands are usually defined with macros like <code>_IO</code>, <code>_IOR</code>, and <code>_IOW</code>. Good drivers use <code>ioctl()</code> only when the operation really is control-oriented and does not map well to data streaming.</p>
+<h3 id="follow-up-questions_19">Follow-Up Questions</h3>
+<ul>
+<li>What is the difference between <code>_IO</code>, <code>_IOR</code>, and <code>_IOW</code>?</li>
+<li>When should you avoid <code>ioctl()</code>?</li>
+<li>Could sysfs be a better choice in some cases?</li>
+</ul>
+<hr />
+<h2 id="q21-how-do-you-implement-a-blocking-read-in-a-driver">Q21. How do you implement a blocking <code>read()</code> in a driver?</h2>
+<h3 id="short-answer_20">Short Answer</h3>
+<p>If data is not available, the process sleeps on a wait queue until the device or another context makes data available and wakes it up.</p>
+<h3 id="deep-answer_20">Deep Answer</h3>
+<p>A blocking <code>read()</code> should not spin in a loop. Instead, it should check whether data is available, call <code>wait_event_interruptible()</code> or a similar API if not, and wake up later when the condition becomes true. This is a core driver concurrency pattern and is far more interview-relevant than advanced user-space thread pools.</p>
+<h3 id="follow-up-questions_20">Follow-Up Questions</h3>
+<ul>
+<li>What is a wait queue?</li>
+<li>Why is blocking better than busy-waiting?</li>
+<li>What should happen if the process receives a signal while waiting?</li>
+</ul>
+<hr />
+<h2 id="q22-what-is-poll-in-a-driver">Q22. What is <code>.poll()</code> in a driver?</h2>
+<h3 id="short-answer_21">Short Answer</h3>
+<p><code>.poll()</code> reports whether a device is ready for reading, writing, or other events, enabling user-space APIs like <code>poll()</code>, <code>select()</code>, and <code>epoll()</code>.</p>
+<h3 id="deep-answer_21">Deep Answer</h3>
+<p>The driver&rsquo;s <code>.poll()</code> implementation typically registers a wait queue and returns a bitmask indicating readiness. This lets user space efficiently monitor multiple descriptors instead of blocking blindly on one <code>read()</code>. If you add blocking I/O to a character driver, knowing how <code>.poll()</code> fits in is a strong plus in interviews.</p>
+<h3 id="follow-up-questions_21">Follow-Up Questions</h3>
+<ul>
+<li>How is <code>.poll()</code> different from <code>read()</code>?</li>
+<li>What does <code>O_NONBLOCK</code> change?</li>
+<li>Why is <code>.poll()</code> useful in real applications?</li>
+</ul>
+<hr />
+<h1 id="section-5-device-tree-and-platform-driver">SECTION 5: DEVICE TREE AND PLATFORM DRIVER</h1>
+<h2 id="q23-why-does-device-tree-exist">Q23. Why does Device Tree exist?</h2>
+<h3 id="short-answer_22">Short Answer</h3>
+<p>Device Tree separates hardware description from driver code so the same kernel can work across multiple boards without hardcoding platform details into drivers.</p>
+<h3 id="deep-answer_22">Deep Answer</h3>
+<p>Instead of embedding addresses, IRQs, GPIOs, clocks, and compatible strings directly in code, those details are described in a data structure that the kernel parses at boot. Drivers then match devices using <code>compatible</code> strings and fetch resources from the tree. This is essential in embedded Linux, especially on ARM-based systems.</p>
+<h3 id="follow-up-questions_22">Follow-Up Questions</h3>
+<ul>
+<li>What hardware details are typically stored in DT?</li>
+<li>What is a <code>compatible</code> string?</li>
+<li>Why is this approach better than hardcoded board files?</li>
+</ul>
+<hr />
+<h2 id="q24-what-is-a-compatible-string-and-how-does-matching-happen">Q24. What is a <code>compatible</code> string, and how does matching happen?</h2>
+<h3 id="short-answer_23">Short Answer</h3>
+<p>A <code>compatible</code> string identifies the hardware type, and the kernel matches it against a driver&rsquo;s <code>of_match_table</code>.</p>
+<h3 id="deep-answer_23">Deep Answer</h3>
+<p>For example, a DT node may contain <code>compatible = "vendor,my-device";</code>. The driver exposes a list of supported strings, and if a match is found, the kernel binds the device to that driver and calls <code>probe()</code>. If the strings do not match exactly, <code>probe()</code> will never be called.</p>
+<h3 id="follow-up-questions_23">Follow-Up Questions</h3>
+<ul>
+<li>What should you check if <code>probe()</code> is not called?</li>
+<li>Can one driver support multiple <code>compatible</code> strings?</li>
+<li>How does this differ from I2C device ID matching?</li>
+</ul>
+<hr />
+<h2 id="q25-what-are-the-reg-interrupts-and-phandle-style-properties-used-for">Q25. What are the <code>reg</code>, <code>interrupts</code>, and phandle-style properties used for?</h2>
+<h3 id="short-answer_24">Short Answer</h3>
+<p><code>reg</code> describes memory-mapped register ranges, <code>interrupts</code> describes interrupt wiring, and phandle references connect one DT node to another resource provider like a GPIO controller or clock provider.</p>
+<h3 id="deep-answer_24">Deep Answer</h3>
+<p>A driver uses these properties to discover hardware resources without hardcoding them. For example, <code>reg</code> is used with resource mapping APIs, <code>interrupts</code> leads to IRQ lookup, and a phandle may connect the device to clocks, regulators, GPIO controllers, or pinctrl settings. Understanding these properties makes DT discussions much easier in interviews.</p>
+<h3 id="follow-up-questions_24">Follow-Up Questions</h3>
+<ul>
+<li>How does a driver get the register base from <code>reg</code>?</li>
+<li>How does a driver get an IRQ from the DT?</li>
+<li>What kinds of things are usually referenced by phandles?</li>
+</ul>
+<hr />
+<h2 id="q26-what-is-a-platform-driver-and-what-usually-happens-in-probe">Q26. What is a platform driver, and what usually happens in <code>probe()</code>?</h2>
+<h3 id="short-answer_25">Short Answer</h3>
+<p>A platform driver handles non-discoverable SoC or board-integrated devices, and <code>probe()</code> is where the driver acquires resources, initializes hardware, and registers its interfaces.</p>
+<h3 id="deep-answer_25">Deep Answer</h3>
+<p>In <code>probe()</code>, a platform driver commonly allocates private data, maps MMIO registers with <code>devm_platform_ioremap_resource()</code>, gets IRQs with <code>platform_get_irq()</code>, requests clocks or GPIOs, initializes the device, and registers with a subsystem or creates user interfaces. If something fails, it returns an error and performs cleanup or relies on <code>devm_*</code> helpers.</p>
+<h3 id="follow-up-questions_25">Follow-Up Questions</h3>
+<ul>
+<li>What kinds of devices use platform drivers?</li>
+<li>What is <code>devm_platform_ioremap_resource()</code>?</li>
+<li>Why is <code>probe()</code> such an important function?</li>
+</ul>
+<hr />
+<h2 id="q27-what-is-eprobe_defer-and-when-is-it-used">Q27. What is <code>-EPROBE_DEFER</code> and when is it used?</h2>
+<h3 id="short-answer_26">Short Answer</h3>
+<p><code>-EPROBE_DEFER</code> tells the kernel that a driver&rsquo;s dependency is not ready yet and that probing should be tried again later.</p>
+<h3 id="deep-answer_26">Deep Answer</h3>
+<p>This happens when a device depends on another provider such as a clock, regulator, GPIO controller, reset controller, or other subsystem that has not finished registering. Returning <code>-EPROBE_DEFER</code> is the correct way to handle this dependency ordering issue.</p>
+<h3 id="follow-up-questions_26">Follow-Up Questions</h3>
+<ul>
+<li>What dependencies commonly cause deferred probing?</li>
+<li>Why is returning a hard failure wrong in this case?</li>
+<li>How would you debug repeated probe deferrals?</li>
+</ul>
+<hr />
+<h1 id="section-6-i2c-and-spi">SECTION 6: I2C AND SPI</h1>
+<h2 id="q28-what-is-the-difference-between-i2c-and-spi">Q28. What is the difference between I2C and SPI?</h2>
+<h3 id="short-answer_27">Short Answer</h3>
+<p>I2C uses two shared wires and addressing, while SPI uses separate clock/data lines and chip-select signals and is usually faster.</p>
+<h3 id="deep-answer_27">Deep Answer</h3>
+<p>I2C is common for sensors, EEPROMs, RTCs, and low-speed peripherals because it uses fewer wires and allows multiple devices on the same bus by address. SPI is often used for flash, displays, ADCs, and other higher-speed devices because it offers higher throughput. Interviewers often ask this to see if you can choose the right bus for a use case.</p>
+<h3 id="follow-up-questions_27">Follow-Up Questions</h3>
+<ul>
+<li>When would you choose I2C over SPI?</li>
+<li>What are ACK and NACK in I2C?</li>
+<li>What are CPOL and CPHA in SPI?</li>
+</ul>
+<hr />
+<h2 id="q29-explain-the-linux-i2c-model-adapter-client-and-driver">Q29. Explain the Linux I2C model: adapter, client, and driver.</h2>
+<h3 id="short-answer_28">Short Answer</h3>
+<p>The adapter is the I2C controller, the client is a device on the bus, and the driver is the software that handles that device.</p>
+<h3 id="deep-answer_28">Deep Answer</h3>
+<p>The adapter represents the hardware bus controller. The client represents a specific device at a specific address on that bus. The driver binds to that client, typically through Device Tree matching, and uses APIs like <code>i2c_smbus_read_byte_data()</code> or <code>i2c_smbus_write_byte_data()</code> to talk to the device.</p>
+<h3 id="follow-up-questions_28">Follow-Up Questions</h3>
+<ul>
+<li>What is an <code>i2c_client</code>?</li>
+<li>How does DT matching work for I2C drivers?</li>
+<li>What are SMBus helper APIs?</li>
+</ul>
+<hr />
+<h2 id="q30-why-is-subsystem-integration-like-hwmon-preferred-in-sensor-drivers">Q30. Why is subsystem integration like <code>hwmon</code> preferred in sensor drivers?</h2>
+<h3 id="short-answer_29">Short Answer</h3>
+<p>Subsystem integration gives a standard user-space interface and makes drivers more maintainable and consistent with the rest of Linux.</p>
+<h3 id="deep-answer_29">Deep Answer</h3>
+<p>Instead of inventing a custom <code>/dev</code> interface or custom sysfs layout, a temperature sensor driver can register with <code>hwmon</code>, which automatically exposes standard attributes like <code>temp1_input</code>. This is better for tooling, userspace compatibility, and code quality.</p>
+<h3 id="follow-up-questions_29">Follow-Up Questions</h3>
+<ul>
+<li>What kinds of subsystems exist besides <code>hwmon</code>?</li>
+<li>Why is a subsystem often better than a custom character device?</li>
+<li>What does a sensor driver still need to implement after joining <code>hwmon</code>?</li>
+</ul>
+<hr />
+<h1 id="section-7-concurrency-interrupts-and-driver-context">SECTION 7: CONCURRENCY, INTERRUPTS, AND DRIVER CONTEXT</h1>
+<h2 id="q31-what-is-the-difference-between-process-context-and-interrupt-context">Q31. What is the difference between process context and interrupt context?</h2>
+<h3 id="short-answer_30">Short Answer</h3>
+<p>Process context is normal schedulable task context where sleeping is usually allowed, while interrupt context is time-sensitive and must not sleep.</p>
+<h3 id="deep-answer_30">Deep Answer</h3>
+<p>Code running due to system calls, kernel threads, or workqueues usually runs in process context. Interrupt handlers run in interrupt context and must complete quickly because they are handling urgent events. This distinction determines what locks, memory allocation flags, and APIs are safe to use.</p>
+<h3 id="follow-up-questions_30">Follow-Up Questions</h3>
+<ul>
+<li>Why can&rsquo;t you sleep in interrupt context?</li>
+<li>Which allocation flags are safe in interrupt context?</li>
+<li>Is a workqueue process context or interrupt context?</li>
+</ul>
+<hr />
+<h2 id="q32-what-is-the-difference-between-a-mutex-and-a-spinlock">Q32. What is the difference between a mutex and a spinlock?</h2>
+<h3 id="short-answer_31">Short Answer</h3>
+<p>A mutex is a sleeping lock used in process context, while a spinlock is a busy-wait lock used when sleeping is not allowed, such as atomic or interrupt context.</p>
+<h3 id="deep-answer_31">Deep Answer</h3>
+<p>Use a mutex for longer critical sections where blocking is acceptable. Use a spinlock for short critical sections where the code cannot sleep. A common interview trap is to ask whether a mutex can be used in interrupt context; the correct answer is no, because mutex acquisition may sleep.</p>
+<h3 id="follow-up-questions_31">Follow-Up Questions</h3>
+<ul>
+<li>Why is sleeping while holding a spinlock wrong?</li>
+<li>When would you use <code>spin_lock_irqsave()</code>?</li>
+<li>If data is shared between process context and IRQ context, what kind of protection is common?</li>
+</ul>
+<hr />
+<h2 id="q33-what-are-top-half-threaded-irq-and-workqueue">Q33. What are top half, threaded IRQ, and workqueue?</h2>
+<h3 id="short-answer_32">Short Answer</h3>
+<p>The top half is the immediate interrupt handler, a threaded IRQ defers heavier work to a schedulable thread, and a workqueue defers work to process context.</p>
+<h3 id="deep-answer_32">Deep Answer</h3>
+<p>A top half should do only urgent work like acknowledging the interrupt and capturing minimal state. If more work is needed and it may sleep, a threaded IRQ or workqueue is used. Modern driver design often prefers a small hard IRQ handler plus a threaded IRQ handler, because real device handling often needs APIs that are not safe in hard interrupt context.</p>
+<h3 id="follow-up-questions_32">Follow-Up Questions</h3>
+<ul>
+<li>Why should the top half be short?</li>
+<li>When would you prefer threaded IRQ over workqueue?</li>
+<li>Can a threaded IRQ sleep?</li>
+</ul>
+<hr />
+<h1 id="section-8-debugging-and-project-discussion">SECTION 8: DEBUGGING AND PROJECT DISCUSSION</h1>
+<h2 id="q34-how-would-you-debug-if-your-drivers-probe-is-not-getting-called">Q34. How would you debug if your driver&rsquo;s <code>probe()</code> is not getting called?</h2>
+<h3 id="short-answer_33">Short Answer</h3>
+<p>First check whether the driver loaded, whether the DT <code>compatible</code> string matches, and whether the device node is enabled.</p>
+<h3 id="deep-answer_33">Deep Answer</h3>
+<p>A practical debug flow is:
+- check <code>dmesg</code> for driver registration logs
+- verify the DT node exists and has <code>status = "okay"</code>
+- confirm the <code>compatible</code> string exactly matches the driver&rsquo;s <code>of_match_table</code>
+- confirm the driver is registered on the right bus
+- check whether dependencies are causing <code>-EPROBE_DEFER</code></p>
+<h3 id="follow-up-questions_33">Follow-Up Questions</h3>
+<ul>
+<li>What if the module loaded but <code>probe()</code> still never runs?</li>
+<li>How would you detect repeated probe deferral?</li>
+<li>What sysfs paths can help inspect device-driver binding?</li>
+</ul>
+<hr />
+<h2 id="q35-how-would-you-debug-a-module-that-fails-to-load">Q35. How would you debug a module that fails to load?</h2>
+<h3 id="short-answer_34">Short Answer</h3>
+<p>Start with <code>dmesg</code>, then check for symbol errors, vermagic mismatch, invalid parameters, missing dependencies, or code paths that fail during initialization.</p>
+<h3 id="deep-answer_34">Deep Answer</h3>
+<p>Many module load problems are explained clearly in kernel logs. Common causes include unresolved symbols, wrong kernel version, missing exported symbols, bad module parameters, or crashes during <code>init</code>. The key interview point is not memorizing every failure, but showing that your first move is to inspect logs and reason systematically.</p>
+<h3 id="follow-up-questions_34">Follow-Up Questions</h3>
+<ul>
+<li>What is vermagic mismatch?</li>
+<li>What is the difference between <code>insmod</code> failure and runtime probe failure?</li>
+<li>Why is <code>dmesg</code> usually the first step?</li>
+</ul>
+<hr />
+<h2 id="q36-walk-me-through-your-driver-project">Q36. Walk me through your driver project.</h2>
+<h3 id="short-answer_35">Short Answer</h3>
+<p>Start from the user-visible goal, then explain architecture, data flow, synchronization, error handling, and how you tested and debugged it.</p>
+<h3 id="deep-answer_35">Deep Answer</h3>
+<p>A strong answer usually follows this structure:
+- what problem the driver solves
+- how the kernel matches or creates the device
+- what resources are acquired in <code>probe()</code> or init
+- how user space or a subsystem interacts with the driver
+- what synchronization is used and why
+- how errors are handled
+- how you tested it
+- one real bug you debugged</p>
+<p>Interviewers care less about fancy wording and more about whether you truly understand your own code.</p>
+<h3 id="follow-up-questions_35">Follow-Up Questions</h3>
+<ul>
+<li>What was the hardest bug you hit?</li>
+<li>Why did you choose that synchronization mechanism?</li>
+<li>If you had more time, what would you improve?</li>
+</ul>
+<hr />
+<h1 id="section-9-debugging-scenarios-practical">SECTION 9: DEBUGGING SCENARIOS — PRACTICAL</h1>
+<h2 id="q1-a-kernel-module-is-not-loading-how-would-you-debug-it">Q1. A kernel module is not loading. How would you debug it?</h2>
+<h3 id="short-answer_36">Short Answer</h3>
+<p>First I would check <code>dmesg</code>, because kernel logs usually show the real reason such as symbol mismatch, vermagic issue, bad parameters, or init failure.</p>
+<h3 id="deep-answer_36">Deep Answer</h3>
+<p>My normal flow would be:
+- run <code>insmod</code> or <code>modprobe</code>
+- immediately check <code>dmesg</code>
+- verify kernel version and module vermagic
+- check for unresolved symbols
+- check whether module parameters are valid
+- confirm the module was built against the correct headers
+- if needed, inspect <code>modinfo</code></p>
+<p>In driver development, <code>dmesg</code> is usually the fastest way to understand why loading failed.</p>
+<h3 id="follow-up-questions_36">Follow-Up Questions</h3>
+<ul>
+<li>What is vermagic mismatch?</li>
+<li>What is the difference between <code>insmod</code> and <code>modprobe</code> here?</li>
+<li>What if the module loads but the device still does not work?</li>
+</ul>
+<hr />
+<h2 id="q2-your-driver-module-loads-but-probe-is-never-called-what-would-you-check">Q2. Your driver module loads, but <code>probe()</code> is never called. What would you check?</h2>
+<h3 id="short-answer_37">Short Answer</h3>
+<p>I would check whether the device was actually created or described correctly, whether the <code>compatible</code> string matches, and whether the driver is registered on the correct bus.</p>
+<h3 id="deep-answer_37">Deep Answer</h3>
+<p>For a DT-based embedded driver, I would verify:
+- the Device Tree node exists
+- <code>status = "okay"</code>
+- <code>compatible</code> matches the driver <code>of_match_table</code>
+- the bus type is correct
+- the module actually registered the driver successfully
+- there is no dependency causing deferred probe</p>
+<p>If this is an I2C driver, I would also check whether the I2C device exists on the expected bus and address.</p>
+<h3 id="follow-up-questions_37">Follow-Up Questions</h3>
+<ul>
+<li>What is <code>of_match_table</code>?</li>
+<li>What is <code>-EPROBE_DEFER</code>?</li>
+<li>How would you check device-driver binding in sysfs?</li>
+</ul>
+<hr />
+<h2 id="q3-probe-is-called-but-it-fails-how-would-you-debug-that">Q3. <code>probe()</code> is called, but it fails. How would you debug that?</h2>
+<h3 id="short-answer_38">Short Answer</h3>
+<p>I would add clear logs inside <code>probe()</code> and identify exactly which resource acquisition or initialization step is failing.</p>
+<h3 id="deep-answer_38">Deep Answer</h3>
+<p>A structured way is:
+- log probe entry
+- log each major step
+- check return values after allocation, MMIO mapping, IRQ lookup, clock or GPIO acquisition
+- inspect <code>PTR_ERR()</code> values for device-managed resource failures
+- check DT properties carefully
+- verify resource order and cleanup path</p>
+<p>Most probe failures happen due to bad DT data, missing dependencies, or incorrect assumptions about hardware state.</p>
+<h3 id="follow-up-questions_38">Follow-Up Questions</h3>
+<ul>
+<li>Which APIs in <code>probe()</code> commonly return error pointers?</li>
+<li>Why is structured logging important?</li>
+<li>Why are cleanup paths critical here?</li>
+</ul>
+<hr />
+<h2 id="q4-device-node-under-dev-is-not-created-what-would-you-check">Q4. Device node under <code>/dev</code> is not created. What would you check?</h2>
+<h3 id="short-answer_39">Short Answer</h3>
+<p>I would check whether device number allocation, <code>cdev_add</code>, <code>class_create</code>, and <code>device_create</code> all succeeded, and then inspect <code>dmesg</code>.</p>
+<h3 id="deep-answer_39">Deep Answer</h3>
+<p>For a character driver, the usual flow is:
+- allocate or register device number
+- initialize and add <code>cdev</code>
+- create class
+- create device node</p>
+<p>If <code>/dev</code> entry is missing, then one of those steps likely failed. I would also check whether user-space device management like <code>udev</code> or <code>mdev</code> is present if the system depends on it.</p>
+<h3 id="follow-up-questions_39">Follow-Up Questions</h3>
+<ul>
+<li>What are major and minor numbers?</li>
+<li>Does <code>cdev_add()</code> itself create <code>/dev</code>?</li>
+<li>What is the role of <code>class_create()</code> and <code>device_create()</code>?</li>
+</ul>
+<hr />
+<h2 id="q5-read-blocks-forever-in-your-driver-how-would-you-debug-that">Q5. <code>read()</code> blocks forever in your driver. How would you debug that?</h2>
+<h3 id="short-answer_40">Short Answer</h3>
+<p>I would check whether the condition for waking the wait queue is ever becoming true and whether the wake-up path is actually executed.</p>
+<h3 id="deep-answer_40">Deep Answer</h3>
+<p>For a blocking <code>read()</code>, common issues are:
+- data-ready flag never set
+- wake-up function never called
+- wrong lock usage preventing state update
+- race between condition check and sleep
+- userspace waiting on wrong file descriptor</p>
+<p>I would add logs around:
+- entering <code>read()</code>
+- checking readiness condition
+- sleeping on wait queue
+- the producer or interrupt path
+- the wake-up call</p>
+<h3 id="follow-up-questions_40">Follow-Up Questions</h3>
+<ul>
+<li>What is a wait queue?</li>
+<li>Why must the wait condition be checked carefully?</li>
+<li>How would non-blocking mode behave differently?</li>
+</ul>
+<hr />
+<h2 id="q6-poll-is-not-working-correctly-how-would-you-think-about-it">Q6. <code>poll()</code> is not working correctly. How would you think about it?</h2>
+<h3 id="short-answer_41">Short Answer</h3>
+<p>I would check whether the driver correctly registers the wait queue with <code>poll_wait()</code> and returns the right readiness mask when data is available.</p>
+<h3 id="deep-answer_41">Deep Answer</h3>
+<p>A <code>.poll()</code> bug usually comes from one of these:
+- wait queue not registered with <code>poll_wait()</code>
+- readiness bits not set correctly
+- internal state not updated properly
+- race between event generation and polling logic</p>
+<p>I would verify whether the device should report readable, writable, or error conditions and whether those states match the driver&rsquo;s internal buffer or event flags.</p>
+<h3 id="follow-up-questions_41">Follow-Up Questions</h3>
+<ul>
+<li>What is the difference between <code>.poll()</code> and <code>read()</code>?</li>
+<li>What readiness bits are commonly returned?</li>
+<li>Why is <code>.poll()</code> important for real applications?</li>
+</ul>
+<hr />
+<h2 id="q7-interrupt-is-registered-but-it-never-fires-what-would-you-check">Q7. Interrupt is registered, but it never fires. What would you check?</h2>
+<h3 id="short-answer_42">Short Answer</h3>
+<p>I would check DT interrupt configuration, hardware enable path, and <code>/proc/interrupts</code> to confirm whether the IRQ is actually arriving.</p>
+<h3 id="deep-answer_42">Deep Answer</h3>
+<p>My debug flow would be:
+- verify the IRQ number from DT or platform APIs
+- check <code>request_irq()</code> or <code>request_threaded_irq()</code> return value
+- confirm hardware interrupt generation is enabled in the device register
+- inspect <code>/proc/interrupts</code>
+- verify interrupt polarity and trigger type
+- check whether the interrupt line is masked
+- confirm pinctrl and GPIO/IRQ routing if relevant</p>
+<p>Often the problem is not in the handler code but in DT, pin configuration, or hardware enable sequence.</p>
+<h3 id="follow-up-questions_42">Follow-Up Questions</h3>
+<ul>
+<li>What does <code>/proc/interrupts</code> show?</li>
+<li>Why do trigger type and polarity matter?</li>
+<li>What if the interrupt count increases but the handler logic still seems wrong?</li>
+</ul>
+<hr />
+<h2 id="q8-your-i2c-driver-probes-but-communication-with-the-device-fails-how-do-you-debug-it">Q8. Your I2C driver probes, but communication with the device fails. How do you debug it?</h2>
+<h3 id="short-answer_43">Short Answer</h3>
+<p>I would check bus number, device address, DT data, pull-ups, and the actual register read/write return values.</p>
+<h3 id="deep-answer_43">Deep Answer</h3>
+<p>Typical checks include:
+- <code>i2cdetect</code> to see whether the device responds at the expected address
+- DT node address and compatible string
+- correct bus number
+- physical wiring and pull-ups if real hardware is used
+- whether the device needs initialization before reads
+- whether register width and endianness are handled correctly
+- kernel log messages around transfer failures</p>
+<p>I2C issues are often caused by wrong address, missing pull-ups, bad wiring, or using the wrong register access pattern.</p>
+<h3 id="follow-up-questions_43">Follow-Up Questions</h3>
+<ul>
+<li>What tools help debug I2C from Linux?</li>
+<li>What is the difference between raw I2C and SMBus helper APIs?</li>
+<li>Why might a sensor ACK but still return wrong data?</li>
+</ul>
+<hr />
+<h2 id="q9-the-kernel-crashes-with-an-oops-after-loading-your-driver-what-would-you-do">Q9. The kernel crashes with an oops after loading your driver. What would you do?</h2>
+<h3 id="short-answer_44">Short Answer</h3>
+<p>I would read the oops carefully, identify the failing function and address, and relate it to the recent code path such as probe, read, interrupt, or cleanup.</p>
+<h3 id="deep-answer_44">Deep Answer</h3>
+<p>I would check:
+- the call trace for the faulting function
+- the failing address (null pointer dereference is common)
+- whether the crash happened in init, probe, or a runtime path
+- recently changed code
+- use of uninitialized pointers
+- use after free</p>
+<p>Tools like <code>addr2line</code> with the module&rsquo;s debug symbols can convert a crash address into a source line. If a crash is reproducible, adding <code>pr_debug()</code> before and after suspicious lines helps narrow it down.</p>
+<h3 id="follow-up-questions_44">Follow-Up Questions</h3>
+<ul>
+<li>What is a kernel oops vs a kernel panic?</li>
+<li>How would you use <code>addr2line</code> with a module?</li>
+<li>Can the system continue after an oops?</li>
+</ul>
+<hr />
+<h1 id="section-10-project-walkthrough-answers">SECTION 10: PROJECT WALKTHROUGH ANSWERS</h1>
+<h2 id="how-to-answer-walk-me-through-your-project">How to Answer &ldquo;Walk Me Through Your Project&rdquo;</h2>
+<p>Structure your answer in this order every time:</p>
+<pre><code>1. Problem (10 seconds)
+   &quot;I built a [X] that does [Y].&quot;
+
+2. Architecture (30 seconds)
+   &quot;The key components are [A], [B], [C].&quot;
+   &quot;User space / subsystem interacts through [interface].&quot;
+
+3. Key Technical Detail (30 seconds)
+   &quot;The most interesting part was [specific mechanism].&quot;
+   &quot;I used [API or pattern] because [reason].&quot;
+
+4. Synchronization (15 seconds)
+   &quot;I protected shared state with [mutex/spinlock/wait queue] because [reason].&quot;
+
+5. One Bug You Debugged (20 seconds)
+   &quot;One issue I hit was [symptom]. I found it by [method]. The fix was [one sentence].&quot;
+
+6. What You Would Improve (optional, 10 seconds)
+   &quot;If I had more time, I would [add X] because [reason].&quot;
+</code></pre>
+<h3 id="character-driver-walkthrough">Character Driver Walkthrough</h3>
+<blockquote>
+<p>&ldquo;I built a character device driver that exposes <code>/dev/chardevN</code> nodes for userspace access. The architecture uses <code>alloc_chrdev_region</code> for device numbers and <code>container_of</code> in the open callback to recover per-device state from the embedded <code>cdev</code>. Read and write use <code>copy_to_user</code> and <code>copy_from_user</code> for safe kernel-user transfer. Blocking read puts the reader to sleep on a wait queue using <code>wait_event_interruptible</code> and wakes it up when data is written. A mutex protects the internal buffer. I added IOCTL commands using <code>_IOR</code> and <code>_IOW</code> macros. The bug I hit was an inverted wait condition — I had <code>buffer_len == 0</code> where I meant <code>buffer_len &gt; 0</code>, so read woke immediately on empty buffer. I caught it by adding <code>pr_debug</code> inside the wait condition evaluation.&rdquo;</p>
+</blockquote>
+<h3 id="platform-driver-walkthrough">Platform Driver Walkthrough</h3>
+<blockquote>
+<p>&ldquo;I built a platform driver that matches a DT node by compatible string. In probe(), I use <code>devm_platform_ioremap_resource</code> to map MMIO registers and <code>platform_get_irq</code> to get the interrupt. I request a threaded IRQ so the heavy work happens in schedulable context. All resources use <code>devm_*</code> APIs so cleanup is automatic. The bug I hit was a <code>-EPROBE_DEFER</code> that was silently swallowed — I was checking the return value incorrectly and treating it as a fatal error. After I added a <code>pr_info</code> showing the return code, I saw it was -517 which is <code>EPROBE_DEFER</code>, and passing it up to the framework allowed the probe to retry successfully.&rdquo;</p>
+</blockquote>
+<h3 id="i2c-sensor-driver-walkthrough">I2C Sensor Driver Walkthrough</h3>
+<blockquote>
+<p>&ldquo;I built an I2C driver for a TMP102-style temperature sensor. The DT node carries the compatible string and address, and the kernel calls my probe() on match. I read the temperature register using <code>i2c_smbus_read_word_swapped</code> since the sensor sends big-endian data. I cache the reading for one second to avoid flooding the bus. I registered with hwmon using <code>devm_hwmon_device_register_with_info</code> so the temperature appears at <code>/sys/class/hwmon/hwmonN/temp1_input</code> in millidegrees Celsius. The bug I hit was temperature readings 16x too large — the raw ADC value was left-shifted by 4 in the register and I forgot to right-shift before scaling. I caught it by printing the raw hex value with pr_debug.&rdquo;</p>
+</blockquote>
+<hr />
+<h1 id="section-11-hr-and-resume-questions">SECTION 11: HR AND RESUME QUESTIONS</h1>
+<h2 id="q-tell-me-about-yourself">Q: Tell me about yourself.</h2>
+<h3 id="structure">Structure</h3>
+<blockquote>
+<p>&ldquo;I am a [background] engineer with strong C programming skills. I have spent the last [N weeks/months] preparing specifically for embedded Linux and device driver roles by [building projects]. My three main projects are [X], [Y], [Z]. I am looking for a role where I can work on [kernel/driver/embedded] development.&rdquo;</p>
+</blockquote>
+<p><strong>Key:</strong> Mention the projects by name immediately. Interviewers for embedded roles want to know you have built something, not just studied.</p>
+<hr />
+<h2 id="q-why-do-you-want-to-work-in-embedded-linux">Q: Why do you want to work in embedded Linux?</h2>
+<h3 id="good-answer">Good Answer</h3>
+<blockquote>
+<p>&ldquo;I enjoy working close to hardware. What draws me to Linux driver development specifically is that the code directly controls physical devices — there is a clear connection between a line of code and something happening in hardware. I also find the kernel&rsquo;s design — the way subsystems like I2C, hwmon, and the platform driver framework are architected — really elegant to work with.&rdquo;</p>
+</blockquote>
+<p><strong>Key:</strong> Be specific. Mention something technical you actually found interesting.</p>
+<hr />
+<h2 id="q-what-is-your-biggest-technical-weakness">Q: What is your biggest technical weakness?</h2>
+<h3 id="good-answer_1">Good Answer</h3>
+<blockquote>
+<p>&ldquo;I have less hands-on experience with Yocto and BSP-level bring-up — most of my work has been at the driver level on an existing running system or QEMU. I have studied the concepts and understand the overall workflow, but I have not built a full Yocto image from scratch. I would expect to need some ramp-up time on BSP tasks.&rdquo;</p>
+</blockquote>
+<p><strong>Key:</strong> Pick a real weakness but one that is peripheral to the core job. Show you are aware of it and working on it.</p>
+<hr />
+<h2 id="q-describe-a-time-you-debugged-a-hard-problem">Q: Describe a time you debugged a hard problem.</h2>
+<h3 id="structure_1">Structure</h3>
+<blockquote>
+<p>&ldquo;The hardest bug I hit was [symptom]. My first hypothesis was [wrong guess]. I tested that by [specific action] and it did not reproduce. I then added [specific debug logs or tool]. That showed me [specific data point]. From that I concluded [root cause]. The fix was [one sentence].&rdquo;</p>
+</blockquote>
+<p><strong>Key:</strong> Interviewers want to see your debugging process, not just the answer. Walk through what you tried that was wrong before you found the right answer.</p>
+<hr />
+<h2 id="q-how-do-you-learn-new-technical-topics">Q: How do you learn new technical topics?</h2>
+<h3 id="good-answer_2">Good Answer</h3>
+<blockquote>
+<p>&ldquo;I prefer to read a short overview first to understand the problem the technology solves, then immediately try to build something small with it. For example, when I was learning the Linux I2C subsystem, I read the kernel documentation first, then built a minimal driver skeleton and tested it on i2c-stub before adding real functionality. I find building something forces me to discover the parts I do not actually understand.&rdquo;</p>
+</blockquote>
+<hr />
+<h2 id="q-where-do-you-see-yourself-in-3-years">Q: Where do you see yourself in 3 years?</h2>
+<h3 id="good-answer_3">Good Answer</h3>
+<blockquote>
+<p>&ldquo;I want to be contributing to production embedded Linux systems — ideally having worked on board bring-up, driver development, and debugging real hardware issues. I would like to have contributed upstream patches to the kernel or at least have experience working in a codebase with kernel contribution standards. I am also interested in learning more about BSP development and Yocto as I get more experience.&rdquo;</p>
+</blockquote>
+<hr />
+<h1 id="final-rapid-revision-checklist">FINAL RAPID REVISION CHECKLIST</h1>
+<p>Before an interview, make sure you can clearly explain each of these in under 60 seconds:</p>
+<p><strong>C Fundamentals</strong>
+- [ ] array vs pointer
+- [ ] <code>volatile</code>
+- [ ] structure padding
+- [ ] function pointers</p>
+<p><strong>Linux Fundamentals</strong>
+- [ ] user space vs kernel space
+- [ ] system calls
+- [ ] process vs thread
+- [ ] <code>fork()</code> / <code>exec()</code> / copy-on-write
+- [ ] <code>mmap()</code> vs <code>ioremap()</code>
+- [ ] boot flow</p>
+<p><strong>Kernel Modules and Memory</strong>
+- [ ] kernel module lifecycle
+- [ ] <code>insmod</code> vs <code>modprobe</code>
+- [ ] <code>kmalloc()</code> / <code>kzalloc()</code> / <code>vmalloc()</code>
+- [ ] <code>GFP_KERNEL</code> vs <code>GFP_ATOMIC</code>
+- [ ] <code>goto</code> cleanup</p>
+<p><strong>Character Driver</strong>
+- [ ] character driver flow
+- [ ] major/minor numbers
+- [ ] <code>cdev</code>
+- [ ] <code>file_operations</code>
+- [ ] <code>copy_to_user()</code> / <code>copy_from_user()</code>
+- [ ] <code>ioctl()</code>
+- [ ] wait queues
+- [ ] <code>.poll()</code></p>
+<p><strong>Device Tree and Platform</strong>
+- [ ] Device Tree matching
+- [ ] platform <code>probe()</code>
+- [ ] <code>-EPROBE_DEFER</code></p>
+<p><strong>I2C and SPI</strong>
+- [ ] I2C vs SPI
+- [ ] I2C driver flow
+- [ ] subsystem integration</p>
+<p><strong>Concurrency</strong>
+- [ ] process vs interrupt context
+- [ ] mutex vs spinlock
+- [ ] threaded IRQ / workqueue</p>
+<p><strong>Debugging</strong>
+- [ ] debugging with <code>dmesg</code>
+- [ ] probe not called
+- [ ] module not loading
+- [ ] IRQ not firing</p>
+<hr />
+<h2 id="practice-tip">Practice Tip</h2>
+<p>For each question, practice answering in this order:</p>
+<ol>
+<li>20-second short answer</li>
+<li>60-second deep answer</li>
+<li>2 likely follow-up questions</li>
+</ol>
+<p>That is the best way to prepare for real interviews.</p>
+
+      <!-- Page Navigation -->
+      <div class="page-nav">
+        <a class="prev" href="10_appendix_debugging.html"><span class="nav-label">← Previous</span><span class="nav-title">Appendix: Debugging</span></a>
+      </div>
+    </div>
+  </main>
+
+  <!-- Back to Top -->
+  <button class="back-to-top" aria-label="Back to top">↑</button>
+
+  <!-- Search Index Data -->
+  <script type="application/json" id="search-data">[{"title": "README \u2014 Overview", "url": "00_readme.html", "headings": [{"text": "\ud83d\udc27 EMBEDDED LINUX &amp; DEVICE DRIVERS \u2014 ENHANCED FOOL-PROOF GUIDE", "id": "embedded-linux-device-drivers-enhanced-fool-proof-guide"}, {"text": "Complete 40-Day Execution Plan (V2 \u2014 Updated Edition)", "id": "complete-40-day-execution-plan-v2-updated-edition"}, {"text": "From Systems C Programmer \u2192 Embedded Linux Engineer", "id": "from-systems-c-programmer-embedded-linux-engineer"}, {"text": "\ud83d\udd25 What&rsquo;s in This Edition (V2)", "id": "whats-in-this-edition-v2"}, {"text": "\u26a1 Priority Rules", "id": "priority-rules"}, {"text": "Must Study", "id": "must-study"}, {"text": "Good To Know", "id": "good-to-know"}, {"text": "Optional", "id": "optional"}, {"text": "\ud83d\udcc1 File Structure", "id": "file-structure"}, {"text": "\ud83d\udcca Timeline Overview", "id": "timeline-overview"}, {"text": "\ud83c\udfc6 Mandatory Projects (3 Projects)", "id": "mandatory-projects-3-projects"}, {"text": "\ud83c\udfaf Who This Is For", "id": "who-this-is-for"}, {"text": "\ud83d\udccb Daily Workflow (Enhanced)", "id": "daily-workflow-enhanced"}, {"text": "Morning (2.5-3 hours):", "id": "morning-25-3-hours"}, {"text": "Evening (1.5-2 hours):", "id": "evening-15-2-hours"}, {"text": "Before Sleep (15 min):", "id": "before-sleep-15-min"}, {"text": "\ud83c\udf93 Rules for Success", "id": "rules-for-success"}, {"text": "\ud83c\udfc6 End Goal: After 40 Days", "id": "end-goal-after-40-days"}, {"text": "\u26a1 Start Now", "id": "start-now"}]}, {"title": "Phase 1: C Revision", "url": "01_phase1.html", "headings": [{"text": "PHASE 1: SYSTEMS C REVISION (Days 0-3)", "id": "phase-1-systems-c-revision-days-0-3"}, {"text": "DAY 0: ENVIRONMENT SETUP", "id": "day-0-environment-setup"}, {"text": "Installation Commands (Ubuntu 22.04/20.04)", "id": "installation-commands-ubuntu-22042004"}, {"text": "Verify Setup", "id": "verify-setup"}, {"text": "\u2705 Verification Criteria", "id": "verification-criteria"}, {"text": "DAY 1: POINTERS &amp; MEMORY \u2014 DEEP DIVE", "id": "day-1-pointers-memory-deep-dive"}, {"text": "\ud83e\udde0 THEORY: Memory Layout of a C Program", "id": "theory-memory-layout-of-a-c-program"}, {"text": "Why This Matters for Embedded Linux:", "id": "why-this-matters-for-embedded-linux"}, {"text": "Internal Detail: How malloc() Works", "id": "internal-detail-how-malloc-works"}, {"text": "\ud83e\udde0 THEORY: Pointer Fundamentals \u2014 What You MUST Know", "id": "theory-pointer-fundamentals-what-you-must-know"}, {"text": "A pointer is just an address. Period.", "id": "a-pointer-is-just-an-address-period"}, {"text": "Pointer Sizes:", "id": "pointer-sizes"}, {"text": "Pointer Arithmetic \u2014 The #1 Interview Topic", "id": "pointer-arithmetic-the-1-interview-topic"}, {"text": "\ud83e\udde0 THEORY: Function Pointers \u2014 Essential for Kernel", "id": "theory-function-pointers-essential-for-kernel"}, {"text": "\ud83e\udde0 THEORY: Struct Padding &amp; Alignment", "id": "theory-struct-padding-alignment"}, {"text": "\ud83d\udcbb COMPLETE CODE: Comprehensive Pointer &amp; Memory Demo", "id": "complete-code-comprehensive-pointer-memory-demo"}, {"text": "\ud83c\udfd7\ufe0f MINI-EXERCISES \u2014 Day 1", "id": "mini-exercises-day-1"}, {"text": "\u26a0\ufe0f COMMON PITFALLS \u2014 Day 1", "id": "common-pitfalls-day-1"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Day 1 (15 Questions)", "id": "interview-questions-day-1-15-questions"}, {"text": "DAY 2: BITWISE OPERATIONS \u2014 MASTERY", "id": "day-2-bitwise-operations-mastery"}, {"text": "\ud83e\udde0 THEORY: Why Bitwise Operations Are Essential", "id": "theory-why-bitwise-operations-are-essential"}, {"text": "\ud83e\udde0 THEORY: Bitwise Operators (Complete Reference)", "id": "theory-bitwise-operators-complete-reference"}, {"text": "\ud83e\udde0 THEORY: The Fundamental Bit Operations", "id": "theory-the-fundamental-bit-operations"}, {"text": "\ud83e\udde0 THEORY: Kernel Bit Manipulation APIs", "id": "theory-kernel-bit-manipulation-apis"}, {"text": "\ud83d\udcbb COMPLETE CODE: Bitwise Mastery", "id": "complete-code-bitwise-mastery"}, {"text": "\ud83c\udfd7\ufe0f MINI-EXERCISES \u2014 Day 2", "id": "mini-exercises-day-2"}, {"text": "\u26a0\ufe0f COMMON PITFALLS \u2014 Day 2", "id": "common-pitfalls-day-2"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Day 2 (14 Questions)", "id": "interview-questions-day-2-14-questions"}, {"text": "DAY 3: THREADING \u2014 CONCURRENCY ESSENTIALS", "id": "day-3-threading-concurrency-essentials"}, {"text": "\ud83e\udde0 THEORY: Why Threading Matters for Kernel Development", "id": "theory-why-threading-matters-for-kernel-development"}, {"text": "\ud83e\udde0 THEORY: Thread vs Process", "id": "theory-thread-vs-process"}, {"text": "\ud83e\udde0 THEORY: Synchronization Primitives \u2014 Deep Dive", "id": "theory-synchronization-primitives-deep-dive"}, {"text": "Mutex (Mutual Exclusion)", "id": "mutex-mutual-exclusion"}, {"text": "Spinlock", "id": "spinlock"}, {"text": "Condition Variable", "id": "condition-variable"}, {"text": "Semaphore", "id": "semaphore"}, {"text": "\ud83e\udde0 THEORY: The Deadlock Problem", "id": "theory-the-deadlock-problem"}, {"text": "\ud83d\udcbb COMPLETE CODE: Threading Patterns", "id": "complete-code-threading-patterns"}, {"text": "\ud83c\udfd7\ufe0f MINI-EXERCISES \u2014 Day 3", "id": "mini-exercises-day-3"}, {"text": "\u26a0\ufe0f COMMON PITFALLS \u2014 Day 3", "id": "common-pitfalls-day-3"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Day 3 (16 Questions)", "id": "interview-questions-day-3-16-questions"}]}, {"title": "Phase 2: Linux Fundamentals", "url": "02_phase2.html", "headings": [{"text": "PHASE 2: LINUX FUNDAMENTALS (Days 4-8)", "id": "phase-2-linux-fundamentals-days-4-8"}, {"text": "DAY 4: SYSTEM CALLS \u2014 THE KERNEL BOUNDARY", "id": "day-4-system-calls-the-kernel-boundary"}, {"text": "\ud83e\udde0 THEORY: User Space vs Kernel Space (Why It Exists)", "id": "theory-user-space-vs-kernel-space-why-it-exists"}, {"text": "Why the split?", "id": "why-the-split"}, {"text": "\ud83e\udde0 THEORY: System Call Mechanism \u2014 Step by Step", "id": "theory-system-call-mechanism-step-by-step"}, {"text": "\ud83e\udde0 THEORY: Key System Calls for Embedded", "id": "theory-key-system-calls-for-embedded"}, {"text": "\ud83e\udde0 THEORY: File Descriptors \u2014 The Universal Handle", "id": "theory-file-descriptors-the-universal-handle"}, {"text": "\ud83d\udcbb COMPLETE CODE: System Calls Deep Dive", "id": "complete-code-system-calls-deep-dive"}, {"text": "\u26a0\ufe0f COMMON PITFALLS \u2014 Day 4", "id": "common-pitfalls-day-4"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Day 4 (10 Questions)", "id": "interview-questions-day-4-10-questions"}, {"text": "DAY 5: PROCESS CREATION (FORK &amp; EXEC)", "id": "day-5-process-creation-fork-exec"}, {"text": "\ud83e\udde0 THEORY: Process Creation in Linux", "id": "theory-process-creation-in-linux"}, {"text": "\ud83e\udde0 THEORY: Copy-On-Write (COW) \u2014 Performance Critical", "id": "theory-copy-on-write-cow-performance-critical"}, {"text": "\ud83e\udde0 THEORY: Process States", "id": "theory-process-states"}, {"text": "\ud83d\udcbb COMPLETE CODE: Process Patterns", "id": "complete-code-process-patterns"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Day 5 (12 Questions)", "id": "interview-questions-day-5-12-questions"}, {"text": "DAY 6: MEMORY MAPPED FILES (MMAP)", "id": "day-6-memory-mapped-files-mmap"}, {"text": "\ud83e\udde0 THEORY: Why mmap() Matters", "id": "theory-why-mmap-matters"}, {"text": "\ud83e\udde0 THEORY: mmap() Parameters Explained", "id": "theory-mmap-parameters-explained"}, {"text": "\ud83d\udcbb COMPLETE CODE: mmap Patterns", "id": "complete-code-mmap-patterns"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Day 6 (8 Questions)", "id": "interview-questions-day-6-8-questions"}, {"text": "DAYS 7-8: LINUX BOOT PROCESS &amp; FILESYSTEMS", "id": "days-7-8-linux-boot-process-filesystems"}, {"text": "\ud83e\udde0 THEORY: Complete Boot Sequence", "id": "theory-complete-boot-sequence"}, {"text": "\ud83e\udde0 THEORY: Critical Pseudo-Filesystems", "id": "theory-critical-pseudo-filesystems"}, {"text": "/proc \u2014 What your driver should know:", "id": "proc-what-your-driver-should-know"}, {"text": "/sys \u2014 The driver developer&rsquo;s best friend:", "id": "sys-the-driver-developers-best-friend"}, {"text": "/dev \u2014 Device nodes:", "id": "dev-device-nodes"}, {"text": "\ud83e\udde0 THEORY: For Embedded \u2014 U-Boot &amp; Device Tree Boot", "id": "theory-for-embedded-u-boot-device-tree-boot"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Days 7-8 (12 Questions)", "id": "interview-questions-days-7-8-12-questions"}]}, {"title": "Phase 3: Kernel Modules", "url": "03_phase3.html", "headings": [{"text": "PHASE 3: KERNEL MODULES &amp; PATTERNS (Days 9-13)", "id": "phase-3-kernel-modules-patterns-days-9-13"}, {"text": "DAY 9: FIRST KERNEL MODULE", "id": "day-9-first-kernel-module"}, {"text": "\ud83e\udde0 THEORY: What IS a Kernel Module?", "id": "theory-what-is-a-kernel-module"}, {"text": "\ud83e\udde0 THEORY: Module vs Built-in", "id": "theory-module-vs-built-in"}, {"text": "\ud83e\udde0 THEORY: Module Lifecycle", "id": "theory-module-lifecycle"}, {"text": "\ud83e\udde0 THEORY: Kernel vs Userspace Environment", "id": "theory-kernel-vs-userspace-environment"}, {"text": "\ud83d\udcbb COMPLETE CODE: Comprehensive First Module", "id": "complete-code-comprehensive-first-module"}, {"text": "\ud83d\udcbb Makefile for Out-of-Tree Module", "id": "makefile-for-out-of-tree-module"}, {"text": "\ud83e\udde0 THEORY: Makefile Explanation", "id": "theory-makefile-explanation"}, {"text": "Usage:", "id": "usage"}, {"text": "\ud83c\udfd7\ufe0f MINI-EXERCISES \u2014 Day 9", "id": "mini-exercises-day-9"}, {"text": "\u26a0\ufe0f COMMON PITFALLS \u2014 Day 9", "id": "common-pitfalls-day-9"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Day 9 (10 Questions)", "id": "interview-questions-day-9-10-questions"}, {"text": "DAYS 10-11: KERNEL ERROR HANDLING &amp; MEMORY", "id": "days-10-11-kernel-error-handling-memory"}, {"text": "\ud83e\udde0 THEORY: The goto Cleanup Pattern \u2014 Kernel&rsquo;s #1 Pattern", "id": "theory-the-goto-cleanup-pattern-kernels-1-pattern"}, {"text": "\ud83d\udcbb COMPLETE CODE: Error Handling Patterns", "id": "complete-code-error-handling-patterns"}, {"text": "\ud83e\udde0 THEORY: Kernel Memory Allocation", "id": "theory-kernel-memory-allocation"}, {"text": "\ud83e\udde0 THEORY: IS_ERR / PTR_ERR / ERR_PTR Pattern", "id": "theory-is_err-ptr_err-err_ptr-pattern"}, {"text": "DAYS 12-13: KERNEL DATA STRUCTURES &amp; TIMERS", "id": "days-12-13-kernel-data-structures-timers"}, {"text": "\ud83e\udde0 THEORY: Kernel Linked Lists", "id": "theory-kernel-linked-lists"}, {"text": "\ud83d\udcbb COMPLETE CODE: Kernel List &amp; Timer Module", "id": "complete-code-kernel-list-timer-module"}, {"text": "\ud83e\udde0 THEORY: Key Kernel Data Structures", "id": "theory-key-kernel-data-structures"}, {"text": "\ud83e\udde0 THEORY: Timers &amp; Delayed Work", "id": "theory-timers-delayed-work"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Days 10-13 (14 Questions)", "id": "interview-questions-days-10-13-14-questions"}]}, {"title": "Phase 4: Char Driver Project", "url": "04_phase4.html", "headings": [{"text": "PHASE 4: CHARACTER DEVICE DRIVER PROJECT (Days 14-22)", "id": "phase-4-character-device-driver-project-days-14-22"}, {"text": "DAY 14: CHARACTER DRIVER ARCHITECTURE", "id": "day-14-character-driver-architecture"}, {"text": "\ud83e\udde0 THEORY: The Big Picture \u2014 How User Reaches Your Driver", "id": "theory-the-big-picture-how-user-reaches-your-driver"}, {"text": "\ud83e\udde0 THEORY: Device Numbers", "id": "theory-device-numbers"}, {"text": "\ud83e\udde0 THEORY: Key Structures Deep Dive", "id": "theory-key-structures-deep-dive"}, {"text": "struct file \u2014 Represents an OPEN file", "id": "struct-file-represents-an-open-file"}, {"text": "struct inode \u2014 Represents a FILE on filesystem", "id": "struct-inode-represents-a-file-on-filesystem"}, {"text": "\ud83e\udde0 THEORY: copy_to_user / copy_from_user \u2014 WHY They Exist", "id": "theory-copy_to_user-copy_from_user-why-they-exist"}, {"text": "DAYS 15-22: COMPLETE CHARACTER DRIVER IMPLEMENTATION", "id": "days-15-22-complete-character-driver-implementation"}, {"text": "\ud83d\udcbb THE DRIVER \u2014 Production Quality", "id": "the-driver-production-quality"}, {"text": "\ud83d\udcbb MAKEFILE", "id": "makefile"}, {"text": "\ud83d\udcbb TEST APPLICATION", "id": "test-application"}, {"text": "\ud83c\udfd7\ufe0f MINI-EXERCISES \u2014 Days 14-22", "id": "mini-exercises-days-14-22"}, {"text": "\u26a0\ufe0f COMMON PITFALLS \u2014 Character Driver", "id": "common-pitfalls-character-driver"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Character Driver (15 Questions)", "id": "interview-questions-character-driver-15-questions"}]}, {"title": "Phase 5: Device Tree & Platform", "url": "05_phase5.html", "headings": [{"text": "PHASE 5: DEVICE TREE &amp; PLATFORM DRIVERS (Days 23-27)", "id": "phase-5-device-tree-platform-drivers-days-23-27"}, {"text": "DAYS 23-24: DEVICE TREE FUNDAMENTALS", "id": "days-23-24-device-tree-fundamentals"}, {"text": "\ud83e\udde0 THEORY: Why Device Tree Exists", "id": "theory-why-device-tree-exists"}, {"text": "\ud83e\udde0 THEORY: Device Tree Syntax", "id": "theory-device-tree-syntax"}, {"text": "\ud83e\udde0 THEORY: Key Properties Reference", "id": "theory-key-properties-reference"}, {"text": "\ud83e\udde0 THEORY: Compatible String Matching \u2014 The Heart of DT", "id": "theory-compatible-string-matching-the-heart-of-dt"}, {"text": "\ud83d\udcbb COMPLETE CODE: DT Property Reading Demo", "id": "complete-code-dt-property-reading-demo"}, {"text": "DT Overlay for Testing (without real hardware)", "id": "dt-overlay-for-testing-without-real-hardware"}, {"text": "DAYS 25-27: PLATFORM DRIVER", "id": "days-25-27-platform-driver"}, {"text": "\ud83e\udde0 THEORY: Platform Driver Model", "id": "theory-platform-driver-model"}, {"text": "\ud83e\udde0 THEORY: probe() and remove() \u2014 The Full Story", "id": "theory-probe-and-remove-the-full-story"}, {"text": "\ud83d\udcbb COMPLETE CODE: Platform Driver", "id": "complete-code-platform-driver"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 Device Tree &amp; Platform (16 Questions)", "id": "interview-questions-device-tree-platform-16-questions"}]}, {"title": "Phase 6: I2C Project", "url": "06_phase6.html", "headings": [{"text": "PHASE 6: I2C SENSOR DRIVER PROJECT (Days 28-37)", "id": "phase-6-i2c-sensor-driver-project-days-28-37"}, {"text": "DAYS 28-29: I2C SUBSYSTEM DEEP DIVE", "id": "days-28-29-i2c-subsystem-deep-dive"}, {"text": "\ud83e\udde0 THEORY: I2C Protocol \u2014 Hardware Level", "id": "theory-i2c-protocol-hardware-level"}, {"text": "\ud83e\udde0 THEORY: I2C Transaction Format", "id": "theory-i2c-transaction-format"}, {"text": "\ud83e\udde0 THEORY: Linux I2C Stack", "id": "theory-linux-i2c-stack"}, {"text": "\ud83e\udde0 THEORY: Key I2C API Functions", "id": "theory-key-i2c-api-functions"}, {"text": "DAYS 30-37: COMPLETE I2C TEMPERATURE SENSOR DRIVER", "id": "days-30-37-complete-i2c-temperature-sensor-driver"}, {"text": "\ud83d\udcbb THE DRIVER \u2014 Production Quality", "id": "the-driver-production-quality"}, {"text": "\ud83d\udcbb MAKEFILE", "id": "makefile"}, {"text": "\ud83e\udde0 THEORY: Testing Without Real Hardware", "id": "theory-testing-without-real-hardware"}, {"text": "\ud83d\udcdd INTERVIEW QUESTIONS \u2014 I2C Driver (12 Questions)", "id": "interview-questions-i2c-driver-12-questions"}]}, {"title": "Phase 7: SPI & Final Prep", "url": "07_phase7.html", "headings": [{"text": "PHASE 7: SPI + BUILD SYSTEM + FINAL PREP (Days 36-40)", "id": "phase-7-spi-build-system-final-prep-days-36-40"}, {"text": "DAY 36: SPI BASICS", "id": "day-36-spi-basics"}, {"text": "Theory: What is SPI?", "id": "theory-what-is-spi"}, {"text": "Theory: CPOL and CPHA", "id": "theory-cpol-and-cpha"}, {"text": "Theory: SPI vs I2C", "id": "theory-spi-vs-i2c"}, {"text": "Theory: Linux SPI Driver Model", "id": "theory-linux-spi-driver-model"}, {"text": "Theory: Device Tree for SPI Devices", "id": "theory-device-tree-for-spi-devices"}, {"text": "Theory: SPI Driver Skeleton", "id": "theory-spi-driver-skeleton"}, {"text": "Theory: SPI Transfer Example", "id": "theory-spi-transfer-example"}, {"text": "Interview Questions \u2014 SPI", "id": "interview-questions-spi"}, {"text": "DAY 37: BUILDROOT AND YOCTO BASICS", "id": "day-37-buildroot-and-yocto-basics"}, {"text": "Theory: What Problem Do They Solve?", "id": "theory-what-problem-do-they-solve"}, {"text": "Theory: Buildroot", "id": "theory-buildroot"}, {"text": "Theory: Yocto Project", "id": "theory-yocto-project"}, {"text": "Theory: Buildroot vs Yocto \u2014 When to Use Which", "id": "theory-buildroot-vs-yocto-when-to-use-which"}, {"text": "Theory: How an Embedded Linux Image Is Assembled", "id": "theory-how-an-embedded-linux-image-is-assembled"}, {"text": "Theory: BusyBox", "id": "theory-busybox"}, {"text": "Interview Questions \u2014 Buildroot and Yocto", "id": "interview-questions-buildroot-and-yocto"}, {"text": "DAY 38: DEBUGGING WORKFLOW DAY", "id": "day-38-debugging-workflow-day"}, {"text": "Overview", "id": "overview"}, {"text": "Scenario 1: Module Does Not Load", "id": "scenario-1-module-does-not-load"}, {"text": "Scenario 2: Module Loads, But probe() Never Called", "id": "scenario-2-module-loads-but-probe-never-called"}, {"text": "Scenario 3: probe() Called, But Fails", "id": "scenario-3-probe-called-but-fails"}, {"text": "Scenario 4: Device Node Not Created Under /dev", "id": "scenario-4-device-node-not-created-under-dev"}, {"text": "Scenario 5: read() Blocks Forever", "id": "scenario-5-read-blocks-forever"}, {"text": "Scenario 6: IRQ Not Firing", "id": "scenario-6-irq-not-firing"}, {"text": "Scenario 7: I2C Communication Fails", "id": "scenario-7-i2c-communication-fails"}, {"text": "Must-Know Debug Commands \u2014 Reference Card", "id": "must-know-debug-commands-reference-card"}, {"text": "DAY 39: RESUME AND PROJECT STORY", "id": "day-39-resume-and-project-story"}, {"text": "Your Three Projects", "id": "your-three-projects"}, {"text": "Project 1: Character Device Driver", "id": "project-1-character-device-driver"}, {"text": "Project 2: Platform Driver / Device Tree Demo", "id": "project-2-platform-driver-device-tree-demo"}, {"text": "Project 3: I2C Sensor Driver", "id": "project-3-i2c-sensor-driver"}, {"text": "GitHub Cleanup Checklist", "id": "github-cleanup-checklist"}, {"text": "Resume Bullet Points", "id": "resume-bullet-points"}, {"text": "DAY 40: MOCK INTERVIEW DAY", "id": "day-40-mock-interview-day"}, {"text": "How to Run Your Mock Interview", "id": "how-to-run-your-mock-interview"}, {"text": "Rapid-Fire Round \u2014 C and Linux Basics", "id": "rapid-fire-round-c-and-linux-basics"}, {"text": "Driver Knowledge Round \u2014 60-second Answers", "id": "driver-knowledge-round-60-second-answers"}, {"text": "Device Tree and Platform Driver Round", "id": "device-tree-and-platform-driver-round"}, {"text": "I2C and Debugging Round", "id": "i2c-and-debugging-round"}, {"text": "Synchronization Round", "id": "synchronization-round"}, {"text": "Project Walkthrough Round", "id": "project-walkthrough-round"}, {"text": "OPTIONAL BONUS: THREAD POOL PROJECT", "id": "optional-bonus-thread-pool-project"}, {"text": "FINAL ADVICE", "id": "final-advice"}]}, {"title": "Appendix: Interview Bank", "url": "08_appendix_interviews.html", "headings": [{"text": "\ud83d\udcda COMPREHENSIVE INTERVIEW QUESTION BANK", "id": "comprehensive-interview-question-bank"}, {"text": "170+ Questions Categorized by Topic \u2014 with Model Answers for 0-2 YOE", "id": "170-questions-categorized-by-topic-with-model-answers-for-0-2-yoe"}, {"text": "CATEGORY 1: C PROGRAMMING FUNDAMENTALS (25 Questions)", "id": "category-1-c-programming-fundamentals-25-questions"}, {"text": "Memory &amp; Pointers", "id": "memory-pointers"}, {"text": "Bitwise", "id": "bitwise"}, {"text": "Threading", "id": "threading"}, {"text": "CATEGORY 2: LINUX KERNEL FUNDAMENTALS (25 Questions)", "id": "category-2-linux-kernel-fundamentals-25-questions"}, {"text": "CATEGORY 3: MEMORY MANAGEMENT (20 Questions)", "id": "category-3-memory-management-20-questions"}, {"text": "CATEGORY 4: DEVICE DRIVERS (30 Questions)", "id": "category-4-device-drivers-30-questions"}, {"text": "CATEGORY 5: DEVICE TREE (15 Questions)", "id": "category-5-device-tree-15-questions"}, {"text": "CATEGORY 6: I2C/SPI PROTOCOLS (15 Questions)", "id": "category-6-i2cspi-protocols-15-questions"}, {"text": "CATEGORY 7: SYNCHRONIZATION &amp; CONCURRENCY (20 Questions)", "id": "category-7-synchronization-concurrency-20-questions"}, {"text": "CATEGORY 8: DEBUGGING &amp; TOOLS (15 Questions)", "id": "category-8-debugging-tools-15-questions"}, {"text": "CATEGORY 9: REAL INTERVIEW SCENARIOS (15 Questions)", "id": "category-9-real-interview-scenarios-15-questions"}, {"text": "CATEGORY 10: SYSTEM DESIGN &amp; ARCHITECTURE (10 Questions)", "id": "category-10-system-design-architecture-10-questions"}, {"text": "QUICK REFERENCE: Must-Know Code Snippets", "id": "quick-reference-must-know-code-snippets"}, {"text": "1. Basic Module Template", "id": "1-basic-module-template"}, {"text": "2. File Operations", "id": "2-file-operations"}, {"text": "3. Character Device Registration", "id": "3-character-device-registration"}, {"text": "4. IOCTL Command Definition", "id": "4-ioctl-command-definition"}, {"text": "5. Platform Driver Template", "id": "5-platform-driver-template"}, {"text": "6. I2C Driver Template", "id": "6-i2c-driver-template"}, {"text": "7. Error Handling Pattern", "id": "7-error-handling-pattern"}, {"text": "8. Quick Error Codes", "id": "8-quick-error-codes"}]}, {"title": "Appendix: Kernel Internals", "url": "09_appendix_kernel.html", "headings": [{"text": "\ud83d\udcd6 APPENDIX: KERNEL INTERNALS DEEP DIVE", "id": "appendix-kernel-internals-deep-dive"}, {"text": "Virtual Memory, Scheduling, Interrupts \u2014 For Interview Depth", "id": "virtual-memory-scheduling-interrupts-for-interview-depth"}, {"text": "VIRTUAL MEMORY \u2014 How It Actually Works", "id": "virtual-memory-how-it-actually-works"}, {"text": "Address Translation", "id": "address-translation"}, {"text": "Page Fault Handling", "id": "page-fault-handling"}, {"text": "Why This Matters for Driver Development", "id": "why-this-matters-for-driver-development"}, {"text": "PROCESS SCHEDULING", "id": "process-scheduling"}, {"text": "The Completely Fair Scheduler (CFS)", "id": "the-completely-fair-scheduler-cfs"}, {"text": "Real-Time Scheduling Classes", "id": "real-time-scheduling-classes"}, {"text": "INTERRUPT HANDLING \u2014 COMPLETE PICTURE", "id": "interrupt-handling-complete-picture"}, {"text": "Interrupt Flow", "id": "interrupt-flow"}, {"text": "Threaded IRQ Example", "id": "threaded-irq-example"}, {"text": "POWER MANAGEMENT", "id": "power-management"}, {"text": "Runtime PM (for drivers)", "id": "runtime-pm-for-drivers"}, {"text": "KERNEL DEBUGGING TOOLS REFERENCE", "id": "kernel-debugging-tools-reference"}, {"text": "Dynamic Debug (Enable dev_dbg at runtime)", "id": "dynamic-debug-enable-dev_dbg-at-runtime"}]}, {"title": "Appendix: Debugging", "url": "10_appendix_debugging.html", "headings": [{"text": "\ud83d\udd27 APPENDIX: DEBUGGING TECHNIQUES", "id": "appendix-debugging-techniques"}, {"text": "Complete Debugging Toolkit for Embedded Linux Development", "id": "complete-debugging-toolkit-for-embedded-linux-development"}, {"text": "SECTION 1: USER-SPACE DEBUGGING", "id": "section-1-user-space-debugging"}, {"text": "strace \u2014 System Call Tracer", "id": "strace-system-call-tracer"}, {"text": "GDB \u2014 The GNU Debugger", "id": "gdb-the-gnu-debugger"}, {"text": "Valgrind \u2014 Memory Error Detector", "id": "valgrind-memory-error-detector"}, {"text": "Address Sanitizer (ASan) \u2014 Compile-Time Instrumentation", "id": "address-sanitizer-asan-compile-time-instrumentation"}, {"text": "SECTION 2: KERNEL-SPACE DEBUGGING", "id": "section-2-kernel-space-debugging"}, {"text": "dmesg \u2014 Kernel Message Buffer", "id": "dmesg-kernel-message-buffer"}, {"text": "Dynamic Debug (dev_dbg at runtime)", "id": "dynamic-debug-dev_dbg-at-runtime"}, {"text": "/proc and /sys Inspection", "id": "proc-and-sys-inspection"}, {"text": "ftrace \u2014 Kernel Function Tracer", "id": "ftrace-kernel-function-tracer"}, {"text": "Kernel Oops \u2014 Reading Crash Outputs", "id": "kernel-oops-reading-crash-outputs"}, {"text": "SECTION 3: DEBUGGING WORKFLOW", "id": "section-3-debugging-workflow"}, {"text": "When Your Module Won&rsquo;t Load", "id": "when-your-module-wont-load"}, {"text": "When Your Driver Crashes", "id": "when-your-driver-crashes"}, {"text": "When I2C Communication Fails", "id": "when-i2c-communication-fails"}, {"text": "SECTION 4: PERFORMANCE DEBUGGING", "id": "section-4-performance-debugging"}, {"text": "perf \u2014 The Swiss Army Knife", "id": "perf-the-swiss-army-knife"}, {"text": "Kernel Config Options for Debugging", "id": "kernel-config-options-for-debugging"}, {"text": "QUICK REFERENCE: What Tool When?", "id": "quick-reference-what-tool-when"}]}, {"title": "Appendix: Interview Practice", "url": "11_interview_practice.html", "headings": [{"text": "EMBEDDED LINUX INTERVIEW PRACTICE GUIDE", "id": "embedded-linux-interview-practice-guide"}, {"text": "Spoken Answers \u2014 Short / Deep / Follow-Up Format", "id": "spoken-answers-short-deep-follow-up-format"}, {"text": "How To Use This Guide", "id": "how-to-use-this-guide"}, {"text": "SECTION 1: C FUNDAMENTALS", "id": "section-1-c-fundamentals"}, {"text": "Q1. What is the difference between an array and a pointer in C?", "id": "q1-what-is-the-difference-between-an-array-and-a-pointer-in-c"}, {"text": "Short Answer", "id": "short-answer"}, {"text": "Deep Answer", "id": "deep-answer"}, {"text": "Follow-Up Questions", "id": "follow-up-questions"}, {"text": "Q2. What is volatile and why is it important in embedded systems?", "id": "q2-what-is-volatile-and-why-is-it-important-in-embedded-systems"}, {"text": "Short Answer", "id": "short-answer_1"}, {"text": "Deep Answer", "id": "deep-answer_1"}, {"text": "Follow-Up Questions", "id": "follow-up-questions_1"}, {"text": "Q3. What is structure padding and alignment?", "id": "q3-what-is-structure-padding-and-alignment"}, {"text": "Short Answer", "id": "short-answer_2"}, {"text": "Deep Answer", "id": "deep-answer_2"}, {"text": "Follow-Up Questions", "id": "follow-up-questions_2"}, {"text": "Q4. What are function pointers, and why are they important in Linux kernel code?", "id": "q4-what-are-function-pointers-and-why-are-they-important-in-linux-kernel-code"}, {"text": "Short Answer", "id": "short-answer_3"}, {"text": "Deep Answer", "id": "deep-answer_3"}, {"text": "Follow-Up Questions", "id": "follow-up-questions_3"}, {"text": "SECTION 2: LINUX FUNDAMENTALS", "id": "section-2-linux-fundamentals"}, {"text": "Q5. What is the difference between user space and kernel space?", "id": "q5-what-is-the-difference-between-user-space-and-kernel-space"}, {"text": "Short Answer", "id": "short-answer_4"}, {"text": "Deep Answer", "id": "deep-answer_4"}, {"text": "Follow-Up Questions", "id": "follow-up-questions_4"}, {"text": "Q6. What is a system call?", "id": "q6-what-is-a-system-call"}, {"text": "Short Answer", "id": "short-answer_5"}, {"text": "Deep Answer", "id": "deep-answer_5"}, {"text": "Follow-Up Questions", "id": "follow-up-questions_5"}, {"text": "Q7. What is the difference between a process and a thread?", "id": "q7-what-is-the-difference-between-a-process-and-a-thread"}, {"text": "Short Answer", "id": "short-answer_6"}, {"text": "Deep Answer", "id": "deep-answer_6"}, {"text": "Follow-Up Questions", "id": "follow-up-questions_6"}, {"text": "Q8. Explain fork(), exec(), and copy-on-write.", "id": "q8-explain-fork-exec-and-copy-on-write"}, {"text": "Short Answer", "id": "short-answer_7"}, {"text": "Deep Answer", "id": "deep-answer_7"}, {"text": "Follow-Up Questions", "id": "follow-up-questions_7"}, {"text": "Q9. What is the difference between mmap() and ioremap()?", "id": "q9-what-is-the-difference-between-mmap-and-ioremap"}, {"text": "Short Answer", "id": "short-answer_8"}, {"text": "Deep Answer", "id": "deep-answer_8"}, {"text": "Follow-Up Questions", "id": "follow-up-questions_8"}, {"text": "Q10. Explain the embedded Linux boot flow.", "id": "q10-explain-the-embedded-linux-boot-flow"}, {"text": "Short Answer", "id": "short-answer_9"}, {"text": "Deep Answer", "id": "deep-answer_9"}, {"text": "Follow-Up Questions", "id": "follow-up-questions_9"}, {"text": "SECTION 3: KERNEL MODULES AND KERNEL MEMORY", "id": "section-3-kernel-modules-and-kernel-memory"}, {"text": "Q11. What is a kernel module?", "id": "q11-what-is-a-kernel-module"}, {"text": "Short Answer", "id": "short-answer_10"}, {"text": "Deep Answer", "id": "deep-answer_10"}, {"text": "Follow-Up Questions", "id": "follow-up-questions_10"}, {"text": "Q12. What is the difference between insmod and modprobe?", "id": "q12-what-is-the-difference-between-insmod-and-modprobe"}, {"text": "Short Answer", "id": "short-answer_11"}, {"text": "Deep Answer", "id": "deep-answer_11"}, {"text": "Follow-Up Questions", "id": "follow-up-questions_11"}, {"text": "Q13. What is the difference between kmalloc(), kzalloc(), and vmalloc()?", "id": "q13-what-is-the-difference-between-kmalloc-kzalloc-and-vmalloc"}, {"text": "Short Answer", "id": "short-answer_12"}, {"text": "Deep Answer", "id": "deep-answer_12"}, {"text": "Follow-Up Questions", "id": "follow-up-questions_12"}, {"text": "Q14. What are GFP_KERNEL and GFP_ATOMIC?", "id": "q14-what-are-gfp_kernel-and-gfp_atomic"}, {"text": "Short Answer", "id": "short-answer_13"}, {"text": "Deep Answer", "id": "deep-answer_13"}, {"text": "Follow-Up Questions", "id": "follow-up-questions_13"}, {"text": "Q15. Why does kernel code often use goto for cleanup?", "id": "q15-why-does-kernel-code-often-use-goto-for-cleanup"}, {"text": "Short Answer", "id": "short-answer_14"}, {"text": "Deep Answer", "id": "deep-answer_14"}, {"text": "Follow-Up Questions", "id": "follow-up-questions_14"}, {"text": "SECTION 4: CHARACTER DRIVER", "id": "section-4-character-driver"}, {"text": "Q16. What is a character device driver?", "id": "q16-what-is-a-character-device-driver"}, {"text": "Short Answer", "id": "short-answer_15"}, {"text": "Deep Answer", "id": "deep-answer_15"}, {"text": "Follow-Up Questions", "id": "follow-up-questions_15"}, {"text": "Q17. What are major and minor numbers?", "id": "q17-what-are-major-and-minor-numbers"}, {"text": "Short Answer", "id": "short-answer_16"}, {"text": "Deep Answer", "id": "deep-answer_16"}, {"text": "Follow-Up Questions", "id": "follow-up-questions_16"}, {"text": "Q18. What are cdev and file_operations?", "id": "q18-what-are-cdev-and-file_operations"}, {"text": "Short Answer", "id": "short-answer_17"}, {"text": "Deep Answer", "id": "deep-answer_17"}, {"text": "Follow-Up Questions", "id": "follow-up-questions_17"}, {"text": "Q19. Why do drivers use copy_to_user() and copy_from_user()?", "id": "q19-why-do-drivers-use-copy_to_user-and-copy_from_user"}, {"text": "Short Answer", "id": "short-answer_18"}, {"text": "Deep Answer", "id": "deep-answer_18"}, {"text": "Follow-Up Questions", "id": "follow-up-questions_18"}, {"text": "Q20. What is ioctl() and when would you use it?", "id": "q20-what-is-ioctl-and-when-would-you-use-it"}, {"text": "Short Answer", "id": "short-answer_19"}, {"text": "Deep Answer", "id": "deep-answer_19"}, {"text": "Follow-Up Questions", "id": "follow-up-questions_19"}, {"text": "Q21. How do you implement a blocking read() in a driver?", "id": "q21-how-do-you-implement-a-blocking-read-in-a-driver"}, {"text": "Short Answer", "id": "short-answer_20"}, {"text": "Deep Answer", "id": "deep-answer_20"}, {"text": "Follow-Up Questions", "id": "follow-up-questions_20"}, {"text": "Q22. What is .poll() in a driver?", "id": "q22-what-is-poll-in-a-driver"}, {"text": "Short Answer", "id": "short-answer_21"}, {"text": "Deep Answer", "id": "deep-answer_21"}, {"text": "Follow-Up Questions", "id": "follow-up-questions_21"}, {"text": "SECTION 5: DEVICE TREE AND PLATFORM DRIVER", "id": "section-5-device-tree-and-platform-driver"}, {"text": "Q23. Why does Device Tree exist?", "id": "q23-why-does-device-tree-exist"}, {"text": "Short Answer", "id": "short-answer_22"}, {"text": "Deep Answer", "id": "deep-answer_22"}, {"text": "Follow-Up Questions", "id": "follow-up-questions_22"}, {"text": "Q24. What is a compatible string, and how does matching happen?", "id": "q24-what-is-a-compatible-string-and-how-does-matching-happen"}, {"text": "Short Answer", "id": "short-answer_23"}, {"text": "Deep Answer", "id": "deep-answer_23"}, {"text": "Follow-Up Questions", "id": "follow-up-questions_23"}, {"text": "Q25. What are the reg, interrupts, and phandle-style properties used for?", "id": "q25-what-are-the-reg-interrupts-and-phandle-style-properties-used-for"}, {"text": "Short Answer", "id": "short-answer_24"}, {"text": "Deep Answer", "id": "deep-answer_24"}, {"text": "Follow-Up Questions", "id": "follow-up-questions_24"}, {"text": "Q26. What is a platform driver, and what usually happens in probe()?", "id": "q26-what-is-a-platform-driver-and-what-usually-happens-in-probe"}, {"text": "Short Answer", "id": "short-answer_25"}, {"text": "Deep Answer", "id": "deep-answer_25"}, {"text": "Follow-Up Questions", "id": "follow-up-questions_25"}, {"text": "Q27. What is -EPROBE_DEFER and when is it used?", "id": "q27-what-is-eprobe_defer-and-when-is-it-used"}, {"text": "Short Answer", "id": "short-answer_26"}, {"text": "Deep Answer", "id": "deep-answer_26"}, {"text": "Follow-Up Questions", "id": "follow-up-questions_26"}, {"text": "SECTION 6: I2C AND SPI", "id": "section-6-i2c-and-spi"}, {"text": "Q28. What is the difference between I2C and SPI?", "id": "q28-what-is-the-difference-between-i2c-and-spi"}, {"text": "Short Answer", "id": "short-answer_27"}, {"text": "Deep Answer", "id": "deep-answer_27"}, {"text": "Follow-Up Questions", "id": "follow-up-questions_27"}, {"text": "Q29. Explain the Linux I2C model: adapter, client, and driver.", "id": "q29-explain-the-linux-i2c-model-adapter-client-and-driver"}, {"text": "Short Answer", "id": "short-answer_28"}, {"text": "Deep Answer", "id": "deep-answer_28"}, {"text": "Follow-Up Questions", "id": "follow-up-questions_28"}, {"text": "Q30. Why is subsystem integration like hwmon preferred in sensor drivers?", "id": "q30-why-is-subsystem-integration-like-hwmon-preferred-in-sensor-drivers"}, {"text": "Short Answer", "id": "short-answer_29"}, {"text": "Deep Answer", "id": "deep-answer_29"}, {"text": "Follow-Up Questions", "id": "follow-up-questions_29"}, {"text": "SECTION 7: CONCURRENCY, INTERRUPTS, AND DRIVER CONTEXT", "id": "section-7-concurrency-interrupts-and-driver-context"}, {"text": "Q31. What is the difference between process context and interrupt context?", "id": "q31-what-is-the-difference-between-process-context-and-interrupt-context"}, {"text": "Short Answer", "id": "short-answer_30"}, {"text": "Deep Answer", "id": "deep-answer_30"}, {"text": "Follow-Up Questions", "id": "follow-up-questions_30"}, {"text": "Q32. What is the difference between a mutex and a spinlock?", "id": "q32-what-is-the-difference-between-a-mutex-and-a-spinlock"}, {"text": "Short Answer", "id": "short-answer_31"}, {"text": "Deep Answer", "id": "deep-answer_31"}, {"text": "Follow-Up Questions", "id": "follow-up-questions_31"}, {"text": "Q33. What are top half, threaded IRQ, and workqueue?", "id": "q33-what-are-top-half-threaded-irq-and-workqueue"}, {"text": "Short Answer", "id": "short-answer_32"}, {"text": "Deep Answer", "id": "deep-answer_32"}, {"text": "Follow-Up Questions", "id": "follow-up-questions_32"}, {"text": "SECTION 8: DEBUGGING AND PROJECT DISCUSSION", "id": "section-8-debugging-and-project-discussion"}, {"text": "Q34. How would you debug if your driver&rsquo;s probe() is not getting called?", "id": "q34-how-would-you-debug-if-your-drivers-probe-is-not-getting-called"}, {"text": "Short Answer", "id": "short-answer_33"}, {"text": "Deep Answer", "id": "deep-answer_33"}, {"text": "Follow-Up Questions", "id": "follow-up-questions_33"}, {"text": "Q35. How would you debug a module that fails to load?", "id": "q35-how-would-you-debug-a-module-that-fails-to-load"}, {"text": "Short Answer", "id": "short-answer_34"}, {"text": "Deep Answer", "id": "deep-answer_34"}, {"text": "Follow-Up Questions", "id": "follow-up-questions_34"}, {"text": "Q36. Walk me through your driver project.", "id": "q36-walk-me-through-your-driver-project"}, {"text": "Short Answer", "id": "short-answer_35"}, {"text": "Deep Answer", "id": "deep-answer_35"}, {"text": "Follow-Up Questions", "id": "follow-up-questions_35"}, {"text": "SECTION 9: DEBUGGING SCENARIOS \u2014 PRACTICAL", "id": "section-9-debugging-scenarios-practical"}, {"text": "Q1. A kernel module is not loading. How would you debug it?", "id": "q1-a-kernel-module-is-not-loading-how-would-you-debug-it"}, {"text": "Short Answer", "id": "short-answer_36"}, {"text": "Deep Answer", "id": "deep-answer_36"}, {"text": "Follow-Up Questions", "id": "follow-up-questions_36"}, {"text": "Q2. Your driver module loads, but probe() is never called. What would you check?", "id": "q2-your-driver-module-loads-but-probe-is-never-called-what-would-you-check"}, {"text": "Short Answer", "id": "short-answer_37"}, {"text": "Deep Answer", "id": "deep-answer_37"}, {"text": "Follow-Up Questions", "id": "follow-up-questions_37"}, {"text": "Q3. probe() is called, but it fails. How would you debug that?", "id": "q3-probe-is-called-but-it-fails-how-would-you-debug-that"}, {"text": "Short Answer", "id": "short-answer_38"}, {"text": "Deep Answer", "id": "deep-answer_38"}, {"text": "Follow-Up Questions", "id": "follow-up-questions_38"}, {"text": "Q4. Device node under /dev is not created. What would you check?", "id": "q4-device-node-under-dev-is-not-created-what-would-you-check"}, {"text": "Short Answer", "id": "short-answer_39"}, {"text": "Deep Answer", "id": "deep-answer_39"}, {"text": "Follow-Up Questions", "id": "follow-up-questions_39"}, {"text": "Q5. read() blocks forever in your driver. How would you debug that?", "id": "q5-read-blocks-forever-in-your-driver-how-would-you-debug-that"}, {"text": "Short Answer", "id": "short-answer_40"}, {"text": "Deep Answer", "id": "deep-answer_40"}, {"text": "Follow-Up Questions", "id": "follow-up-questions_40"}, {"text": "Q6. poll() is not working correctly. How would you think about it?", "id": "q6-poll-is-not-working-correctly-how-would-you-think-about-it"}, {"text": "Short Answer", "id": "short-answer_41"}, {"text": "Deep Answer", "id": "deep-answer_41"}, {"text": "Follow-Up Questions", "id": "follow-up-questions_41"}, {"text": "Q7. Interrupt is registered, but it never fires. What would you check?", "id": "q7-interrupt-is-registered-but-it-never-fires-what-would-you-check"}, {"text": "Short Answer", "id": "short-answer_42"}, {"text": "Deep Answer", "id": "deep-answer_42"}, {"text": "Follow-Up Questions", "id": "follow-up-questions_42"}, {"text": "Q8. Your I2C driver probes, but communication with the device fails. How do you debug it?", "id": "q8-your-i2c-driver-probes-but-communication-with-the-device-fails-how-do-you-debug-it"}, {"text": "Short Answer", "id": "short-answer_43"}, {"text": "Deep Answer", "id": "deep-answer_43"}, {"text": "Follow-Up Questions", "id": "follow-up-questions_43"}, {"text": "Q9. The kernel crashes with an oops after loading your driver. What would you do?", "id": "q9-the-kernel-crashes-with-an-oops-after-loading-your-driver-what-would-you-do"}, {"text": "Short Answer", "id": "short-answer_44"}, {"text": "Deep Answer", "id": "deep-answer_44"}, {"text": "Follow-Up Questions", "id": "follow-up-questions_44"}, {"text": "SECTION 10: PROJECT WALKTHROUGH ANSWERS", "id": "section-10-project-walkthrough-answers"}, {"text": "How to Answer &ldquo;Walk Me Through Your Project&rdquo;", "id": "how-to-answer-walk-me-through-your-project"}, {"text": "Character Driver Walkthrough", "id": "character-driver-walkthrough"}, {"text": "Platform Driver Walkthrough", "id": "platform-driver-walkthrough"}, {"text": "I2C Sensor Driver Walkthrough", "id": "i2c-sensor-driver-walkthrough"}, {"text": "SECTION 11: HR AND RESUME QUESTIONS", "id": "section-11-hr-and-resume-questions"}, {"text": "Q: Tell me about yourself.", "id": "q-tell-me-about-yourself"}, {"text": "Structure", "id": "structure"}, {"text": "Q: Why do you want to work in embedded Linux?", "id": "q-why-do-you-want-to-work-in-embedded-linux"}, {"text": "Good Answer", "id": "good-answer"}, {"text": "Q: What is your biggest technical weakness?", "id": "q-what-is-your-biggest-technical-weakness"}, {"text": "Good Answer", "id": "good-answer_1"}, {"text": "Q: Describe a time you debugged a hard problem.", "id": "q-describe-a-time-you-debugged-a-hard-problem"}, {"text": "Structure", "id": "structure_1"}, {"text": "Q: How do you learn new technical topics?", "id": "q-how-do-you-learn-new-technical-topics"}, {"text": "Good Answer", "id": "good-answer_2"}, {"text": "Q: Where do you see yourself in 3 years?", "id": "q-where-do-you-see-yourself-in-3-years"}, {"text": "Good Answer", "id": "good-answer_3"}, {"text": "FINAL RAPID REVISION CHECKLIST", "id": "final-rapid-revision-checklist"}, {"text": "Practice Tip", "id": "practice-tip"}]}]</script>
+
+  <!-- Scripts -->
+  <script>hljs.highlightAll();</script>
+  <script src="app.js"></script>
+</body>
+</html>

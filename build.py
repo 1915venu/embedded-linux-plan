@@ -27,11 +27,12 @@ PAGES = [
     {"src": "03_Phase3_Kernel_Modules.md",       "out": "03_phase3.html",              "title": "Phase 3: Kernel Modules",          "icon": "🧩",  "section": "phases",   "badge": "Days 9-13"},
     {"src": "04_Phase4_CharDriver_Project.md",   "out": "04_phase4.html",              "title": "Phase 4: Char Driver Project",     "icon": "💾",  "section": "phases",   "badge": "Days 14-22"},
     {"src": "05_Phase5_DeviceTree_Platform.md",  "out": "05_phase5.html",              "title": "Phase 5: Device Tree & Platform",  "icon": "🌳",  "section": "phases",   "badge": "Days 23-27"},
-    {"src": "06_Phase6_I2C_Project.md",          "out": "06_phase6.html",              "title": "Phase 6: I2C Project",             "icon": "🔌",  "section": "phases",   "badge": "Days 28-37"},
-    {"src": "07_Phase7_ThreadPool_Interview.md", "out": "07_phase7.html",              "title": "Phase 7: Thread Pool & Interview", "icon": "🎯",  "section": "phases",   "badge": "Days 38-40"},
-    {"src": "08_Appendix_InterviewBank.md",      "out": "08_appendix_interviews.html", "title": "Appendix: Interview Bank",         "icon": "📝",  "section": "appendix", "badge": "150+ Q&A"},
+    {"src": "06_Phase6_I2C_Project.md",          "out": "06_phase6.html",              "title": "Phase 6: I2C Project",             "icon": "🔌",  "section": "phases",   "badge": "Days 28-35"},
+    {"src": "07_Phase7_ThreadPool_Interview.md", "out": "07_phase7.html",              "title": "Phase 7: SPI & Final Prep",        "icon": "🎯",  "section": "phases",   "badge": "Days 36-40"},
+    {"src": "08_Appendix_InterviewBank.md",      "out": "08_appendix_interviews.html", "title": "Appendix: Interview Bank",         "icon": "📝",  "section": "appendix", "badge": "170+ Q&A"},
     {"src": "09_Appendix_KernelInternals.md",    "out": "09_appendix_kernel.html",     "title": "Appendix: Kernel Internals",       "icon": "🔬",  "section": "appendix", "badge": ""},
     {"src": "10_Appendix_Debugging.md",          "out": "10_appendix_debugging.html",  "title": "Appendix: Debugging",              "icon": "🔧",  "section": "appendix", "badge": ""},
+    {"src": "11_Interview_Practice_Guide.md",    "out": "11_interview_practice.html",  "title": "Appendix: Interview Practice",     "icon": "🗣️", "section": "appendix", "badge": "Spoken Q&A"},
 ]
 
 # ===== PATHS =====
